@@ -7,7 +7,13 @@ import (
 )
 
 type Buffer struct {
-	Unused [8]uint8
+	B    *int8
+	Size uintptr
+	N    uintptr
+	L    *State
+	Init struct {
+		B [1024]int8
+	}
 }
 
 type Reg struct {

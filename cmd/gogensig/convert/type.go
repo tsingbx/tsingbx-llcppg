@@ -73,6 +73,8 @@ func (p *TypeConv) ToType(expr ast.Expr) (types.Type, error) {
 		return p.handleIdentRefer(expr)
 	case *ast.Variadic:
 		return types.NewSlice(gogen.TyEmptyInterface), nil
+	case *ast.RecordType:
+		return p.RecordTypeToStruct(t)
 	default:
 		return nil, fmt.Errorf("unsupported type: %T", expr)
 	}
