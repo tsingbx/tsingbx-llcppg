@@ -376,6 +376,10 @@ import (
 )
 
 type NormalType c.Int
+
+type Foo struct {
+	Unused [8]uint8
+}
 `
 	if strings.TrimSpace(expectedOutput) != strings.TrimSpace(buf.String()) {
 		t.Errorf("does not match expected.\nExpected:\n%s\nGot:\n%s", expectedOutput, buf.String())

@@ -6,7 +6,9 @@ import (
 	"unsafe"
 )
 
-
+type Buffer struct {
+	Unused [8]uint8
+}
 
 type Reg struct {
 	Name *int8
@@ -103,7 +105,9 @@ func Pushresultsize(B *Buffer, sz uintptr)
 //go:linkname Buffinitsize C.luaL_buffinitsize
 func Buffinitsize(L *State, B *Buffer, sz uintptr) *int8
 
-
+type Stream struct {
+	Unused [8]uint8
+}
 
 ===== lua.go =====
 package lua

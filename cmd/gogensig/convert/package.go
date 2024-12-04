@@ -230,13 +230,14 @@ func (p *Package) handleTypeDecl(name string, typeDecl *ast.TypeDecl, changed bo
 }
 
 func (p *Package) handleCompleteType(decl *gogen.TypeDecl, typ *ast.RecordType, name string) error {
+	defer delete(p.incomplete, name)
 	structType, err := p.cvt.RecordTypeToStruct(typ)
 	if err != nil {
-		decl.Delete()
+		// For incomplete type's conerter error, we use default struct type
+		decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
 		return err
 	}
 	decl.InitType(p.p, structType)
-	delete(p.incomplete, name)
 	return nil
 }
 
