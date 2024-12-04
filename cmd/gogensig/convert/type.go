@@ -23,6 +23,14 @@ var (
 	ErrTypeConv = errors.New("error convert type")
 )
 
+type TypeContext int
+
+const (
+	Normal TypeContext = iota
+	Param              // In function parameter context
+	Record             // In record field context
+)
+
 type HeaderInfo struct {
 	IncPath string // stdlib include path
 	Path    string // full path
@@ -39,7 +47,7 @@ type TypeConv struct {
 	SysTypePkg  map[string]*Header2Pkg
 	symbolTable *config.SymbolTable // llcppg.symb.json
 	typeMap     *BuiltinTypeMap
-	inParam     bool // flag to indicate if currently processing a param
+	ctx         TypeContext
 	conf        *TypeConfig
 }
 
@@ -91,7 +99,7 @@ func (p *TypeConv) handleArrayType(t *ast.ArrayType) (types.Type, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error convert elem type: %w", err)
 	}
-	if p.inParam {
+	if p.ctx == Param {
 		// array in the parameter,ignore the len,convert as pointer
 		return types.NewPointer(elemType), nil
 	}
@@ -122,6 +130,9 @@ func (p *TypeConv) handlePointerType(t *ast.PointerType) (types.Type, error) {
 		return p.typeMap.CType("Pointer"), nil
 	}
 	if baseFuncType, ok := baseType.(*types.Signature); ok {
+		if p.ctx == Record {
+			return p.typeMap.CType("Pointer"), nil
+		}
 		return baseFuncType, nil
 	}
 	return types.NewPointer(baseType), nil
@@ -175,10 +186,10 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 	return nil, errs.NewUnsupportedReferError(t)
 }
 
-func (p *TypeConv) ToSignature(funcType *ast.FuncType, recv *types.Var) (*types.Signature, error) {
-	beforeInParam := p.inParam
-	p.inParam = true
-	defer func() { p.inParam = beforeInParam }()
+func (p *TypeConv) ToSignature(funcType *ast.FuncType) (*types.Signature, error) {
+	ctx := p.ctx
+	p.ctx = Param
+	defer func() { p.ctx = ctx }()
 	params, variadic, err := p.fieldListToParams(funcType.Params)
 	if recv != nil {
 		params, variadic, err = p.fieldListToParams(&ast.FieldList{List: funcType.Params.List[1:]})
@@ -198,7 +209,7 @@ func (p *TypeConv) fieldListToParams(params *ast.FieldList) (*types.Tuple, bool,
 	if params == nil {
 		return types.NewTuple(), false, nil
 	}
-	vars, err := p.fieldListToVars(params, false)
+	vars, err := p.fieldListToVars(params)
 	if err != nil {
 		return nil, false, err
 	}
@@ -226,13 +237,13 @@ func (p *TypeConv) retToResult(ret ast.Expr) (*types.Tuple, error) {
 }
 
 // Convert ast.FieldList to []types.Var
-func (p *TypeConv) fieldListToVars(params *ast.FieldList, isRecord bool) ([]*types.Var, error) {
+func (p *TypeConv) fieldListToVars(params *ast.FieldList) ([]*types.Var, error) {
 	var vars []*types.Var
 	if params == nil || params.List == nil {
 		return vars, nil
 	}
 	for _, field := range params.List {
-		fieldVar, err := p.fieldToVar(field, isRecord)
+		fieldVar, err := p.fieldToVar(field)
 		if err != nil {
 			return nil, err
 		}
@@ -250,7 +261,7 @@ func (p *TypeConv) defaultRecordField() []*types.Var {
 	}
 }
 
-func (p *TypeConv) fieldToVar(field *ast.Field, isRecord bool) (*types.Var, error) {
+func (p *TypeConv) fieldToVar(field *ast.Field) (*types.Var, error) {
 	if field == nil {
 		return nil, fmt.Errorf("unexpected nil field")
 	}
@@ -260,6 +271,7 @@ func (p *TypeConv) fieldToVar(field *ast.Field, isRecord bool) (*types.Var, erro
 	if len(field.Names) > 0 {
 		name = field.Names[0].Name
 	}
+
 	typ, err := p.ToType(field.Type)
 	if err != nil {
 		return nil, err
@@ -269,13 +281,16 @@ func (p *TypeConv) fieldToVar(field *ast.Field, isRecord bool) (*types.Var, erro
 	if _, ok := field.Type.(*ast.Variadic); ok {
 		isVariadic = true
 	}
-	name = checkFieldName(name, isRecord, isVariadic)
+	name = checkFieldName(name, p.ctx, isVariadic)
 	return types.NewVar(token.NoPos, p.Types, name, typ), nil
 }
 
 func (p *TypeConv) RecordTypeToStruct(recordType *ast.RecordType) (types.Type, error) {
+	ctx := p.ctx
+	p.ctx = Record
+	defer func() { p.ctx = ctx }()
 	var fields []*types.Var
-	flds, err := p.fieldListToVars(recordType.Fields, true)
+	flds, err := p.fieldListToVars(recordType.Fields)
 	if err != nil {
 		return nil, err
 	}
@@ -364,13 +379,13 @@ func (p *TypeConv) LookupSymbol(mangleName config.MangleNameType) (config.GoName
 // isVariadic determines if the field is a variadic parameter
 // The field or param name should be public if it's a record field
 // and they will not record to the public symbol table
-func checkFieldName(name string, isRecord bool, isVariadic bool) string {
-	if isVariadic {
+func checkFieldName(name string, ctx TypeContext, isVariadic bool) string {
+	if isVariadic && ctx == Param {
 		return "__llgo_va_list"
 	}
 	// every field name should be public,will not be a keyword
-	if isRecord {
-		return names.PubName(name)
+	if ctx == Record {
+		return names.CPubName(name)
 	}
 	return avoidKeyword(name)
 }
