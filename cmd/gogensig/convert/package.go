@@ -16,6 +16,7 @@ import (
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/deps"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
+	"github.com/goplus/llcppg/cmd/gogensig/errs"
 	cppgtypes "github.com/goplus/llcppg/types"
 )
 
@@ -168,18 +169,26 @@ func (p *Package) ToSigSignature(goFuncName *GoFuncName, funcDecl *ast.FuncDecl)
 	return sig, nil
 }
 
-func (p *Package) newFuncDecl(goFuncName *GoFuncName, sig *types.Signature, funcDecl *ast.FuncDecl) error {
+func (p *Package) bodyStart(decl *gogen.Func, ret ast.Expr) error {
+	if !Expr(ret).IsVoid() {
+		retType, err := p.ToType(ret)
+		if err != nil {
+			return err
+		}
+		decl.BodyStart(p.p).ZeroLit(retType).Return(1).End()
+	} else {
+		decl.BodyStart(p.p).End()
+	}
+	return nil
+}
+
+func (p *Package) newFuncDeclAndComment(goFuncName *GoFuncName, sig *types.Signature, funcDecl *ast.FuncDecl) error {
 	var decl *gogen.Func
 	if goFuncName.HasReceiver() {
 		decl = p.p.NewFuncDecl(token.NoPos, goFuncName.funcName, sig)
-		if !Expr(funcDecl.Type.Ret).IsVoid() {
-			retType, err := p.ToType(funcDecl.Type.Ret)
-			if err != nil {
-				return err
-			}
-			decl.BodyStart(p.p).ZeroLit(retType).Return(1).End()
-		} else {
-			decl.BodyStart(p.p).End()
+		err := p.bodyStart(decl, funcDecl.Type.Ret)
+		if err != nil {
+			return err
 		}
 	} else {
 		decl = p.p.NewFuncDecl(token.NoPos, goFuncName.OriginGoSymbolName(), sig)
@@ -202,7 +211,7 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		log.Printf("NewFuncDecl: %v\n", funcDecl.Name)
 	}
 	if anony {
-		return fmt.Errorf("anonymous function not supported")
+		return errs.NewAnonymousFuncNotSupportError()
 	}
 
 	goSymbolName, err := p.cvt.LookupSymbol(funcDecl.MangledName)
@@ -211,14 +220,14 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		return err
 	}
 	if obj := p.p.Types.Scope().Lookup(goSymbolName); obj != nil {
-		return fmt.Errorf("function %s already defined", goSymbolName)
+		return errs.NewFuncAlreadyDefinedError(goSymbolName)
 	}
 	goFuncName := NewGoFuncName(goSymbolName)
 	sig, err := p.ToSigSignature(goFuncName, funcDecl)
 	if err != nil {
 		return err
 	}
-	return p.newFuncDecl(goFuncName, sig, funcDecl)
+	return p.newFuncDeclAndComment(goFuncName, sig, funcDecl)
 }
 
 // NewTypeDecl converts C/C++ type declarations to Go.

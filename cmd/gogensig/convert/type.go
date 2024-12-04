@@ -15,6 +15,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/sizes"
+	"github.com/goplus/llcppg/cmd/gogensig/errs"
 )
 
 type HeaderInfo struct {
@@ -164,7 +165,7 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		}
 		// todo(zzy):scoping expr
 	}
-	return nil, fmt.Errorf("unsupported refer: %T", t)
+	return nil, errs.NewUnsupportedReferError(t)
 }
 
 func (p *TypeConv) ToSignature(funcType *ast.FuncType, recv *types.Var) (*types.Signature, error) {
@@ -334,7 +335,7 @@ func (p *TypeConv) referSysType(name string) (types.Object, error) {
 		depPkg := p.conf.Package.p.Import(pkg)
 		obj = depPkg.TryRef(names.PubName(name))
 		if obj == nil {
-			return nil, fmt.Errorf("sys type %s in %s not found in package %s, full path %s", name, info.IncPath, pkg, info.Path)
+			return nil, errs.NewSysTypeNotFoundError(name, info.IncPath, pkg, info.Path)
 		}
 		return obj, nil
 
