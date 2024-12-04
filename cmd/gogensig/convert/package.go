@@ -185,10 +185,7 @@ func (p *Package) newFuncDecl(goFuncName *GoFuncName, sig *types.Signature, func
 		decl = p.p.NewFuncDecl(token.NoPos, goFuncName.OriginGoSymbolName(), sig)
 	}
 	doc := CommentGroup(funcDecl.Doc)
-	err := doc.AddCommentGroup(NewFuncDocComments(funcDecl.Name.Name, goFuncName.OriginGoSymbolName()))
-	if err != nil {
-		return err
-	}
+	doc.AddCommentGroup(NewFuncDocComments(funcDecl.Name.Name, goFuncName.OriginGoSymbolName()))
 	decl.SetComments(p.p, doc.CommentGroup)
 	return nil
 }
