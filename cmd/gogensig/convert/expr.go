@@ -1,6 +1,7 @@
 package convert
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/goplus/llcppg/ast"
@@ -42,9 +43,10 @@ func (p *ExprWrap) ToString() (string, error) {
 func (p *ExprWrap) ToChar() (int8, error) {
 	v, ok := p.e.(*ast.BasicLit)
 	if ok && v.Kind == ast.CharLit {
-		iV, err := strconv.Atoi(v.Value)
+		var iV int8
+		_, err := fmt.Sscan(v.Value, &iV)
 		if err == nil {
-			return int8(iV), nil
+			return iV, nil
 		}
 	}
 	return 0, errs.NewCantConvertError(p.e, "char")
