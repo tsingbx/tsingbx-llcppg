@@ -25,6 +25,10 @@ var (
 
 type TypeContext int
 
+var (
+	ErrTypeConv = errors.New("error convert type")
+)
+
 const (
 	Normal TypeContext = iota
 	Param              // In function parameter context
@@ -263,7 +267,7 @@ func (p *TypeConv) defaultRecordField() []*types.Var {
 
 func (p *TypeConv) fieldToVar(field *ast.Field) (*types.Var, error) {
 	if field == nil {
-		return nil, fmt.Errorf("unexpected nil field")
+		return nil, fmt.Errorf("%w: unexpected nil field", ErrTypeConv)
 	}
 
 	//field without name
