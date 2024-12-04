@@ -443,7 +443,7 @@ struct lua_Debug {
     unsigned short ntransfer;   /* (r) number of transferred values */
     char short_src[LUA_IDSIZE]; /* (S) */
     /* private part */
-    // struct CallInfo *i_ci; /* active function */
+    struct CallInfo *i_ci; /* active function */
 };
 
 /* }====================================================================== */
