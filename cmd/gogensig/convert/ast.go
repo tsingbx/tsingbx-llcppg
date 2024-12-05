@@ -51,10 +51,6 @@ func (p *ConvertCommentGroup) AddComment(comment *goast.Comment) error {
 	return nil
 }
 
-func (p *ConvertCommentGroup) AddCommentGroup(doc *goast.CommentGroup) error {
-	if doc == nil || doc.List == nil || len(doc.List) <= 0 {
-		return fmt.Errorf("%s", "add nil or empty commentgroup")
-	}
+func (p *ConvertCommentGroup) AddCommentGroup(doc *goast.CommentGroup) {
 	p.CommentGroup.List = append(p.CommentGroup.List, doc.List...)
-	return nil
 }

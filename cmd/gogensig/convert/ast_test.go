@@ -42,22 +42,16 @@ func TestAddCommentGroupOK(t *testing.T) {
 	comment := &ast.Comment{Text: "Foo comment"}
 	commentGroup := &ast.CommentGroup{List: []*ast.Comment{comment}}
 	convertCommentGroup := convert.CommentGroup(commentGroup)
-	err := convertCommentGroup.AddCommentGroup(&goast.CommentGroup{
+	convertCommentGroup.AddCommentGroup(&goast.CommentGroup{
 		List: []*goast.Comment{{Text: "Good"}},
 	})
-	if err != nil {
-		t.Error(err)
-	}
 }
 
 func TestAddCommentGroupError(t *testing.T) {
 	comment := &ast.Comment{Text: "Foo comment"}
 	commentGroup := &ast.CommentGroup{List: []*ast.Comment{comment}}
 	convertCommentGroup := convert.CommentGroup(commentGroup)
-	err := convertCommentGroup.AddCommentGroup(&goast.CommentGroup{
+	convertCommentGroup.AddCommentGroup(&goast.CommentGroup{
 		List: []*goast.Comment{},
 	})
-	if err == nil {
-		t.Error("expect a error")
-	}
 }

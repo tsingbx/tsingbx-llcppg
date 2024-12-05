@@ -16,6 +16,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/sizes"
+	"github.com/goplus/llcppg/cmd/gogensig/errs"
 )
 
 var (
@@ -73,7 +74,7 @@ func (p *TypeConv) ToType(expr ast.Expr) (types.Type, error) {
 	case *ast.ArrayType:
 		return p.handleArrayType(t)
 	case *ast.FuncType:
-		return p.ToSignature(t)
+		return p.ToSignature(t, nil)
 	case *ast.Ident, *ast.ScopingExpr, *ast.TagExpr:
 		return p.handleIdentRefer(expr)
 	case *ast.Variadic:
@@ -171,14 +172,17 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		}
 		// todo(zzy):scoping expr
 	}
-	return nil, fmt.Errorf("unsupported refer: %T", t)
+	return nil, errs.NewUnsupportedReferError(t)
 }
 
-func (p *TypeConv) ToSignature(funcType *ast.FuncType) (*types.Signature, error) {
+func (p *TypeConv) ToSignature(funcType *ast.FuncType, recv *types.Var) (*types.Signature, error) {
 	beforeInParam := p.inParam
 	p.inParam = true
 	defer func() { p.inParam = beforeInParam }()
 	params, variadic, err := p.fieldListToParams(funcType.Params)
+	if recv != nil {
+		params, variadic, err = p.fieldListToParams(&ast.FieldList{List: funcType.Params.List[1:]})
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +190,7 @@ func (p *TypeConv) ToSignature(funcType *ast.FuncType) (*types.Signature, error)
 	if err != nil {
 		return nil, err
 	}
-	return types.NewSignatureType(nil, nil, nil, params, results, variadic), nil
+	return types.NewSignatureType(recv, nil, nil, params, results, variadic), nil
 }
 
 // Convert ast.FieldList to types.Tuple (Function Param)
@@ -336,9 +340,9 @@ func (p *TypeConv) referSysType(name string) (types.Object, error) {
 			PkgPath: pkg,
 		}
 		depPkg := p.conf.Package.p.Import(pkg)
-		obj = depPkg.TryRef(names.CPubName(name))
+		obj = depPkg.TryRef(names.PubName(name))
 		if obj == nil {
-			return nil, fmt.Errorf("sys type %s in %s not found in package %s, full path %s", name, info.IncPath, pkg, info.Path)
+			return nil, errs.NewSysTypeNotFoundError(name, info.IncPath, pkg, info.Path)
 		}
 		return obj, nil
 
@@ -366,7 +370,7 @@ func checkFieldName(name string, isRecord bool, isVariadic bool) string {
 	}
 	// every field name should be public,will not be a keyword
 	if isRecord {
-		return names.CPubName(name)
+		return names.PubName(name)
 	}
 	return avoidKeyword(name)
 }
