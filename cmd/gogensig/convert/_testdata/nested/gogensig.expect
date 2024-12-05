@@ -1,0 +1,46 @@
+===== temp.go =====
+package nested
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+type Struct1 struct {
+	B    *int8
+	N    uintptr
+	Init struct {
+		B [60]int8
+	}
+}
+
+type Struct2 struct {
+	B    *int8
+	Size uintptr
+	N    uintptr
+	Init struct {
+		L   c.Long
+		B   [60]int8
+		Rec Struct1
+	}
+}
+
+type Union1 struct {
+	Init struct {
+		L   c.Long
+		B   [60]int8
+		Rec Struct2
+	}
+}
+
+type Union2 struct {
+	Init struct {
+		Rec Struct2
+	}
+}
+
+===== llcppg.pub =====
+struct1 Struct1
+struct2 Struct2
+union1 Union1
+union2 Union2

@@ -6,13 +6,21 @@ import (
 	_ "unsafe"
 )
 
+type Fenv struct {
+	Unused [8]uint8
+}
 
+type Stddef struct {
+	Unused [8]uint8
+}
 
+type Stdint struct {
+	Unused [8]uint8
+}
 
-
-
-
-
+type Stdio struct {
+	Unused [8]uint8
+}
 
 type Time struct {
 	T1 time.Tm
@@ -21,9 +29,13 @@ type Time struct {
 	T4 time.Timespec
 }
 
+type Uchar struct {
+	Unused [8]uint8
+}
 
-
-
+type Wchar struct {
+	Unused [8]uint8
+}
 
 ===== llcppg.pub =====
 fenv Fenv

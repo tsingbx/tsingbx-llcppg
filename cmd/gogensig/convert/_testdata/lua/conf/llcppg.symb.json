@@ -488,5 +488,285 @@
     "mangle": "lua_yieldk",
     "c++": "lua_yieldk(lua_State *, int, lua_KContext, lua_KFunction)",
     "go": "Yieldk"
+  },
+  {
+    "mangle": "luaL_addgsub",
+    "c++": "luaL_addgsub(luaL_Buffer *, const char *, const char *, const char *)",
+    "go": "Addgsub"
+  },
+  {
+    "mangle": "luaL_addlstring",
+    "c++": "luaL_addlstring(luaL_Buffer *, const char *, size_t)",
+    "go": "Addlstring"
+  },
+  {
+    "mangle": "luaL_addstring",
+    "c++": "luaL_addstring(luaL_Buffer *, const char *)",
+    "go": "Addstring"
+  },
+  {
+    "mangle": "luaL_addvalue",
+    "c++": "luaL_addvalue(luaL_Buffer *)",
+    "go": "Addvalue"
+  },
+  {
+    "mangle": "luaL_argerror",
+    "c++": "luaL_argerror(lua_State *, int, const char *)",
+    "go": "Argerror"
+  },
+  {
+    "mangle": "luaL_buffinit",
+    "c++": "luaL_buffinit(lua_State *, luaL_Buffer *)",
+    "go": "Buffinit"
+  },
+  {
+    "mangle": "luaL_buffinitsize",
+    "c++": "luaL_buffinitsize(lua_State *, luaL_Buffer *, size_t)",
+    "go": "Buffinitsize"
+  },
+  {
+    "mangle": "luaL_callmeta",
+    "c++": "luaL_callmeta(lua_State *, int, const char *)",
+    "go": "Callmeta"
+  },
+  {
+    "mangle": "luaL_checkany",
+    "c++": "luaL_checkany(lua_State *, int)",
+    "go": "Checkany"
+  },
+  {
+    "mangle": "luaL_checkinteger",
+    "c++": "luaL_checkinteger(lua_State *, int)",
+    "go": "Checkinteger"
+  },
+  {
+    "mangle": "luaL_checklstring",
+    "c++": "luaL_checklstring(lua_State *, int, size_t *)",
+    "go": "Checklstring"
+  },
+  {
+    "mangle": "luaL_checknumber",
+    "c++": "luaL_checknumber(lua_State *, int)",
+    "go": "Checknumber"
+  },
+  {
+    "mangle": "luaL_checkoption",
+    "c++": "luaL_checkoption(lua_State *, int, const char *, const char *const *)",
+    "go": "Checkoption"
+  },
+  {
+    "mangle": "luaL_checkstack",
+    "c++": "luaL_checkstack(lua_State *, int, const char *)",
+    "go": "Checkstack__1"
+  },
+  {
+    "mangle": "luaL_checktype",
+    "c++": "luaL_checktype(lua_State *, int, int)",
+    "go": "Checktype"
+  },
+  {
+    "mangle": "luaL_checkudata",
+    "c++": "luaL_checkudata(lua_State *, int, const char *)",
+    "go": "Checkudata"
+  },
+  {
+    "mangle": "luaL_checkversion_",
+    "c++": "luaL_checkversion_(lua_State *, lua_Number, size_t)",
+    "go": "Checkversion"
+  },
+  {
+    "mangle": "luaL_error",
+    "c++": "luaL_error(lua_State *, const char *, ...)",
+    "go": "Error__1"
+  },
+  {
+    "mangle": "luaL_execresult",
+    "c++": "luaL_execresult(lua_State *, int)",
+    "go": "Execresult"
+  },
+  {
+    "mangle": "luaL_fileresult",
+    "c++": "luaL_fileresult(lua_State *, int, const char *)",
+    "go": "Fileresult"
+  },
+  {
+    "mangle": "luaL_getmetafield",
+    "c++": "luaL_getmetafield(lua_State *, int, const char *)",
+    "go": "Getmetafield"
+  },
+  {
+    "mangle": "luaL_getsubtable",
+    "c++": "luaL_getsubtable(lua_State *, int, const char *)",
+    "go": "Getsubtable"
+  },
+  {
+    "mangle": "luaL_gsub",
+    "c++": "luaL_gsub(lua_State *, const char *, const char *, const char *)",
+    "go": "Gsub"
+  },
+  {
+    "mangle": "luaL_len",
+    "c++": "luaL_len(lua_State *, int)",
+    "go": "Len__1"
+  },
+  {
+    "mangle": "luaL_loadbufferx",
+    "c++": "luaL_loadbufferx(lua_State *, const char *, size_t, const char *, const char *)",
+    "go": "Loadbufferx"
+  },
+  {
+    "mangle": "luaL_loadfilex",
+    "c++": "luaL_loadfilex(lua_State *, const char *, const char *)",
+    "go": "Loadfilex"
+  },
+  {
+    "mangle": "luaL_loadstring",
+    "c++": "luaL_loadstring(lua_State *, const char *)",
+    "go": "Loadstring"
+  },
+  {
+    "mangle": "luaL_newmetatable",
+    "c++": "luaL_newmetatable(lua_State *, const char *)",
+    "go": "Newmetatable"
+  },
+  {
+    "mangle": "luaL_newstate",
+    "c++": "luaL_newstate()",
+    "go": "Newstate__1"
+  },
+  {
+    "mangle": "luaL_openlibs",
+    "c++": "luaL_openlibs(lua_State *)",
+    "go": "Openlibs"
+  },
+  {
+    "mangle": "luaL_optinteger",
+    "c++": "luaL_optinteger(lua_State *, int, lua_Integer)",
+    "go": "Optinteger"
+  },
+  {
+    "mangle": "luaL_optlstring",
+    "c++": "luaL_optlstring(lua_State *, int, const char *, size_t *)",
+    "go": "Optlstring"
+  },
+  {
+    "mangle": "luaL_optnumber",
+    "c++": "luaL_optnumber(lua_State *, int, lua_Number)",
+    "go": "Optnumber"
+  },
+  {
+    "mangle": "luaL_prepbuffsize",
+    "c++": "luaL_prepbuffsize(luaL_Buffer *, size_t)",
+    "go": "Prepbuffsize"
+  },
+  {
+    "mangle": "luaL_pushresult",
+    "c++": "luaL_pushresult(luaL_Buffer *)",
+    "go": "Pushresult"
+  },
+  {
+    "mangle": "luaL_pushresultsize",
+    "c++": "luaL_pushresultsize(luaL_Buffer *, size_t)",
+    "go": "Pushresultsize"
+  },
+  {
+    "mangle": "luaL_ref",
+    "c++": "luaL_ref(lua_State *, int)",
+    "go": "Ref"
+  },
+  {
+    "mangle": "luaL_requiref",
+    "c++": "luaL_requiref(lua_State *, const char *, lua_CFunction, int)",
+    "go": "Requiref"
+  },
+  {
+    "mangle": "luaL_setfuncs",
+    "c++": "luaL_setfuncs(lua_State *, const luaL_Reg *, int)",
+    "go": "Setfuncs"
+  },
+  {
+    "mangle": "luaL_setmetatable",
+    "c++": "luaL_setmetatable(lua_State *, const char *)",
+    "go": "Setmetatable__1"
+  },
+  {
+    "mangle": "luaL_testudata",
+    "c++": "luaL_testudata(lua_State *, int, const char *)",
+    "go": "Testudata"
+  },
+  {
+    "mangle": "luaL_tolstring",
+    "c++": "luaL_tolstring(lua_State *, int, size_t *)",
+    "go": "Tolstring__1"
+  },
+  {
+    "mangle": "luaL_traceback",
+    "c++": "luaL_traceback(lua_State *, lua_State *, const char *, int)",
+    "go": "Traceback"
+  },
+  {
+    "mangle": "luaL_typeerror",
+    "c++": "luaL_typeerror(lua_State *, int, const char *)",
+    "go": "Typeerror"
+  },
+  {
+    "mangle": "luaL_unref",
+    "c++": "luaL_unref(lua_State *, int, int)",
+    "go": "Unref"
+  },
+  {
+    "mangle": "luaL_where",
+    "c++": "luaL_where(lua_State *, int)",
+    "go": "Where"
+  },
+  {
+    "mangle": "luaopen_base",
+    "c++": "luaopen_base(lua_State *)",
+    "go": "Base"
+  },
+  {
+    "mangle": "luaopen_coroutine",
+    "c++": "luaopen_coroutine(lua_State *)",
+    "go": "Coroutine"
+  },
+  {
+    "mangle": "luaopen_debug",
+    "c++": "luaopen_debug(lua_State *)",
+    "go": "Debug"
+  },
+  {
+    "mangle": "luaopen_io",
+    "c++": "luaopen_io(lua_State *)",
+    "go": "Io"
+  },
+  {
+    "mangle": "luaopen_math",
+    "c++": "luaopen_math(lua_State *)",
+    "go": "Math"
+  },
+  {
+    "mangle": "luaopen_os",
+    "c++": "luaopen_os(lua_State *)",
+    "go": "Os"
+  },
+  {
+    "mangle": "luaopen_package",
+    "c++": "luaopen_package(lua_State *)",
+    "go": "Package"
+  },
+  {
+    "mangle": "luaopen_string",
+    "c++": "luaopen_string(lua_State *)",
+    "go": "String"
+  },
+  {
+    "mangle": "luaopen_table",
+    "c++": "luaopen_table(lua_State *)",
+    "go": "Table"
+  },
+  {
+    "mangle": "luaopen_utf8",
+    "c++": "luaopen_utf8(lua_State *)",
+    "go": "Utf8"
   }
 ]

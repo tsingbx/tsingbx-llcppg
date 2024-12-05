@@ -1,3 +1,120 @@
+===== lauxlib.go =====
+package lua
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+
+type Buffer struct {
+	B    *int8
+	Size uintptr
+	N    uintptr
+	L    *State
+	Init struct {
+		B [1024]int8
+	}
+}
+
+type Reg struct {
+	Name *int8
+	Func CFunction
+}
+//go:linkname Checkversion C.luaL_checkversion_
+func Checkversion(L *State, ver Number, sz uintptr)
+//go:linkname Getmetafield C.luaL_getmetafield
+func Getmetafield(L *State, obj c.Int, e *int8) c.Int
+//go:linkname Callmeta C.luaL_callmeta
+func Callmeta(L *State, obj c.Int, e *int8) c.Int
+//go:linkname Tolstring__1 C.luaL_tolstring
+func Tolstring__1(L *State, idx c.Int, len *uintptr) *int8
+//go:linkname Argerror C.luaL_argerror
+func Argerror(L *State, arg c.Int, extramsg *int8) c.Int
+//go:linkname Typeerror C.luaL_typeerror
+func Typeerror(L *State, arg c.Int, tname *int8) c.Int
+//go:linkname Checklstring C.luaL_checklstring
+func Checklstring(L *State, arg c.Int, l *uintptr) *int8
+//go:linkname Optlstring C.luaL_optlstring
+func Optlstring(L *State, arg c.Int, def *int8, l *uintptr) *int8
+//go:linkname Checknumber C.luaL_checknumber
+func Checknumber(L *State, arg c.Int) Number
+//go:linkname Optnumber C.luaL_optnumber
+func Optnumber(L *State, arg c.Int, def Number) Number
+//go:linkname Checkinteger C.luaL_checkinteger
+func Checkinteger(L *State, arg c.Int) Integer
+//go:linkname Optinteger C.luaL_optinteger
+func Optinteger(L *State, arg c.Int, def Integer) Integer
+//go:linkname Checkstack__1 C.luaL_checkstack
+func Checkstack__1(L *State, sz c.Int, msg *int8)
+//go:linkname Checktype C.luaL_checktype
+func Checktype(L *State, arg c.Int, t c.Int)
+//go:linkname Checkany C.luaL_checkany
+func Checkany(L *State, arg c.Int)
+//go:linkname Newmetatable C.luaL_newmetatable
+func Newmetatable(L *State, tname *int8) c.Int
+//go:linkname Setmetatable__1 C.luaL_setmetatable
+func Setmetatable__1(L *State, tname *int8)
+//go:linkname Testudata C.luaL_testudata
+func Testudata(L *State, ud c.Int, tname *int8) unsafe.Pointer
+//go:linkname Checkudata C.luaL_checkudata
+func Checkudata(L *State, ud c.Int, tname *int8) unsafe.Pointer
+//go:linkname Where C.luaL_where
+func Where(L *State, lvl c.Int)
+//go:linkname Error__1 C.luaL_error
+func Error__1(L *State, fmt *int8, __llgo_va_list ...interface{}) c.Int
+//go:linkname Checkoption C.luaL_checkoption
+func Checkoption(L *State, arg c.Int, def *int8, lst **int8) c.Int
+//go:linkname Fileresult C.luaL_fileresult
+func Fileresult(L *State, stat c.Int, fname *int8) c.Int
+//go:linkname Execresult C.luaL_execresult
+func Execresult(L *State, stat c.Int) c.Int
+//go:linkname Ref C.luaL_ref
+func Ref(L *State, t c.Int) c.Int
+//go:linkname Unref C.luaL_unref
+func Unref(L *State, t c.Int, ref c.Int)
+//go:linkname Loadfilex C.luaL_loadfilex
+func Loadfilex(L *State, filename *int8, mode *int8) c.Int
+//go:linkname Loadbufferx C.luaL_loadbufferx
+func Loadbufferx(L *State, buff *int8, sz uintptr, name *int8, mode *int8) c.Int
+//go:linkname Loadstring C.luaL_loadstring
+func Loadstring(L *State, s *int8) c.Int
+//go:linkname Newstate__1 C.luaL_newstate
+func Newstate__1() *State
+//go:linkname Len__1 C.luaL_len
+func Len__1(L *State, idx c.Int) Integer
+//go:linkname Addgsub C.luaL_addgsub
+func Addgsub(b *Buffer, s *int8, p *int8, r *int8)
+//go:linkname Gsub C.luaL_gsub
+func Gsub(L *State, s *int8, p *int8, r *int8) *int8
+//go:linkname Setfuncs C.luaL_setfuncs
+func Setfuncs(L *State, l *Reg, nup c.Int)
+//go:linkname Getsubtable C.luaL_getsubtable
+func Getsubtable(L *State, idx c.Int, fname *int8) c.Int
+//go:linkname Traceback C.luaL_traceback
+func Traceback(L *State, L1 *State, msg *int8, level c.Int)
+//go:linkname Requiref C.luaL_requiref
+func Requiref(L *State, modname *int8, openf CFunction, glb c.Int)
+//go:linkname Buffinit C.luaL_buffinit
+func Buffinit(L *State, B *Buffer)
+//go:linkname Prepbuffsize C.luaL_prepbuffsize
+func Prepbuffsize(B *Buffer, sz uintptr) *int8
+//go:linkname Addlstring C.luaL_addlstring
+func Addlstring(B *Buffer, s *int8, l uintptr)
+//go:linkname Addstring C.luaL_addstring
+func Addstring(B *Buffer, s *int8)
+//go:linkname Addvalue C.luaL_addvalue
+func Addvalue(B *Buffer)
+//go:linkname Pushresult C.luaL_pushresult
+func Pushresult(B *Buffer)
+//go:linkname Pushresultsize C.luaL_pushresultsize
+func Pushresultsize(B *Buffer, sz uintptr)
+//go:linkname Buffinitsize C.luaL_buffinitsize
+func Buffinitsize(L *State, B *Buffer, sz uintptr) *int8
+
+type Stream struct {
+	Unused [8]uint8
+}
+
 ===== lua.go =====
 package lua
 
@@ -43,6 +160,7 @@ type Debug struct {
 	Ftransfer       uint16
 	Ntransfer       uint16
 	ShortSrc        [60]int8
+	ICi             *CallInfo
 }
 // llgo:type C
 type Hook func(*State, *Debug)
@@ -241,6 +359,10 @@ func Gethookcount(L *State) c.Int
 //go:linkname Setcstacklimit C.lua_setcstacklimit
 func Setcstacklimit(L *State, limit c.Uint) c.Int
 
+type CallInfo struct {
+	Unused [8]uint8
+}
+
 ===== lua_autogen_link.go =====
 package lua
 
@@ -251,7 +373,38 @@ package lua
 
 import _ "unsafe"
 
+===== lualib.go =====
+package lua
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+//go:linkname Base C.luaopen_base
+func Base(L *State) c.Int
+//go:linkname Coroutine C.luaopen_coroutine
+func Coroutine(L *State) c.Int
+//go:linkname Table C.luaopen_table
+func Table(L *State) c.Int
+//go:linkname Io C.luaopen_io
+func Io(L *State) c.Int
+//go:linkname Os C.luaopen_os
+func Os(L *State) c.Int
+//go:linkname String C.luaopen_string
+func String(L *State) c.Int
+//go:linkname Utf8 C.luaopen_utf8
+func Utf8(L *State) c.Int
+//go:linkname Math C.luaopen_math
+func Math(L *State) c.Int
+//go:linkname Package C.luaopen_package
+func Package(L *State) c.Int
+//go:linkname Openlibs C.luaL_openlibs
+func Openlibs(L *State)
+
 ===== llcppg.pub =====
+luaL_Buffer Buffer
+luaL_Reg Reg
+luaL_Stream Stream
 lua_Alloc Alloc
 lua_CFunction CFunction
 lua_Debug Debug

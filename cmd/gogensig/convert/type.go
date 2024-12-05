@@ -4,6 +4,7 @@ This file is used to convert type from ast type to types.Type
 package convert
 
 import (
+	"errors"
 	"fmt"
 	"go/token"
 	"go/types"
@@ -15,6 +16,10 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/sizes"
+)
+
+var (
+	ErrTypeConv = errors.New("error convert type")
 )
 
 type HeaderInfo struct {
@@ -73,8 +78,10 @@ func (p *TypeConv) ToType(expr ast.Expr) (types.Type, error) {
 		return p.handleIdentRefer(expr)
 	case *ast.Variadic:
 		return types.NewSlice(gogen.TyEmptyInterface), nil
+	case *ast.RecordType:
+		return p.RecordTypeToStruct(t)
 	default:
-		return nil, fmt.Errorf("unsupported type: %T", expr)
+		return nil, fmt.Errorf("%w: unsupported type %T", ErrTypeConv, expr)
 	}
 }
 
