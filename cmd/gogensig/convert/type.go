@@ -19,10 +19,6 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
 )
 
-var (
-	ErrTypeConv = errors.New("error convert type")
-)
-
 type TypeContext int
 
 var (
@@ -153,19 +149,31 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		var typ types.Type
 		// system type
 		if obj != nil {
-			return obj.Type(), nil
+			typ = obj.Type()
+		} else {
+			obj = gogen.Lookup(p.Types.Scope(), name)
+			if obj == nil {
+				// implicit forward decl
+				decl := p.conf.Package.emptyTypeDecl(name, nil)
+				p.conf.Package.incomplete[name] = decl
+				typ = decl.Type()
+			} else {
+				typ = obj.Type()
+			}
 		}
 
-		obj = gogen.Lookup(p.Types.Scope(), name)
-		if obj == nil {
-			// implicit forward decl
-			decl := p.conf.Package.emptyTypeDecl(name, nil)
-			p.conf.Package.incomplete[name] = decl
-			return decl.Type(), nil
+		if p.ctx == Record {
+			if named, ok := typ.(*types.Named); ok {
+				if _, ok := named.Underlying().(*types.Signature); ok {
+					return p.typeMap.CType("Pointer"), nil
+				}
+			}
 		}
-		return obj.Type(), nil
+		return typ, nil
 	}
 	switch t := t.(type) {
 	case *ast.Ident:
@@ -190,7 +198,7 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 	return nil, errs.NewUnsupportedReferError(t)
 }
 
-func (p *TypeConv) ToSignature(funcType *ast.FuncType) (*types.Signature, error) {
+func (p *TypeConv) ToSignature(funcType *ast.FuncType, recv *types.Var) (*types.Signature, error) {
 	ctx := p.ctx
 	p.ctx = Param
 	defer func() { p.ctx = ctx }()
@@ -281,11 +289,12 @@ func (p *TypeConv) fieldToVar(field *ast.Field) (*types.Var, error) {
 		return nil, err
 	}
 
-	isVariadic := false
-	if _, ok := field.Type.(*ast.Variadic); ok {
-		isVariadic = true
+	if p.ctx == Record {
+		name = getFieldName(name)
+	} else {
+		_, isVariadic := field.Type.(*ast.Variadic)
+		name = getParamName(name, isVariadic)
 	}
-	name = checkFieldName(name, p.ctx, isVariadic)
 	return types.NewVar(token.NoPos, p.Types, name, typ), nil
 }
 
@@ -381,17 +390,16 @@ func (p *TypeConv) LookupSymbol(mangleName config.MangleNameType) (config.GoName
 }
 
 // isVariadic determines if the field is a variadic parameter
-// The field or param name should be public if it's a record field
-// and they will not record to the public symbol table
-func checkFieldName(name string, ctx TypeContext, isVariadic bool) string {
-	if isVariadic && ctx == Param {
+func getParamName(name string, isVaradic bool) string {
+	if isVaradic {
 		return "__llgo_va_list"
 	}
-	// every field name should be public,will not be a keyword
-	if ctx == Record {
-		return names.CPubName(name)
-	}
 	return avoidKeyword(name)
+}
+
+// The field name should be public if it's a record field
+func getFieldName(name string) string {
+	return names.PubName(name)
 }
 
 func avoidKeyword(name string) string {

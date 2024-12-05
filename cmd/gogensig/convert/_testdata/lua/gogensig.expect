@@ -18,7 +18,7 @@ type Buffer struct {
 
 type Reg struct {
 	Name *int8
-	Func CFunction
+	Func unsafe.Pointer
 }
 //go:linkname Checkversion C.luaL_checkversion_
 func Checkversion(L *State, ver Number, sz uintptr)
@@ -113,7 +113,7 @@ func Buffinitsize(L *State, B *Buffer, sz uintptr) *int8
 
 type Stream struct {
 	F      *c.FILE
-	Closef CFunction
+	Closef unsafe.Pointer
 }
 
 ===== lua.go =====

@@ -1,0 +1,26 @@
+===== temp.go =====
+package funcrefer
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+// llgo:type C
+type CallBack func(unsafe.Pointer) c.Int
+//go:linkname Exec C.exec
+func Exec(L unsafe.Pointer, cb CallBack)
+
+type Hooks struct {
+	MallocFn unsafe.Pointer
+	FreeFn   unsafe.Pointer
+}
+
+type Stream struct {
+	F  *c.FILE
+	Cb unsafe.Pointer
+}
+
+===== llcppg.pub =====
+CallBack
+Hooks
+Stream

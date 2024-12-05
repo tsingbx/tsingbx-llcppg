@@ -18,8 +18,8 @@ type CJSON struct {
 }
 
 type Hooks struct {
-	MallocFn func(uintptr) unsafe.Pointer
-	FreeFn   func(unsafe.Pointer)
+	MallocFn unsafe.Pointer
+	FreeFn   unsafe.Pointer
 }
 type Bool c.Int
 //go:linkname Version C.cJSON_Version
