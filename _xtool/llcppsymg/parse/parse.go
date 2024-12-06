@@ -85,7 +85,7 @@ func (p *SymbolProcessor) inCurPkg(cur clang.Cursor, isArg bool) bool {
 }
 
 func (p *SymbolProcessor) GenMethodName(class, name string, isDestructor bool, isPointer bool) string {
-	prefix := "(" + class + ")."
+	prefix := class + "."
 	if isPointer {
 		prefix = "(*" + class + ")."
 	}
