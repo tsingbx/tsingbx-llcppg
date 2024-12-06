@@ -1,0 +1,8 @@
+[
+    {
+      "mangle": "exec",
+      "c++": "exec",
+      "go": "Exec"
+    }
+  ]
+  
