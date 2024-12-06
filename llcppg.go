@@ -25,8 +25,8 @@ import (
 	"os/exec"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
+	"github.com/goplus/llcppg/cmd/llcppcfg/llcppgcfg"
 	"github.com/goplus/llcppg/types"
-	"github.com/goplus/llgo/xtool/env"
 )
 
 var verbose bool
@@ -78,9 +78,8 @@ func main() {
 
 	var conf types.Config
 	json.NewDecoder(f).Decode(&conf)
-	conf.CFlags = env.ExpandEnv(conf.CFlags)
-	conf.Libs = env.ExpandEnv(conf.Libs)
-
+	conf.Include, conf.CFlags = llcppgcfg.ExpandCflags(conf.CFlags)
+	conf.Libs = llcppgcfg.ExpandString(conf.Libs)
 	b, err := json.MarshalIndent(&conf, "", "  ")
 	check(err)
 
