@@ -18,8 +18,8 @@ type LLCppConfig struct {
 	Include      []string `json:"include"`
 	Libs         string   `json:"libs"`
 	TrimPrefixes []string `json:"trimPrefixes"`
-	ReplPrefixes []string `json:"replPrefixes"`
-	Cplusplus    bool     `json:"cplusplus"`
+	//ReplPrefixes []string `json:"replPrefixes"`
+	Cplusplus bool `json:"cplusplus"`
 }
 
 func CmdOutString(cmd *exec.Cmd) (string, error) {
@@ -50,7 +50,7 @@ func ExpandString(str string) string {
 	return strings.TrimSpace(expandStr)
 }
 
-func ExpandCflags(str string, fn func(s string) bool) (includes []string, flags string) {
+func doExpandCflags(str string, fn func(s string) bool) (includes []string, flags string) {
 	list := strings.FieldsFunc(str, func(r rune) bool {
 		return unicode.IsSpace(r)
 	})
@@ -105,10 +105,9 @@ func ExpandLibsName(name string) string {
 	return ExpandString(originLibs)
 }
 
-func ExpandCFlagsName(name string) (retIncludes []string, retCflags string) {
-	originCFlags := fmt.Sprintf("${pkg-config --cflags %s}", name)
+func ExpandCflags(originCFlags string) (retIncludes []string, retCflags string) {
 	cflags := ExpandString(originCFlags)
-	expandIncludes, expandCflags := ExpandCflags(cflags, func(s string) bool {
+	expandIncludes, expandCflags := doExpandCflags(cflags, func(s string) bool {
 		ext := filepath.Ext(s)
 		return ext == ".h" || ext == ".hpp"
 	})
@@ -119,6 +118,11 @@ func ExpandCFlagsName(name string) (retIncludes []string, retCflags string) {
 	retIncludes = expandIncludes
 	retCflags = cflags
 	return
+}
+
+func ExpandCFlagsName(name string) ([]string, string) {
+	originCFlags := fmt.Sprintf("${pkg-config --cflags %s}", name)
+	return ExpandCflags(originCFlags)
 }
 
 func NewLLCppConfig(name string, isCpp bool, expand bool) *LLCppConfig {
