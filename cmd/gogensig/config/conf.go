@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
-	"github.com/goplus/llcppg/cmd/llcppcfg/llcppgcfg"
 	cppgtypes "github.com/goplus/llcppg/types"
 )
 
@@ -27,8 +26,6 @@ func GetCppgCfgFromPath(filePath string) (*cppgtypes.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	conf.Include, conf.CFlags = llcppgcfg.ExpandCflags(conf.CFlags)
-	conf.Libs = llcppgcfg.ExpandString(conf.Libs)
 	return conf, nil
 }
 
