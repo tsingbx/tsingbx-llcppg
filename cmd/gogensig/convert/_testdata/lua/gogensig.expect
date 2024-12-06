@@ -112,7 +112,8 @@ func Pushresultsize(B *Buffer, sz uintptr)
 func Buffinitsize(L *State, B *Buffer, sz uintptr) *int8
 
 type Stream struct {
-	Unused [8]uint8
+	F      *c.FILE
+	Closef CFunction
 }
 
 ===== lua.go =====
