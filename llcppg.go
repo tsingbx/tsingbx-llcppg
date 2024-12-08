@@ -64,8 +64,10 @@ func gogensig(in io.Reader, cfg string) error {
 	return cmd.Run()
 }
 
-func marshalConf(conf *types.Config, expandLibs bool) ([]byte, error) {
-	conf.Include, conf.CFlags = llcppgcfg.ExpandCflags(conf.CFlags)
+func marshalConf(conf *types.Config, expandCflags, expandLibs bool) ([]byte, error) {
+	if expandCflags {
+		conf.Include, conf.CFlags = llcppgcfg.ExpandCflags(conf.CFlags)
+	}
 	if expandLibs {
 		conf.Libs = llcppgcfg.ExpandString(conf.Libs)
 	}
@@ -84,10 +86,11 @@ func main() {
 	check(err)
 	defer f.Close()
 
-	var llcppsymgConf types.Config
-	json.NewDecoder(f).Decode(&llcppsymgConf)
-	gogensigConf := llcppsymgConf
-	b, err := marshalConf(&llcppsymgConf, true)
+	var originConf types.Config
+	json.NewDecoder(f).Decode(&originConf)
+
+	llcppsymgConf := originConf
+	b, err := marshalConf(&llcppsymgConf, true, true)
 	check(err)
 
 	err = llcppsymg(b)
@@ -96,10 +99,13 @@ func main() {
 	r, w := io.Pipe()
 	go llcppsigfetch(b, w)
 
-	b, err = marshalConf(&gogensigConf, false)
+	gogensigConf := llcppsymgConf
+	gogensigConf.Libs = originConf.Libs
+
+	b, err = marshalConf(&gogensigConf, false, false)
 	check(err)
 
-	changedCfgFile := ags.CfgFile + ".changed"
+	changedCfgFile := "." + ags.CfgFile
 	err = os.WriteFile(changedCfgFile, b, 0600)
 	check(err)
 
