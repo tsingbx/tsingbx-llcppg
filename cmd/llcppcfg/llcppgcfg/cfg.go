@@ -3,26 +3,24 @@ package llcppgcfg
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"unicode"
+
+	"github.com/goplus/llcppg/types"
 )
 
-type LLCppConfig struct {
-	Name         string   `json:"name"`
-	Cflags       string   `json:"cflags"`
-	Include      []string `json:"include"`
-	Libs         string   `json:"libs"`
-	TrimPrefixes []string `json:"trimPrefixes"`
-	//ReplPrefixes []string `json:"replPrefixes"`
-	Cplusplus bool `json:"cplusplus"`
-}
+type LLCppConfig types.Config
 
 func CmdOutString(cmd *exec.Cmd) (string, error) {
+	if cmd == nil {
+		return "", errors.New("nil cmd")
+	}
 	outBuf := bytes.NewBufferString("")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = outBuf
@@ -33,15 +31,20 @@ func CmdOutString(cmd *exec.Cmd) (string, error) {
 	return outBuf.String(), nil
 }
 
+func ExecCommand(cmdStr string, args ...string) *exec.Cmd {
+	cmdStr = strings.TrimSpace(cmdStr)
+	return exec.Command(cmdStr, args...)
+}
+
 func ExpandString(str string) string {
 	str = strings.ReplaceAll(str, "(", "{")
 	str = strings.ReplaceAll(str, ")", "}")
 	expandStr := os.Expand(str, func(s string) string {
 		args := strings.Fields(s)
-		if len(args) <= 0 {
+		if len(args) == 0 {
 			return ""
 		}
-		outString, err := CmdOutString(exec.Command(args[0], args[1:]...))
+		outString, err := CmdOutString(ExecCommand(args[0], args[1:]...))
 		if err != nil {
 			return ""
 		}
@@ -50,15 +53,13 @@ func ExpandString(str string) string {
 	return strings.TrimSpace(expandStr)
 }
 
-func doExpandCflags(str string, fn func(s string) bool) (includes []string, flags string) {
-	list := strings.FieldsFunc(str, func(r rune) bool {
-		return unicode.IsSpace(r)
-	})
+func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
+	list := strings.Fields(str)
 	contains := make(map[string]string, 0)
 	for _, l := range list {
 		trimStr := strings.TrimPrefix(l, "-I")
 		trimStr += "/"
-		filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
+		err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
@@ -79,8 +80,12 @@ func doExpandCflags(str string, fn func(s string) bool) (includes []string, flag
 			}
 			return nil
 		})
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
+	includes := make([]string, 0)
 	includeMap := make(map[string]struct{})
 	for path, relPath := range contains {
 		includeDir, found := strings.CutSuffix(path, relPath)
@@ -96,8 +101,8 @@ func doExpandCflags(str string, fn func(s string) bool) (includes []string, flag
 		}
 		flagsBuilder.WriteString("-I" + include)
 	}
-	flags = flagsBuilder.String()
-	return
+	flags := flagsBuilder.String()
+	return includes, flags
 }
 
 func ExpandLibsName(name string) string {
@@ -105,7 +110,7 @@ func ExpandLibsName(name string) string {
 	return ExpandString(originLibs)
 }
 
-func ExpandCflags(originCFlags string) (retIncludes []string, retCflags string) {
+func ExpandCflags(originCFlags string) ([]string, string) {
 	cflags := ExpandString(originCFlags)
 	expandIncludes, expandCflags := doExpandCflags(cflags, func(s string) bool {
 		ext := filepath.Ext(s)
@@ -114,10 +119,7 @@ func ExpandCflags(originCFlags string) (retIncludes []string, retCflags string) 
 	if len(expandCflags) > 0 {
 		cflags = expandCflags
 	}
-	// expand Cflags and Libs
-	retIncludes = expandIncludes
-	retCflags = cflags
-	return
+	return expandIncludes, cflags
 }
 
 func ExpandCFlagsName(name string) ([]string, string) {
@@ -129,23 +131,23 @@ func NewLLCppConfig(name string, isCpp bool, expand bool) *LLCppConfig {
 	cfg := &LLCppConfig{
 		Name: name,
 	}
-	cfg.Cflags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
+	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
 	cfg.TrimPrefixes = []string{}
 	cfg.Cplusplus = isCpp
 	cfg.Include = []string{}
-	if !expand {
-		cfg.Include, _ = ExpandCFlagsName(name)
-	} else {
-		cfg.Include, cfg.Cflags = ExpandCFlagsName(name)
+	if expand {
+		cfg.Include, cfg.CFlags = ExpandCFlagsName(name)
 		cfg.Libs = ExpandLibsName(name)
+		return cfg
 	}
+	cfg.Include, _ = ExpandCFlagsName(name)
 	return cfg
 }
 
 func GenCfg(name string, cpp bool, expand bool) (*bytes.Buffer, error) {
-	if len(name) <= 0 {
-		return nil, fmt.Errorf("name can't be empty")
+	if len(name) == 0 {
+		return nil, errors.New("name can't be empty")
 	}
 	cfg := NewLLCppConfig(name, cpp, expand)
 	buf := bytes.NewBuffer([]byte{})

@@ -9,25 +9,25 @@ import (
 	"github.com/goplus/llcppg/cmd/llcppcfg/llcppgcfg"
 )
 
+func printUsageLog() {
+	fmt.Println(`llcppcfg is to generate llcpp.cfg file.
+usage: llcppcfg [-cpp|-help|-expand] libname`)
+}
+
 func printHelp() {
-	flag.Usage()
+	printUsageLog()
 	flag.PrintDefaults()
 }
 
 func main() {
-	var cpp bool = false
-	var help bool = false
-	var expand bool = false
+	var cpp, help, expand bool
 	flag.BoolVar(&cpp, "cpp", false, "if it is c++ lib")
 	flag.BoolVar(&help, "help", false, "print help message")
 	flag.BoolVar(&expand, "expand", false, "expand pkg-config command to result")
-	flag.Usage = func() {
-		fmt.Println(`llcppcfg is to generate llcpp.cfg file.
-usage: llcppcfg [-cpp|-help|-expand] libname`)
-	}
+	flag.Usage = printHelp
 	flag.Parse()
 	if help || len(os.Args) <= 1 {
-		printHelp()
+		flag.Usage()
 		return
 	}
 	name := ""
@@ -39,7 +39,7 @@ usage: llcppcfg [-cpp|-help|-expand] libname`)
 		log.Fatal(err)
 	}
 	outFile := "./llcppg.cfg"
-	err = os.WriteFile(outFile, buf.Bytes(), 0644)
+	err = os.WriteFile(outFile, buf.Bytes(), 0600)
 	if err != nil {
 		log.Fatal(err)
 	}
