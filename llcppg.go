@@ -100,8 +100,12 @@ func main() {
 	check(err)
 
 	changedCfgFile := ags.CfgFile + ".changed"
-	err = os.WriteFile(changedCfgFile, b, 0644)
+	err = os.WriteFile(changedCfgFile, b, 0600)
 	check(err)
+
+	defer func() {
+		os.Remove(changedCfgFile)
+	}()
 
 	err = gogensig(r, changedCfgFile)
 	check(err)
