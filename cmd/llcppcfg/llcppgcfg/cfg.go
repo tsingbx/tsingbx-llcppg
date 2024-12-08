@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -38,7 +39,7 @@ func ExpandString(str string) string {
 	str = strings.ReplaceAll(str, ")", "}")
 	expandStr := os.Expand(str, func(s string) string {
 		args := strings.Fields(s)
-		if len(args) <= 0 {
+		if len(args) == 0 {
 			return ""
 		}
 		outString, err := CmdOutString(exec.Command(args[0], args[1:]...))
@@ -58,7 +59,7 @@ func doExpandCflags(str string, fn func(s string) bool) (includes []string, flag
 	for _, l := range list {
 		trimStr := strings.TrimPrefix(l, "-I")
 		trimStr += "/"
-		filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
+		err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
@@ -79,6 +80,9 @@ func doExpandCflags(str string, fn func(s string) bool) (includes []string, flag
 			}
 			return nil
 		})
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	includeMap := make(map[string]struct{})
@@ -144,7 +148,7 @@ func NewLLCppConfig(name string, isCpp bool, expand bool) *LLCppConfig {
 }
 
 func GenCfg(name string, cpp bool, expand bool) (*bytes.Buffer, error) {
-	if len(name) <= 0 {
+	if len(name) == 0 {
 		return nil, fmt.Errorf("name can't be empty")
 	}
 	cfg := NewLLCppConfig(name, cpp, expand)
