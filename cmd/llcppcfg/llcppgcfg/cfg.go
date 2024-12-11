@@ -17,9 +17,20 @@ import (
 
 type LLCppConfig types.Config
 
+type NilCmdError struct {
+}
+
+func (p *NilCmdError) Error() string {
+	return "nil cmd"
+}
+
+func NewNilCmdError() *NilCmdError {
+	return &NilCmdError{}
+}
+
 func CmdOutString(cmd *exec.Cmd) (string, error) {
 	if cmd == nil {
-		return "", errors.New("nil cmd")
+		return "", NewNilCmdError()
 	}
 	outBuf := bytes.NewBufferString("")
 	cmd.Stdin = os.Stdin
@@ -75,7 +86,7 @@ func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
 				if err == nil {
 					contains[path] = relPath
 				} else {
-					contains[path] = d.Name()
+					panic(err)
 				}
 			}
 			return nil

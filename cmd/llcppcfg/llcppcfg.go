@@ -9,13 +9,13 @@ import (
 	"github.com/goplus/llcppg/cmd/llcppcfg/llcppgcfg"
 )
 
-func printUsageLog() {
-	fmt.Println(`llcppcfg is to generate llcpp.cfg file.
+func customLog() {
+	fmt.Println(`llcppcfg is to generate llcppg.cfg file.
 usage: llcppcfg [-cpp|-help|-expand] libname`)
 }
 
 func printHelp() {
-	printUsageLog()
+	customLog()
 	flag.PrintDefaults()
 }
 
