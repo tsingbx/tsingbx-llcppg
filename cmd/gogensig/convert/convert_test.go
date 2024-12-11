@@ -157,57 +157,37 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 	if err != nil {
 		t.Fatal(err)
 	}
-	tempDir, err := os.MkdirTemp("", "gogensig-test")
-	if err != nil {
-		t.Fatal("failed to create temp dir")
-	}
-	defer os.RemoveAll(tempDir)
 
-	outputDir := filepath.Join(tempDir, name)
-	err = os.MkdirAll(outputDir, 0744)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(outputDir)
-
-	projectRoot, err := filepath.Abs("../../../")
-	if err != nil {
-		t.Fatal(err)
-	}
 	originalWd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Chdir(originalWd)
-	os.Chdir(outputDir)
-
-	config.RunCommand(outputDir, "go", "mod", "init", name)
-	config.RunCommand(outputDir, "go", "get", "github.com/goplus/llgo@main")
-	config.RunCommand(outputDir, "go", "get", "github.com/goplus/llcppg")
-	config.RunCommand(outputDir, "go", "mod", "edit", "-replace", "github.com/goplus/llcppg="+projectRoot)
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Fatal(err)
+		}
+	}()
+	outputDir, err := ModInit(name)
+	defer os.RemoveAll(outputDir)
 
 	// patch the test file's cflags
 	preprocess := func(p *convert.Package) {
-		var patchFlags func(pkg *convert.Pkg)
-		patchFlags = func(pkg *convert.Pkg) {
+		var patchFlags func(pkg *convert.PkgInfo)
+		patchFlags = func(pkg *convert.PkgInfo) {
 			if pkg.PkgPath != "." {
 				incFlags := " -I" + filepath.Join(pkg.Dir, "hfile")
 				pkg.CppgConf.CFlags += incFlags
 				cfg.CFlags += incFlags
 			}
 
-			deps, err := pkg.LoadDeps()
-			if err != nil {
-				t.Fatal(err)
-			}
-			for _, dep := range deps {
+			for _, dep := range pkg.Deps {
 				patchFlags(dep)
 				if err != nil {
 					t.Fatal(err)
 				}
 			}
 		}
-		patchFlags(p.Pkg)
+		patchFlags(p.PkgInfo)
 		err = config.CreateJSONFile(flagedCfgPath, cfg)
 		if err != nil {
 			t.Fatal(err)
@@ -435,4 +415,41 @@ func TestGetIncPathFail(t *testing.T) {
 		t.Fatal("NewAstConvert Fail")
 	}
 	converter.VisitStart("test.h", "", false)
+}
+
+func ModInit(name string) (string, error) {
+	tempDir, err := os.MkdirTemp("", "gogensig-test")
+	if err != nil {
+		return "", err
+	}
+	outputDir := filepath.Join(tempDir, name)
+	err = os.MkdirAll(outputDir, 0744)
+	if err != nil {
+		return "", err
+	}
+	projectRoot, err := filepath.Abs("../../../")
+	if err != nil {
+		return "", err
+	}
+	if err := os.Chdir(outputDir); err != nil {
+		return "", err
+	}
+
+	err = config.RunCommand(outputDir, "go", "mod", "init", name)
+	if err != nil {
+		return "", err
+	}
+	err = config.RunCommand(outputDir, "go", "get", "github.com/goplus/llgo@main")
+	if err != nil {
+		return "", err
+	}
+	err = config.RunCommand(outputDir, "go", "get", "github.com/goplus/llcppg")
+	if err != nil {
+		return "", err
+	}
+	err = config.RunCommand(outputDir, "go", "mod", "edit", "-replace", "github.com/goplus/llcppg="+projectRoot)
+	if err != nil {
+		return "", err
+	}
+	return outputDir, nil
 }

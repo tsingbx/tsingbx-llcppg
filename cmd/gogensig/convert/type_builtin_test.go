@@ -29,12 +29,14 @@ func TestLookupSymbolError(t *testing.T) {
 
 func TestSubstObj(t *testing.T) {
 	pkg := NewPackage(&PackageConfig{
-		PkgPath:     ".",
+		PkgBase: PkgBase{
+			PkgPath:  ".",
+			CppgConf: &cppgtypes.Config{},
+		},
 		Name:        "testpkg",
 		GenConf:     &gogen.Config{},
 		OutputDir:   "",
 		SymbolTable: &config.SymbolTable{},
-		CppgConf:    &cppgtypes.Config{},
 	})
 	if pkg == nil {
 		t.Fatal("NewPackage failed")

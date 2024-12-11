@@ -46,18 +46,20 @@ func NewAstConvert(config *AstConvertConfig) (*AstConvert, error) {
 		conf = &cppgtypes.Config{}
 	}
 
-	public, err := cfg.GetPubFromPath(config.PubFile)
+	pubs, err := cfg.GetPubFromPath(config.PubFile)
 	if err != nil {
 		return nil, err
 	}
 
 	pkg := NewPackage(&PackageConfig{
-		PkgPath:     ".",
+		PkgBase: PkgBase{
+			PkgPath:  ".",
+			CppgConf: conf,
+			Pubs:     pubs,
+		},
 		Name:        config.PkgName,
 		OutputDir:   config.OutputDir,
 		SymbolTable: symbTable,
-		CppgConf:    conf,
-		Public:      public,
 	})
 	p.Pkg = pkg
 	return p, nil

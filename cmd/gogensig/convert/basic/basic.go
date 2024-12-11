@@ -31,11 +31,6 @@ func ConvertProcesser(cfg *Config) (*processor.DocFileSetProcessor, *convert.Pac
 	docVisitors := []visitor.DocVisitor{astConvert}
 	visitorManager := processor.NewDocVisitorManager(docVisitors)
 
-	err = astConvert.Pkg.InitDeps()
-	if err != nil {
-		return nil, nil, err
-	}
-
 	incs := astConvert.Pkg.DepIncPaths()
 
 	return processor.NewDocFileSetProcessor(&processor.ProcesserConfig{

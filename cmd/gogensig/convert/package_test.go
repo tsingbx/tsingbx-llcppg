@@ -14,6 +14,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/mod/gopmod"
 )
 
 var dir string
@@ -108,8 +109,10 @@ func TestLinkFileOK(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 	pkg := createTestPkg(t, &convert.PackageConfig{
 		OutputDir: tempDir,
-		CppgConf: &cppgtypes.Config{
-			Libs: "pkg-config --libs libcjson",
+		PkgBase: convert.PkgBase{
+			CppgConf: &cppgtypes.Config{
+				Libs: "pkg-config --libs libcjson",
+			},
 		},
 	})
 	filePath, _ := pkg.WriteLinkFile()
@@ -128,7 +131,9 @@ func TestLinkFileFail(t *testing.T) {
 		defer os.RemoveAll(tempDir)
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: tempDir,
-			CppgConf:  &cppgtypes.Config{},
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{},
+			},
 		})
 
 		_, err = pkg.WriteLinkFile()
@@ -144,15 +149,21 @@ func TestLinkFileFail(t *testing.T) {
 		defer os.RemoveAll(tempDir)
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: tempDir,
-			CppgConf: &cppgtypes.Config{
-				Libs: "${pkg-config --libs libcjson}",
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{
+					Libs: "${pkg-config --libs libcjson}",
+				},
 			},
 		})
-		err = os.Chmod(filepath.Join(tempDir), 0555)
+		err = os.Chmod(tempDir, 0555)
 		if err != nil {
 			t.Fatalf("Failed to change directory permissions: %v", err)
 		}
-		defer os.Chmod(filepath.Join(tempDir), 0755)
+		defer func() {
+			if err := os.Chmod(tempDir, 0755); err != nil {
+				t.Fatalf("Failed to change directory permissions: %v", err)
+			}
+		}()
 		_, err = pkg.WriteLinkFile()
 		if err == nil {
 			t.FailNow()
@@ -309,7 +320,11 @@ func TestPackageWrite(t *testing.T) {
 
 		// read-only
 		err = os.Chmod(tempDir, 0555)
-		defer os.Chmod(tempDir, 0755)
+		defer func() {
+			if err := os.Chmod(tempDir, 0755); err != nil {
+				t.Fatalf("Failed to change directory permissions: %v", err)
+			}
+		}()
 		if err != nil {
 			t.Fatalf("Failed to change directory permissions: %v", err)
 		}
@@ -1519,16 +1534,21 @@ func TestIdentRefer(t *testing.T) {
 	})
 	t.Run("type alias", func(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
-			CppgConf: &cppgtypes.Config{},
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{},
+			},
 		})
-		pkg.NewTypedefDecl(&ast.TypedefDecl{
+		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
 			Name: &ast.Ident{Name: "int8_t"},
 			Type: &ast.BuiltinType{
 				Kind:  ast.Char,
 				Flags: ast.Signed,
 			},
 		})
-		pkg.NewTypeDecl(&ast.TypeDecl{
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = pkg.NewTypeDecl(&ast.TypeDecl{
 			Name: &ast.Ident{Name: "Foo"},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
@@ -1544,6 +1564,9 @@ func TestIdentRefer(t *testing.T) {
 				},
 			},
 		})
+		if err != nil {
+			t.Fatal(err)
+		}
 		comparePackageOutput(t, pkg, `
 		package testpkg
 		import _ "unsafe"
@@ -1626,7 +1649,9 @@ func testGenDecl(t *testing.T, tc genDeclTestCase) {
 	t.Helper()
 	pkg := createTestPkg(t, &convert.PackageConfig{
 		SymbolTable: cfg.CreateSymbolTable(tc.symbs),
-		CppgConf:    tc.cppgconf,
+		PkgBase: convert.PkgBase{
+			CppgConf: tc.cppgconf,
+		},
 	})
 	if pkg == nil {
 		t.Fatal("NewPackage failed")
@@ -1681,13 +1706,15 @@ func createTestPkg(t *testing.T, config *convert.PackageConfig) *convert.Package
 		config.SymbolTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
 	}
 	pkg := convert.NewPackage(&convert.PackageConfig{
-		PkgPath:     ".",
+		PkgBase: convert.PkgBase{
+			PkgPath:  ".",
+			CppgConf: config.CppgConf,
+			Pubs:     make(map[string]string),
+		},
 		Name:        "testpkg",
 		GenConf:     &gogen.Config{},
 		OutputDir:   config.OutputDir,
 		SymbolTable: config.SymbolTable,
-		CppgConf:    config.CppgConf,
-		Public:      make(map[string]string),
 	})
 	if pkg == nil {
 		t.Fatal("NewPackage failed")
@@ -2043,58 +2070,66 @@ func TestIncPathToPkg(t *testing.T) {
 
 func TestImport(t *testing.T) {
 	t.Run("invalid mod", func(t *testing.T) {
-		pkg := &convert.Pkg{}
-		_, err := pkg.Import("pkg")
+		loader := convert.PkgDepLoader{}
+		_, err := loader.Import("pkg")
 		if err == nil {
 			t.Fatal("expected error")
 		}
 	})
+
 	t.Run("invalid include path", func(t *testing.T) {
-		pkg := createTestPkg(t, &convert.PackageConfig{
-			OutputDir: ".",
-			CppgConf: &cppgtypes.Config{
-				Deps: []string{
-					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpath",
-					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/partfinddep",
-				},
-			},
-		})
-		_, err := pkg.LoadDeps()
+		p := &convert.Package{}
+		genPkg := gogen.NewPackage(".", "include", nil)
+		mod, err := gopmod.Load(".")
 		if err != nil {
 			t.Fatal(err)
 		}
-		pkg.DepIncPaths()
+		p.PkgInfo = convert.NewPkgInfo(".", ".", &cppgtypes.Config{
+			Deps: []string{
+				"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpath",
+				"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/partfinddep",
+			},
+		}, nil)
+		loader := convert.NewPkgDepLoader(mod, genPkg)
+		deps, err := loader.LoadDeps(p.PkgInfo)
+		p.PkgInfo.Deps = deps
+		if err != nil {
+			t.Fatal(err)
+		}
+		p.DepIncPaths()
 	})
 	t.Run("invalid pub file", func(t *testing.T) {
-		pkg := createTestPkg(t, &convert.PackageConfig{
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatal("expected panic")
+			}
+		}()
+		createTestPkg(t, &convert.PackageConfig{
 			OutputDir: ".",
-			CppgConf: &cppgtypes.Config{
-				Deps: []string{
-					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpub",
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{
+					Deps: []string{
+						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpub",
+					},
 				},
 			},
 		})
-		_, err := pkg.LoadDeps()
-		if err == nil {
-			t.Fatal("expected error")
-		}
 	})
 	t.Run("invalid dep", func(t *testing.T) {
-		pkg := createTestPkg(t, &convert.PackageConfig{
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatal("expected panic")
+			}
+		}()
+		createTestPkg(t, &convert.PackageConfig{
 			OutputDir: ".",
-			CppgConf: &cppgtypes.Config{
-				Deps: []string{
-					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invaliddep",
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{
+					Deps: []string{
+						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invaliddep",
+					},
 				},
 			},
 		})
-		err := pkg.InitDeps()
-		if err == nil {
-			t.Fatal("expected error")
-		}
-		_, err = pkg.Import("github.com/goplus/invaliddep")
-		if err == nil {
-			t.Fatal("expected error")
-		}
 	})
 }
