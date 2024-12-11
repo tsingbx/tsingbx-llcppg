@@ -2,20 +2,15 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/goplus/llcppg/cmd/llcppcfg/llcppgcfg"
 )
 
-func customLog() {
-	fmt.Println(`llcppcfg is to generate llcppg.cfg file.
-usage: llcppcfg [-cpp|-help|-expand] libname`)
-}
-
 func printHelp() {
-	customLog()
+	log.Println(`llcppcfg is to generate llcppg.cfg file.
+usage: llcppcfg [-cpp|-help|-expand] libname`)
 	flag.PrintDefaults()
 }
 
