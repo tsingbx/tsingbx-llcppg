@@ -2096,6 +2096,10 @@ func TestImport(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		_, err = loader.Import("github.com/goplus/invalidpkg")
+		if err == nil {
+			t.Fatal("expected error")
+		}
 		p.DepIncPaths()
 	})
 	t.Run("invalid pub file", func(t *testing.T) {

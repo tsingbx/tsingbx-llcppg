@@ -55,12 +55,11 @@ type PackageConfig struct {
 	GenConf     *gogen.Config
 }
 
-func (p *PackageConfig) GetGoName(name string, prefixed []string) string {
+func (p *PackageConfig) GetGoName(name string, prefixes []string) string {
 	goName, ok := p.Pubs[name]
 	if ok {
 		return goName
 	}
-	prefixes := []string{}
 	return names.GoName(name, prefixes)
 }
 
@@ -251,10 +250,11 @@ func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 	}
 
 	// every type name should be public
-	name, changed, err := p.DeclName(typeDecl.Name.Name, true)
+	name, changed, err := p.DeclName(typeDecl.Name.Name)
 	if err != nil {
 		return err
 	}
+	p.CollectNameMapping(typeDecl.Name.Name, name)
 
 	decl := p.handleTypeDecl(name, typeDecl, changed)
 
@@ -310,10 +310,11 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 	if debug {
 		log.Printf("NewTypedefDecl: %v\n", typedefDecl.Name)
 	}
-	name, changed, err := p.DeclName(typedefDecl.Name.Name, true)
+	name, changed, err := p.DeclName(typedefDecl.Name.Name)
 	if err != nil {
 		return err
 	}
+	p.CollectNameMapping(typedefDecl.Name.Name, name)
 	// todo(zzy): this block will be removed after https://github.com/goplus/llgo/pull/870
 	if obj := p.p.Types.Scope().Lookup(name); obj != nil {
 		// for a typedef ,always appear same name like
@@ -381,10 +382,11 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, string, error
 	var err error
 	var t *gogen.TypeDecl
 	if enumName != nil {
-		name, changed, err = p.DeclName(enumName.Name, true)
+		name, changed, err = p.DeclName(enumName.Name)
 		if err != nil {
-			return nil, "", fmt.Errorf("enum type %s already defined", enumName.Name)
+			return nil, "", errs.NewTypeDefinedError(name, enumName.Name)
 		}
+		p.CollectNameMapping(enumName.Name, name)
 	}
 	enumType := p.cvt.ToDefaultEnumType()
 	if name != "" {
@@ -407,9 +409,9 @@ func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type, en
 		} else {
 			constName = item.Name.Name
 		}
-		name, changed, err := p.DeclName(constName, false)
+		name, changed, err := p.DeclName(constName)
 		if err != nil {
-			return fmt.Errorf("enum item %s already defined %w", name, err)
+			return errs.NewTypeDefinedError(name, constName)
 		}
 		val, err := Expr(item.Value).ToInt()
 		if err != nil {
@@ -503,7 +505,7 @@ func (p *Package) WritePubFile() error {
 // For a decl name, if it's a current package, remove the prefixed name
 // For a decl name, it should be unique
 // todo(zzy): not current converter package file,need not remove prefixed name
-func (p *Package) DeclName(name string, collect bool) (pubName string, changed bool, err error) {
+func (p *Package) DeclName(name string) (pubName string, changed bool, err error) {
 	originName := name
 	prefixes := []string{}
 	if p.curFile.inCurPkg {
@@ -515,14 +517,18 @@ func (p *Package) DeclName(name string, collect bool) (pubName string, changed b
 		return "", false, errs.NewTypeDefinedError(name, originName)
 	}
 	changed = name != originName
-	if collect && p.curFile.inCurPkg {
-		if changed {
-			p.Pubs[originName] = name
-		} else {
-			p.Pubs[originName] = ""
-		}
-	}
 	return name, changed, nil
+}
+
+func (p *Package) CollectNameMapping(originName, newName string) {
+	if !p.curFile.inCurPkg {
+		return
+	}
+	if originName != newName {
+		p.Pubs[originName] = newName
+	} else {
+		p.Pubs[originName] = ""
+	}
 }
 
 // Return all include paths of dependent packages
