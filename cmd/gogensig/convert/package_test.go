@@ -14,10 +14,18 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/mod/gopmod"
 )
+
+var dir string
 
 func init() {
 	convert.SetDebug(convert.DbgFlagAll)
+	var err error
+	dir, err = os.Getwd()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TestUnionDecl(t *testing.T) {
@@ -94,15 +102,17 @@ type U struct {
 }
 
 func TestLinkFileOK(t *testing.T) {
-	tempDir, err := os.MkdirTemp("", "test_package_link")
+	tempDir, err := os.MkdirTemp(dir, "test_package_link")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
 	defer os.RemoveAll(tempDir)
 	pkg := createTestPkg(t, &convert.PackageConfig{
 		OutputDir: tempDir,
-		CppgConf: &cppgtypes.Config{
-			Libs: "pkg-config --libs libcjson",
+		PkgBase: convert.PkgBase{
+			CppgConf: &cppgtypes.Config{
+				Libs: "pkg-config --libs libcjson",
+			},
 		},
 	})
 	filePath, _ := pkg.WriteLinkFile()
@@ -113,16 +123,17 @@ func TestLinkFileOK(t *testing.T) {
 }
 
 func TestLinkFileFail(t *testing.T) {
-
 	t.Run("not link lib", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp("", "test_package_link")
+		tempDir, err := os.MkdirTemp(dir, "test_package_link")
 		if err != nil {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
 		defer os.RemoveAll(tempDir)
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: tempDir,
-			CppgConf:  &cppgtypes.Config{},
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{},
+			},
 		})
 
 		_, err = pkg.WriteLinkFile()
@@ -131,22 +142,28 @@ func TestLinkFileFail(t *testing.T) {
 		}
 	})
 	t.Run("no permission", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp("", "test_package_link")
+		tempDir, err := os.MkdirTemp(dir, "test_package_link")
 		if err != nil {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
 		defer os.RemoveAll(tempDir)
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: tempDir,
-			CppgConf: &cppgtypes.Config{
-				Libs: "${pkg-config --libs libcjson}",
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{
+					Libs: "${pkg-config --libs libcjson}",
+				},
 			},
 		})
-		err = os.Chmod(filepath.Join(tempDir), 0555)
+		err = os.Chmod(tempDir, 0555)
 		if err != nil {
 			t.Fatalf("Failed to change directory permissions: %v", err)
 		}
-		defer os.Chmod(filepath.Join(tempDir), 0755)
+		defer func() {
+			if err := os.Chmod(tempDir, 0755); err != nil {
+				t.Fatalf("Failed to change directory permissions: %v", err)
+			}
+		}()
 		_, err = pkg.WriteLinkFile()
 		if err == nil {
 			t.FailNow()
@@ -226,7 +243,7 @@ func TestPackageWrite(t *testing.T) {
 	genPath := names.HeaderFileToGo(filePath)
 
 	t.Run("OutputToTempDir", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp("", "test_package_write")
+		tempDir, err := os.MkdirTemp(dir, "test_package_write")
 		if err != nil {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
@@ -235,7 +252,10 @@ func TestPackageWrite(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: tempDir,
 		})
-		pkg.SetCurFile(filePath, incPath, true, true, false)
+		err = pkg.SetCurFile(filePath, incPath, true, true, false)
+		if err != nil {
+			t.Fatalf("SetCurFile method failed: %v", err)
+		}
 		err = pkg.Write(filePath)
 		if err != nil {
 			t.Fatalf("Write method failed: %v", err)
@@ -246,11 +266,7 @@ func TestPackageWrite(t *testing.T) {
 	})
 
 	t.Run("OutputToCurrentDir", func(t *testing.T) {
-		currentDir, err := os.Getwd()
-		if err != nil {
-			t.Fatalf("Failed to get current directory: %v", err)
-		}
-		testpkgDir := filepath.Join(currentDir, "testpkg")
+		testpkgDir := filepath.Join(dir, "testpkg")
 		if err := os.MkdirAll(testpkgDir, 0755); err != nil {
 			t.Fatalf("Failed to create testpkg directory: %v", err)
 		}
@@ -263,7 +279,10 @@ func TestPackageWrite(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: testpkgDir,
 		})
-		pkg.SetCurFile(filePath, incPath, true, true, false)
+		err := pkg.SetCurFile(filePath, incPath, true, true, false)
+		if err != nil {
+			t.Fatalf("SetCurFile method failed: %v", err)
+		}
 		err = pkg.Write(filePath)
 		if err != nil {
 			t.Fatalf("Write method failed: %v", err)
@@ -274,6 +293,11 @@ func TestPackageWrite(t *testing.T) {
 	})
 
 	t.Run("InvalidOutputDir", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatal("Expected an error for invalid output directory, but got nil")
+			}
+		}()
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: "/nonexistent/directory",
 		})
@@ -284,7 +308,7 @@ func TestPackageWrite(t *testing.T) {
 	})
 
 	t.Run("UnwritableOutputDir", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp("", "test_package_write_unwritable")
+		tempDir, err := os.MkdirTemp(dir, "test_package_write_unwritable")
 		if err != nil {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
@@ -296,7 +320,11 @@ func TestPackageWrite(t *testing.T) {
 
 		// read-only
 		err = os.Chmod(tempDir, 0555)
-		defer os.Chmod(tempDir, 0755)
+		defer func() {
+			if err := os.Chmod(tempDir, 0755); err != nil {
+				t.Fatalf("Failed to change directory permissions: %v", err)
+			}
+		}()
 		if err != nil {
 			t.Fatalf("Failed to change directory permissions: %v", err)
 		}
@@ -1506,16 +1534,21 @@ func TestIdentRefer(t *testing.T) {
 	})
 	t.Run("type alias", func(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
-			CppgConf: &cppgtypes.Config{},
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{},
+			},
 		})
-		pkg.NewTypedefDecl(&ast.TypedefDecl{
+		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
 			Name: &ast.Ident{Name: "int8_t"},
 			Type: &ast.BuiltinType{
 				Kind:  ast.Char,
 				Flags: ast.Signed,
 			},
 		})
-		pkg.NewTypeDecl(&ast.TypeDecl{
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = pkg.NewTypeDecl(&ast.TypeDecl{
 			Name: &ast.Ident{Name: "Foo"},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
@@ -1531,6 +1564,9 @@ func TestIdentRefer(t *testing.T) {
 				},
 			},
 		})
+		if err != nil {
+			t.Fatal(err)
+		}
 		comparePackageOutput(t, pkg, `
 		package testpkg
 		import _ "unsafe"
@@ -1613,7 +1649,9 @@ func testGenDecl(t *testing.T, tc genDeclTestCase) {
 	t.Helper()
 	pkg := createTestPkg(t, &convert.PackageConfig{
 		SymbolTable: cfg.CreateSymbolTable(tc.symbs),
-		CppgConf:    tc.cppgconf,
+		PkgBase: convert.PkgBase{
+			CppgConf: tc.cppgconf,
+		},
 	})
 	if pkg == nil {
 		t.Fatal("NewPackage failed")
@@ -1668,13 +1706,15 @@ func createTestPkg(t *testing.T, config *convert.PackageConfig) *convert.Package
 		config.SymbolTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
 	}
 	pkg := convert.NewPackage(&convert.PackageConfig{
-		PkgPath:     ".",
+		PkgBase: convert.PkgBase{
+			PkgPath:  ".",
+			CppgConf: config.CppgConf,
+			Pubs:     make(map[string]string),
+		},
 		Name:        "testpkg",
 		GenConf:     &gogen.Config{},
 		OutputDir:   config.OutputDir,
 		SymbolTable: config.SymbolTable,
-		CppgConf:    config.CppgConf,
-		Public:      make(map[string]string),
 	})
 	if pkg == nil {
 		t.Fatal("NewPackage failed")
@@ -1810,7 +1850,7 @@ func TestIncPathToPkg(t *testing.T) {
 	testCases := map[string]map[string][]string{
 		// macos 14.0
 		"darwin": {
-			convert.LLGO_C: []string{
+			convert.SysPkgC: []string{
 				"alloc.h",
 				"_ctype.h",
 				"_stdio.h",
@@ -1868,16 +1908,16 @@ func TestIncPathToPkg(t *testing.T) {
 				"wchar.h",
 				"wctype.h",
 			},
-			convert.LLGO_PTHREAD: []string{
+			convert.SysPkgPthread: []string{
 				"sys/_pthread/_pthread_attr_t.h",
 				"sys/_pthread/_pthread_types.h",
 				"sys/_pthread/_pthread_t.h",
 			},
-			convert.LLGO_I18N: []string{
+			convert.SysPkgI18n: []string{
 				"_locale.h",
 				"locale.h",
 			},
-			convert.LLGO_OS: []string{
+			convert.SysPkgOs: []string{
 				"sys/signal.h",
 				"sys/_types/_sigaltstack.h",
 				"sys/_types/_sigset_t.h",
@@ -1887,7 +1927,7 @@ func TestIncPathToPkg(t *testing.T) {
 				"sys/wait.h",
 				"arm/signal.h",
 			},
-			convert.LLGO_TIME: []string{
+			convert.SysPkgTime: []string{
 				"time.h",
 				"sys/_types/_time_t.h",
 				"sys/_types/_clock_t.h",
@@ -1895,7 +1935,7 @@ func TestIncPathToPkg(t *testing.T) {
 				"sys/_types/_timespec.h",
 				"sys/_types/_timeval.h",
 			},
-			convert.LLGO_UNIX_NET: []string{
+			convert.SysPkgUnixNet: []string{
 				"sys/socket.h",
 				"arpa/inet.h",
 				"netinet6/in6.h",
@@ -1903,17 +1943,17 @@ func TestIncPathToPkg(t *testing.T) {
 				"net/if.h",
 				"net/if_var.h",
 			},
-			convert.LLGO_MATH: []string{
+			convert.SysPkgMath: []string{
 				"math.h",
 				"fenv.h",
 			},
-			convert.LLGO_SETJMP: []string{
+			convert.SysPkgSetjmp: []string{
 				"setjmp.h",
 			},
 		},
 		// Ubuntu 24.04 LTS
 		"linux": {
-			convert.LLGO_C: []string{
+			convert.SysPkgC: []string{
 				"__stdarg_va_list.h",
 				"ctype.h",
 				"linux/types.h",
@@ -1964,12 +2004,12 @@ func TestIncPathToPkg(t *testing.T) {
 				"bits/byteswap.h",
 				"bits/procfs.h",
 			},
-			convert.LLGO_I18N: []string{
+			convert.SysPkgI18n: []string{
 				"bits/types/__locale_t.h",
 				"bits/types/locale_t.h",
 				"locale.h",
 			},
-			convert.LLGO_OS: []string{
+			convert.SysPkgOs: []string{
 				"signal.h",
 				"assert.h",
 				"bits/types/sig_atomic_t.h",
@@ -1989,7 +2029,7 @@ func TestIncPathToPkg(t *testing.T) {
 				"sys/procfs.h",
 				"sys/ucontext.h",
 			},
-			convert.LLGO_TIME: []string{
+			convert.SysPkgTime: []string{
 				"time.h",
 				"sys/time.h",
 				"bits/types/clock_t.h",
@@ -2002,16 +2042,16 @@ func TestIncPathToPkg(t *testing.T) {
 				"bits/types/clockid_t.h",
 				"bits/types/struct_itimerspec.h",
 			},
-			convert.LLGO_MATH: []string{
+			convert.SysPkgMath: []string{
 				"bits/math-vector.h",
 				"math.h",
 				"fenv.h",
 				"bits/fenv.h",
 			},
-			convert.LLGO_SETJMP: []string{
+			convert.SysPkgSetjmp: []string{
 				"setjmp.h",
 			},
-			convert.LLGO_PTHREAD: []string{
+			convert.SysPkgPthread: []string{
 				"pthread.h",
 				"bits/pthreadtypes.h",
 			},
@@ -2026,4 +2066,107 @@ func TestIncPathToPkg(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestIncPathToPkgInvalidRegex(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Expected panic for invalid regex pattern, but got none")
+		}
+	}()
+
+	// Save original mappings and restore after test
+	oldMappings := convert.PkgMappings
+	convert.PkgMappings = []convert.PkgMapping{
+		{Pattern: "[", Package: "invalid"}, // Invalid regex pattern - unclosed character class
+	}
+	defer func() {
+		convert.PkgMappings = oldMappings
+	}()
+
+	// This should panic due to invalid regex
+	convert.IncPathToPkg("any_path")
+}
+
+func TestImport(t *testing.T) {
+	t.Run("invalid mod", func(t *testing.T) {
+		loader := convert.PkgDepLoader{}
+		_, err := loader.Import("pkg")
+		if err == nil {
+			t.Fatal("expected error")
+		}
+	})
+
+	t.Run("invalid include path", func(t *testing.T) {
+		p := &convert.Package{}
+		genPkg := gogen.NewPackage(".", "include", nil)
+		mod, err := gopmod.Load(".")
+		if err != nil {
+			t.Fatal(err)
+		}
+		p.PkgInfo = convert.NewPkgInfo(".", ".", &cppgtypes.Config{
+			Deps: []string{
+				"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpath",
+				"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/partfinddep",
+			},
+		}, nil)
+		loader := convert.NewPkgDepLoader(mod, genPkg)
+		deps, err := loader.LoadDeps(p.PkgInfo)
+		p.PkgInfo.Deps = deps
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = loader.Import("github.com/goplus/invalidpkg")
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		p.DepIncPaths()
+	})
+	t.Run("invalid pub file", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatal("expected panic")
+			}
+		}()
+		createTestPkg(t, &convert.PackageConfig{
+			OutputDir: ".",
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{
+					Deps: []string{
+						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpub",
+					},
+				},
+			},
+		})
+	})
+	t.Run("invalid dep", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatal("expected panic")
+			}
+		}()
+		createTestPkg(t, &convert.PackageConfig{
+			OutputDir: ".",
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{
+					Deps: []string{
+						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invaliddep",
+					},
+				},
+			},
+		})
+	})
+	t.Run("same type register", func(t *testing.T) {
+		createTestPkg(t, &convert.PackageConfig{
+			OutputDir: ".",
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{
+					Deps: []string{
+						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjson",
+						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjsonbool",
+					},
+				},
+			},
+		})
+	})
 }

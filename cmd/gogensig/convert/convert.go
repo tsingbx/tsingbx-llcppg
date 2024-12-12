@@ -46,18 +46,20 @@ func NewAstConvert(config *AstConvertConfig) (*AstConvert, error) {
 		conf = &cppgtypes.Config{}
 	}
 
-	public, err := cfg.GetPubFromPath(config.PubFile)
+	pubs, err := cfg.GetPubFromPath(config.PubFile)
 	if err != nil {
 		return nil, err
 	}
 
 	pkg := NewPackage(&PackageConfig{
-		PkgPath:     ".",
+		PkgBase: PkgBase{
+			PkgPath:  ".",
+			CppgConf: conf,
+			Pubs:     pubs,
+		},
 		Name:        config.PkgName,
 		OutputDir:   config.OutputDir,
 		SymbolTable: symbTable,
-		CppgConf:    conf,
-		Public:      public,
 	})
 	p.Pkg = pkg
 	return p, nil
@@ -129,7 +131,13 @@ func (p *AstConvert) VisitTypedefDecl(typedefDecl *ast.TypedefDecl) {
 
 func (p *AstConvert) VisitStart(path string, incPath string, isSys bool) {
 	inPkgIncPath := false
-	incPaths := p.Pkg.GetIncPaths()
+	incPaths, notFounds, err := p.Pkg.GetIncPaths()
+	if len(notFounds) > 0 {
+		log.Println("failed to find some include paths: \n", notFounds)
+		if err != nil {
+			log.Println("failed to get any include paths: \n", err.Error())
+		}
+	}
 	for _, includePath := range incPaths {
 		if includePath == path {
 			inPkgIncPath = true
