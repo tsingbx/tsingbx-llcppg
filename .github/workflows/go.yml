@@ -54,10 +54,10 @@ jobs:
     - name: Build
       run: go build -v ./...
 
-    - name: Install llcppg dependencies
-      run: bash .github/workflows/install_llcppg_depend.sh
+    - name: Install llcppg modules
+      run: bash .github/workflows/install_llcppg_modules.sh
 
-    - name: Test llcppsymg
+    - name: Test llcppsymg & llcppsigfetch
       run: |
         llgo cmptest ./_xtool/llcppsigfetch/parse/cvt_test/...
 
