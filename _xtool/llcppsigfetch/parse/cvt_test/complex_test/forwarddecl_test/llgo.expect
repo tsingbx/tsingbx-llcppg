@@ -24,26 +24,6 @@
 					"Methods":	[]
 				}
 			}, {
-				"_Type":	"TypedefDecl",
-				"Loc":	{
-					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
-				},
-				"Doc":	null,
-				"Parent":	null,
-				"Name":	{
-					"_Type":	"Ident",
-					"Name":	"sqlite3_pcache_page"
-				},
-				"Type":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"Ident",
-						"Name":	"sqlite3_pcache_page"
-					},
-					"Tag":	0
-				}
-			}, {
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
@@ -123,26 +103,6 @@
 						"List":	null
 					},
 					"Methods":	[]
-				}
-			}, {
-				"_Type":	"TypedefDecl",
-				"Loc":	{
-					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
-				},
-				"Doc":	null,
-				"Parent":	null,
-				"Name":	{
-					"_Type":	"Ident",
-					"Name":	"sqlite3_pcache_methods2"
-				},
-				"Type":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"Ident",
-						"Name":	"sqlite3_pcache_methods2"
-					},
-					"Tag":	0
 				}
 			}, {
 				"_Type":	"TypeDecl",
@@ -324,26 +284,6 @@
 						"List":	null
 					},
 					"Methods":	[]
-				}
-			}, {
-				"_Type":	"TypedefDecl",
-				"Loc":	{
-					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
-				},
-				"Doc":	null,
-				"Parent":	null,
-				"Name":	{
-					"_Type":	"Ident",
-					"Name":	"lua_Debug"
-				},
-				"Type":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"Ident",
-						"Name":	"lua_Debug"
-					},
-					"Tag":	0
 				}
 			}, {
 				"_Type":	"FuncDecl",

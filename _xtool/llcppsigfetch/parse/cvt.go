@@ -444,7 +444,18 @@ func (ct *Converter) ProcessUnderlyingType(cursor clang.Cursor) ast.Expr {
 	}
 
 	referTypeCursor := underlyingTyp.TypeDeclaration()
-	if toStr(cursor.String()) == toStr(referTypeCursor.String()) && isCursorChildOf(referTypeCursor, cursor) {
+	defName := toStr(cursor.String())
+	underName := toStr(referTypeCursor.String())
+	ct.logln("ProcessUnderlyingType: defName:", defName, "underName:", underName)
+
+	// For a typedef like "typedef struct xxx xxx;", the underlying type declaration
+	// can appear in two locations:
+	// 1. Inside the typedef itself when the struct is defined inline
+	// 2. At the implementation location when there's a separate struct xxx definition
+	// in the source file
+	// Therefore, we shouldn't use declaration location to determine whether to remove
+	// extra typedef nodes
+	if defName == underName {
 		ct.logln("ProcessUnderlyingType: is self reference")
 		return nil
 	}
@@ -955,19 +966,6 @@ func buildScopingFromParts(parts []string) ast.Expr {
 		}
 	}
 	return expr
-}
-
-// isCursorChildOf checks if the child cursor is contained within the parent cursor.
-// This function is necessary because libclang doesn't correctly report the lexical
-// or semantic parent for anonymous structs inside typedefs. By comparing source ranges,
-// we can determine if one cursor is nested inside another.
-func isCursorChildOf(child, parent clang.Cursor) bool {
-	return isRangeChildOf(child.Extent(), parent.Extent())
-}
-
-func isRangeChildOf(childRange, parentRange clang.SourceRange) bool {
-	return getOffset(childRange.RangeStart()) >= getOffset(parentRange.RangeStart()) &&
-		getOffset(childRange.RangeEnd()) <= getOffset(parentRange.RangeEnd())
 }
 
 func getOffset(location clang.SourceLocation) c.Uint {
