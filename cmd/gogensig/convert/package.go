@@ -8,17 +8,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
-	cppgtypes "github.com/goplus/llcppg/types"
-	"github.com/goplus/llgo/xtool/env"
 	"github.com/goplus/mod/gopmod"
 )
 
@@ -39,7 +34,6 @@ func SetDebug(flags int) {
 // In Processing Package
 type Package struct {
 	*PkgInfo
-	name       string         // current package name
 	p          *gogen.Package // package writer
 	conf       *PackageConfig // package config
 	cvt        *TypeConv      // package type convert
@@ -49,7 +43,7 @@ type Package struct {
 
 type PackageConfig struct {
 	PkgBase
-	Name        string
+	Name        string // current package name
 	OutputDir   string
 	SymbolTable *cfg.SymbolTable
 	GenConf     *gogen.Config
@@ -68,7 +62,6 @@ func (p *PackageConfig) GetGoName(name string, prefixes []string) string {
 func NewPackage(config *PackageConfig) *Package {
 	p := &Package{
 		p:          gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
-		name:       config.Name,
 		conf:       config,
 		incomplete: make(map[string]*gogen.TypeDecl),
 	}
@@ -94,7 +87,10 @@ func NewPackage(config *PackageConfig) *Package {
 		SymbolTable: config.SymbolTable,
 		Package:     p,
 	})
-	p.SetCurFile(p.Name(), "", false, false, false)
+	err = p.SetCurFile(p.conf.Name, "", false, false, false)
+	if err != nil {
+		log.Panicf("failed to set current file: %s", err.Error())
+	}
 	return p
 }
 
@@ -121,10 +117,6 @@ func (p *Package) GetGenPackage() *gogen.Package {
 
 func (p *Package) GetOutputDir() string {
 	return p.conf.OutputDir
-}
-
-func (p *Package) Name() string {
-	return p.name
 }
 
 func (p *Package) GetTypeConv() *TypeConv {
@@ -449,10 +441,13 @@ func (p *Package) Write(headerFile string) error {
 }
 
 func (p *Package) WriteLinkFile() (string, error) {
-	fileName := p.name + "_autogen_link.go"
+	fileName := p.conf.Name + "_autogen_link.go"
 	filePath := filepath.Join(p.GetOutputDir(), fileName)
-	p.p.SetCurFile(fileName, true)
-	err := p.linkLib(p.conf.CppgConf.Libs)
+	_, err := p.p.SetCurFile(fileName, true)
+	if err != nil {
+		return "", fmt.Errorf("failed to set current file: %w", err)
+	}
+	err = p.linkLib(p.conf.CppgConf.Libs)
 	if debug {
 		log.Printf("Write LinkFile [%s] from  gogen:[%s] to [%s]\n", fileName, fileName, filePath)
 	}
@@ -472,7 +467,7 @@ func (p *Package) WriteLinkFile() (string, error) {
 // Before calling SetCurFile, all type creations are written to this default gogen file.
 // It allows for easy inspection of generated types without the need for actual file I/O.
 func (p *Package) WriteDefaultFileToBuffer() (*bytes.Buffer, error) {
-	return p.WriteToBuffer(p.Name() + ".go")
+	return p.WriteToBuffer(p.conf.Name + ".go")
 }
 
 // Write the corresponding files in gogen package to the file
@@ -571,267 +566,4 @@ func (p *Package) DepIncPaths() []string {
 		log.Println("failed to get any include paths from these package: \n", allfailed)
 	}
 	return paths
-}
-
-type PkgMapping struct {
-	Pattern string
-	Package string
-}
-
-const (
-	LLGO_C       = "github.com/goplus/llgo/c"
-	LLGO_OS      = "github.com/goplus/llgo/c/os"
-	LLGO_SETJMP  = "github.com/goplus/llgo/c/setjmp"
-	LLGO_TIME    = "github.com/goplus/llgo/c/time"
-	LLGO_MATH    = "github.com/goplus/llgo/c/math"
-	LLGO_I18N    = "github.com/goplus/llgo/c/i18n"
-	LLGO_COMPLEX = "github.com/goplus/llgo/c/math/cmplx"
-
-	// posix
-	LLGO_PTHREAD  = "github.com/goplus/llgo/c/pthread"
-	LLGO_UNIX_NET = "github.com/goplus/llgo/c/unix/net"
-)
-
-// IncPathToPkg determines the Go package for a given C include path.
-//
-// According to the C language specification, when including a standard library,
-// such as stdio.h, certain declarations must be provided (e.g., FILE type).
-// However, these types don't have to be declared in the header file itself.
-// On MacOS, for example, the actual declaration exists in _stdio.h. Therefore,
-// each standard library header file can be viewed as defining an interface,
-// independent of its implementation.
-//
-// In our current requirements, the matching follows this order:
-//  1. First match standard library interface headers (like stdio.h, stdint.h)
-//     which define required types and functions
-//  2. Then match implementation headers (like _stdio.h, sys/_types/_int8_t.h)
-//     which contain the actual type definitions
-//
-// For example:
-// - stdio.h as interface, specifies that FILE type must be provided
-// - _stdio.h as implementation, provides the actual FILE definition on MacOS
-func IncPathToPkg(incPath string) (pkg string, isDefault bool) {
-	pkgMappings := []PkgMapping{
-		// c std
-		{Pattern: `(^|[^a-zA-Z0-9])stdint[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])stddef[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])stdio[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])stdlib[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])string[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])stdbool[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])stdarg[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])limits[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])ctype[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])uchar[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])wchar[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])wctype[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])inttypes[^a-zA-Z0-9]`, Package: LLGO_C},
-
-		{Pattern: `(^|[^a-zA-Z0-9])signal[^a-zA-Z0-9]`, Package: LLGO_OS},
-		{Pattern: `(^|[^a-zA-Z0-9])sig[a-zA-Z]*[^a-zA-Z0-9]`, Package: LLGO_OS},
-		{Pattern: `(^|[^a-zA-Z0-9])assert[^a-zA-Z0-9]`, Package: LLGO_OS},
-		{Pattern: `(^|[^a-zA-Z0-9])stdalign[^a-zA-Z0-9]`, Package: LLGO_OS},
-
-		{Pattern: `(^|[^a-zA-Z0-9])setjmp[^a-zA-Z0-9]`, Package: LLGO_SETJMP},
-
-		{Pattern: `(^|[^a-zA-Z0-9])math[^a-zA-Z0-9]`, Package: LLGO_MATH},
-		{Pattern: `(^|[^a-zA-Z0-9])fenv[^a-zA-Z0-9]`, Package: LLGO_MATH},
-		{Pattern: `(^|[^a-zA-Z0-9])complex[^a-zA-Z0-9]`, Package: LLGO_COMPLEX},
-
-		{Pattern: `(^|[^a-zA-Z0-9])time[^a-zA-Z0-9]`, Package: LLGO_TIME},
-
-		{Pattern: `(^|[^a-zA-Z0-9])pthread\w*`, Package: LLGO_PTHREAD},
-
-		{Pattern: `(^|[^a-zA-Z0-9])locale[^a-zA-Z0-9]`, Package: LLGO_I18N},
-
-		// c posix
-		{Pattern: `(^|[^a-zA-Z0-9])socket[^a-zA-Z0-9]`, Package: LLGO_UNIX_NET},
-		{Pattern: `(^|[^a-zA-Z0-9])arpa[^a-zA-Z0-9]`, Package: LLGO_UNIX_NET},
-		{Pattern: `(^|[^a-zA-Z0-9])netinet6?[^a-zA-Z0-9]`, Package: LLGO_UNIX_NET},
-		{Pattern: `(^|[^a-zA-Z0-9])net[^a-zA-Z0-9]`, Package: LLGO_UNIX_NET},
-
-		// impl file
-		{Pattern: `_int\d+_t`, Package: LLGO_C},
-		{Pattern: `_uint\d+_t`, Package: LLGO_C},
-		{Pattern: `_size_t`, Package: LLGO_C},
-		{Pattern: `_intptr_t`, Package: LLGO_C},
-		{Pattern: `_uintptr_t`, Package: LLGO_C},
-		{Pattern: `_ptrdiff_t`, Package: LLGO_C},
-
-		{Pattern: `malloc`, Package: LLGO_C},
-		{Pattern: `alloc`, Package: LLGO_C},
-
-		{Pattern: `(^|[^a-zA-Z0-9])clock(id_t|_t)`, Package: LLGO_TIME},
-		{Pattern: `(^|[^a-zA-Z0-9])(i)?time\w*`, Package: LLGO_TIME},
-		{Pattern: `(^|[^a-zA-Z0-9])tm[^a-zA-Z0-9]`, Package: LLGO_TIME},
-
-		// before must the special type.h such as _pthread_types.h ....
-		{Pattern: `\w+_t[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])types[^a-zA-Z0-9]`, Package: LLGO_C},
-		{Pattern: `(^|[^a-zA-Z0-9])sys[^a-zA-Z0-9]`, Package: LLGO_OS},
-	}
-
-	for _, mapping := range pkgMappings {
-		matched, err := regexp.MatchString(mapping.Pattern, incPath)
-		if err != nil {
-			panic(err)
-		}
-		if matched {
-			return mapping.Package, false
-		}
-	}
-	return LLGO_C, true
-}
-
-type Module = gopmod.Module
-
-type PkgDepLoader struct {
-	module   *gopmod.Module
-	pkg      *gogen.Package
-	pkgCache map[string]*PkgInfo // pkgPath -> *PkgInfo
-	regCache map[string]struct{} // pkgPath
-}
-
-//(todo): GetResult
-
-func NewPkgDepLoader(mod *gopmod.Module, pkg *gogen.Package) *PkgDepLoader {
-	return &PkgDepLoader{
-		module:   mod,
-		pkg:      pkg,
-		pkgCache: make(map[string]*PkgInfo),
-		regCache: make(map[string]struct{}),
-	}
-}
-
-// for current package & dependent packages
-type PkgInfo struct {
-	PkgBase
-	Deps     []*PkgInfo
-	Dir      string   // absolute local path of the package
-	includes []string // abs header path
-}
-
-type PkgBase struct {
-	PkgPath  string            // package path, e.g. github.com/goplus/llgo/cjson
-	CppgConf *cppgtypes.Config // llcppg.cfg
-	Pubs     map[string]string // llcppg.pub
-}
-
-func NewPkgInfo(pkgPath string, pkgDir string, conf *cppgtypes.Config, pubs map[string]string) *PkgInfo {
-	return &PkgInfo{
-		PkgBase: PkgBase{PkgPath: pkgPath, Pubs: pubs, CppgConf: conf},
-		Dir:     pkgDir,
-	}
-}
-
-// LoadDeps loads direct dependencies of the current package and recursively loads their
-// dependencies, to get the complete dependency.
-func (pm *PkgDepLoader) LoadDeps(p *PkgInfo) ([]*PkgInfo, error) {
-	deps, err := pm.Imports(p.CppgConf.Deps)
-	if err != nil {
-		return nil, err
-	}
-	return deps, nil
-}
-
-func (pm *PkgDepLoader) Imports(pkgPaths []string) (pkgs []*PkgInfo, err error) {
-	pkgs = make([]*PkgInfo, len(pkgPaths))
-	for i, pkgPath := range pkgPaths {
-		pkgs[i], err = pm.Import(pkgPath)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return
-}
-
-func (pm *PkgDepLoader) Import(pkgPath string) (*PkgInfo, error) {
-	if pm.module == nil {
-		return nil, errs.NewModNotFoundError()
-	}
-	if pkg, exist := pm.pkgCache[pkgPath]; exist {
-		return pkg, nil
-	}
-	pkg, err := pm.module.Lookup(pkgPath)
-	if err != nil {
-		return nil, err
-	}
-	pkgDir, err := filepath.Abs(pkg.Dir)
-	if err != nil {
-		return nil, err
-	}
-	pubs, err := cfg.ReadPubFile(filepath.Join(pkgDir, args.LLCPPG_PUB))
-	if err != nil {
-		return nil, err
-	}
-	cfg, err := cfg.GetCppgCfgFromPath(filepath.Join(pkgDir, args.LLCPPG_CFG))
-	if err != nil {
-		return nil, err
-	}
-	newPkg := NewPkgInfo(pkgPath, pkgDir, cfg, pubs)
-	pm.pkgCache[pkgPath] = newPkg
-
-	if len(cfg.Deps) > 0 {
-		deps, err := pm.LoadDeps(newPkg)
-		newPkg.Deps = deps
-		if err != nil {
-			return nil, fmt.Errorf("failed to get deps for package %s: %w", pkgPath, err)
-		}
-	}
-	return newPkg, nil
-}
-
-func (pm *PkgDepLoader) InitDeps(p *PkgInfo) error {
-	deps, err := pm.LoadDeps(p)
-	p.Deps = deps
-	if err != nil {
-		return err
-	}
-	pm.RegisterDeps(p)
-	return nil
-}
-
-// RegisterDeps registers types from dependent packages into the current conversion project's scope
-func (pm *PkgDepLoader) RegisterDeps(p *PkgInfo) {
-	for _, dep := range p.Deps {
-		pm.RegisterDep(dep)
-	}
-}
-
-func (pm *PkgDepLoader) RegisterDep(dep *PkgInfo) {
-	if _, ok := pm.regCache[dep.PkgPath]; ok {
-		return
-	}
-	pm.regCache[dep.PkgPath] = struct{}{}
-	genPkg := pm.pkg
-	scope := genPkg.Types.Scope()
-	depPkg := genPkg.Import(dep.PkgPath)
-	pm.RegisterDeps(dep)
-	for cName, pubGoName := range dep.Pubs {
-		if pubGoName == "" {
-			pubGoName = cName
-		}
-		if obj := depPkg.TryRef(pubGoName); obj != nil {
-			var preObj types.Object
-			if pubGoName == cName {
-				preObj = obj
-			} else {
-				preObj = gogen.NewSubst(token.NoPos, genPkg.Types, cName, obj)
-			}
-			if old := scope.Insert(preObj); old != nil {
-				log.Printf("conflicted name `%v` in %v, previous definition is %v\n", pubGoName, dep.PkgPath, old)
-			}
-		}
-	}
-}
-
-func (p *PkgInfo) GetIncPaths() ([]string, []string, error) {
-	if p.includes != nil {
-		return p.includes, nil, nil
-	}
-	expandedIncFlags := env.ExpandEnv(p.CppgConf.CFlags)
-	cflags := cfgparse.ParseCFlags(expandedIncFlags)
-	incPaths, notFounds, err := cflags.GenHeaderFilePaths(p.CppgConf.Include)
-	p.includes = incPaths
-	return incPaths, notFounds, err
 }

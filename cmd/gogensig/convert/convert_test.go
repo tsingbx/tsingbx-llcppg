@@ -295,9 +295,6 @@ func TestVisitDone(t *testing.T) {
 		t.Fatal("NewAstConvert Fail")
 	}
 	pkg.SetVisitDone(func(pkg *convert.Package, incPath string) {
-		if pkg.Name() != "test" {
-			t.Fatal("pkg name error")
-		}
 		if incPath != "test.h" {
 			t.Fatal("doc path error")
 		}

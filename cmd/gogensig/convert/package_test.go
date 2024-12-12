@@ -1850,7 +1850,7 @@ func TestIncPathToPkg(t *testing.T) {
 	testCases := map[string]map[string][]string{
 		// macos 14.0
 		"darwin": {
-			convert.LLGO_C: []string{
+			convert.SysPkgC: []string{
 				"alloc.h",
 				"_ctype.h",
 				"_stdio.h",
@@ -1908,16 +1908,16 @@ func TestIncPathToPkg(t *testing.T) {
 				"wchar.h",
 				"wctype.h",
 			},
-			convert.LLGO_PTHREAD: []string{
+			convert.SysPkgPthread: []string{
 				"sys/_pthread/_pthread_attr_t.h",
 				"sys/_pthread/_pthread_types.h",
 				"sys/_pthread/_pthread_t.h",
 			},
-			convert.LLGO_I18N: []string{
+			convert.SysPkgI18n: []string{
 				"_locale.h",
 				"locale.h",
 			},
-			convert.LLGO_OS: []string{
+			convert.SysPkgOs: []string{
 				"sys/signal.h",
 				"sys/_types/_sigaltstack.h",
 				"sys/_types/_sigset_t.h",
@@ -1927,7 +1927,7 @@ func TestIncPathToPkg(t *testing.T) {
 				"sys/wait.h",
 				"arm/signal.h",
 			},
-			convert.LLGO_TIME: []string{
+			convert.SysPkgTime: []string{
 				"time.h",
 				"sys/_types/_time_t.h",
 				"sys/_types/_clock_t.h",
@@ -1935,7 +1935,7 @@ func TestIncPathToPkg(t *testing.T) {
 				"sys/_types/_timespec.h",
 				"sys/_types/_timeval.h",
 			},
-			convert.LLGO_UNIX_NET: []string{
+			convert.SysPkgUnixNet: []string{
 				"sys/socket.h",
 				"arpa/inet.h",
 				"netinet6/in6.h",
@@ -1943,17 +1943,17 @@ func TestIncPathToPkg(t *testing.T) {
 				"net/if.h",
 				"net/if_var.h",
 			},
-			convert.LLGO_MATH: []string{
+			convert.SysPkgMath: []string{
 				"math.h",
 				"fenv.h",
 			},
-			convert.LLGO_SETJMP: []string{
+			convert.SysPkgSetjmp: []string{
 				"setjmp.h",
 			},
 		},
 		// Ubuntu 24.04 LTS
 		"linux": {
-			convert.LLGO_C: []string{
+			convert.SysPkgC: []string{
 				"__stdarg_va_list.h",
 				"ctype.h",
 				"linux/types.h",
@@ -2004,12 +2004,12 @@ func TestIncPathToPkg(t *testing.T) {
 				"bits/byteswap.h",
 				"bits/procfs.h",
 			},
-			convert.LLGO_I18N: []string{
+			convert.SysPkgI18n: []string{
 				"bits/types/__locale_t.h",
 				"bits/types/locale_t.h",
 				"locale.h",
 			},
-			convert.LLGO_OS: []string{
+			convert.SysPkgOs: []string{
 				"signal.h",
 				"assert.h",
 				"bits/types/sig_atomic_t.h",
@@ -2029,7 +2029,7 @@ func TestIncPathToPkg(t *testing.T) {
 				"sys/procfs.h",
 				"sys/ucontext.h",
 			},
-			convert.LLGO_TIME: []string{
+			convert.SysPkgTime: []string{
 				"time.h",
 				"sys/time.h",
 				"bits/types/clock_t.h",
@@ -2042,16 +2042,16 @@ func TestIncPathToPkg(t *testing.T) {
 				"bits/types/clockid_t.h",
 				"bits/types/struct_itimerspec.h",
 			},
-			convert.LLGO_MATH: []string{
+			convert.SysPkgMath: []string{
 				"bits/math-vector.h",
 				"math.h",
 				"fenv.h",
 				"bits/fenv.h",
 			},
-			convert.LLGO_SETJMP: []string{
+			convert.SysPkgSetjmp: []string{
 				"setjmp.h",
 			},
-			convert.LLGO_PTHREAD: []string{
+			convert.SysPkgPthread: []string{
 				"pthread.h",
 				"bits/pthreadtypes.h",
 			},
@@ -2066,6 +2066,26 @@ func TestIncPathToPkg(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestIncPathToPkgInvalidRegex(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Expected panic for invalid regex pattern, but got none")
+		}
+	}()
+
+	// Save original mappings and restore after test
+	oldMappings := convert.PkgMappings
+	convert.PkgMappings = []convert.PkgMapping{
+		{Pattern: "[", Package: "invalid"}, // Invalid regex pattern - unclosed character class
+	}
+	defer func() {
+		convert.PkgMappings = oldMappings
+	}()
+
+	// This should panic due to invalid regex
+	convert.IncPathToPkg("any_path")
 }
 
 func TestImport(t *testing.T) {
@@ -2131,6 +2151,19 @@ func TestImport(t *testing.T) {
 				CppgConf: &cppgtypes.Config{
 					Deps: []string{
 						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invaliddep",
+					},
+				},
+			},
+		})
+	})
+	t.Run("same type register", func(t *testing.T) {
+		createTestPkg(t, &convert.PackageConfig{
+			OutputDir: ".",
+			PkgBase: convert.PkgBase{
+				CppgConf: &cppgtypes.Config{
+					Deps: []string{
+						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjson",
+						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjsonbool",
 					},
 				},
 			},
