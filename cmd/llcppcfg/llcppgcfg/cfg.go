@@ -14,6 +14,13 @@ import (
 	"github.com/goplus/llcppg/types"
 )
 
+type CfgExpandMode int
+
+const (
+	NormalMode CfgExpandMode = iota
+	ExpandMode
+)
+
 type LLCppConfig types.Config
 
 type NilError struct {
@@ -165,12 +172,12 @@ func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
 	return cfg
 }
 
-func GenCfg(name string, cpp bool, expand bool) (*bytes.Buffer, error) {
+func GenCfg(name string, cpp bool, expand CfgExpandMode) (*bytes.Buffer, error) {
 	if len(name) == 0 {
 		return nil, NewEmptyStringError("name")
 	}
 	cfg := NewLLCppConfig(name, cpp)
-	if expand {
+	if expand == ExpandMode {
 		expandCFlagsAndLibs(name, cfg)
 	}
 	buf := bytes.NewBuffer([]byte{})

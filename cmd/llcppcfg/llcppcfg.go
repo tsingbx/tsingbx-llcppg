@@ -29,7 +29,15 @@ func main() {
 	if len(flag.Args()) > 0 {
 		name = flag.Arg(0)
 	}
-	buf, err := llcppgcfg.GenCfg(name, cpp, expand)
+
+	fnToCfgExpandMode := func() llcppgcfg.CfgExpandMode {
+		if expand {
+			return llcppgcfg.ExpandMode
+		}
+		return llcppgcfg.NormalMode
+	}
+
+	buf, err := llcppgcfg.GenCfg(name, cpp, fnToCfgExpandMode())
 	if err != nil {
 		log.Fatal(err)
 	}
