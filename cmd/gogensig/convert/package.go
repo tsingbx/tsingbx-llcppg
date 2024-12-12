@@ -307,13 +307,6 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 		return err
 	}
 	p.CollectNameMapping(typedefDecl.Name.Name, name)
-	// todo(zzy): this block will be removed after https://github.com/goplus/llgo/pull/870
-	if obj := p.p.Types.Scope().Lookup(name); obj != nil {
-		// for a typedef ,always appear same name like
-		// typedef struct foo { int a; } foo;
-		// For this typedef, we only need skip this
-		return nil
-	}
 
 	genDecl := p.p.NewTypeDefs()
 	typ, err := p.ToType(typedefDecl.Type)
