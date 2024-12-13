@@ -24,7 +24,7 @@ func init() {
 }
 
 func TestFromTestdata(t *testing.T) {
-	testFromDir(t, "./_testdata", false)
+	testFromDir(t, "./_testdata", false, "openssl")
 }
 
 // test sys type in stdinclude to package
@@ -92,7 +92,7 @@ func TestSysToPkg(t *testing.T) {
 				t.Logf("missing expected type %s (package: %s)", name, exp)
 			}
 		}
-	})
+	}, []string{})
 }
 
 func TestDepPkg(t *testing.T) {
@@ -101,10 +101,10 @@ func TestDepPkg(t *testing.T) {
 	if err != nil {
 		t.Fatal("Getwd failed:", err)
 	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil, []string{})
 }
 
-func testFromDir(t *testing.T, relDir string, gen bool) {
+func testFromDir(t *testing.T, relDir string, gen bool, debugName string) {
 	dir, err := os.Getwd()
 	if err != nil {
 		t.Fatal("Getwd failed:", err)
@@ -119,13 +119,22 @@ func testFromDir(t *testing.T, relDir string, gen bool) {
 		if strings.HasPrefix(name, "_") || strings.HasPrefix(name, ".") {
 			continue
 		}
+
+		if len(debugName) > 0 && name != debugName {
+			continue
+		}
+
 		t.Run(name, func(t *testing.T) {
-			testFrom(t, name, dir+"/"+name, gen, nil)
+			if len(debugName) > 0 {
+				testFrom(t, name, dir+"/"+name, gen, nil, []string{"-v"})
+			} else {
+				testFrom(t, name, dir+"/"+name, gen, nil, []string{})
+			}
 		})
 	}
 }
 
-func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *testing.T, pkg *convert.Package)) {
+func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *testing.T, pkg *convert.Package), llcppsigfetchArgs []string) {
 	confPath := filepath.Join(dir, "conf")
 	cfgPath := filepath.Join(confPath, "llcppg.cfg")
 	symbPath := filepath.Join(confPath, "llcppg.symb.json")
@@ -208,7 +217,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 		t.Fatal(err)
 	}
 
-	bytes, err := config.SigfetchConfig(flagedCfgPath, confPath)
+	bytes, err := config.SigfetchConfig(flagedCfgPath, confPath, llcppsigfetchArgs)
 	if err != nil {
 		t.Fatal(err)
 	}

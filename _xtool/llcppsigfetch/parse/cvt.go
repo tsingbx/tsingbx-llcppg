@@ -232,7 +232,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 	curFile := ct.GetCurFile(cursor)
 
 	name := toStr(cursor.String())
-	ct.logf("visitTop: Cursor: %s\n", name)
+	ct.logf("visitTop: Cursor: %s, Kind:%s\n", name, clang.GoString(cursor.Kind.String()))
 
 	if curFile == nil {
 		return clang.ChildVisit_Continue
@@ -469,7 +469,7 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	defer ct.decIndent()
 	name, kind := getCursorDesc(cursor)
 	mangledName := toStr(cursor.Mangling())
-	ct.logln("ProcessFuncDecl: CursorName:", name, "CursorKind:", kind)
+	ct.logln("ProcessFuncDecl: CursorName:", name, "CursorKind:", kind, "FuncType:", clang.GoString(cursor.Type().String()))
 
 	// function type will only collect return type
 	// ProcessType can't get the field names,will collect in follows
@@ -965,6 +965,7 @@ func buildScopingFromParts(parts []string) ast.Expr {
 			X:      &ast.Ident{Name: part},
 		}
 	}
+
 	return expr
 }
 

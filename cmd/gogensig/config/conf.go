@@ -54,8 +54,8 @@ func SigfetchExtract(file string, isTemp bool, isCPP bool, dir string) ([]byte, 
 	return executeSigfetch(args, dir)
 }
 
-func SigfetchConfig(configFile string, dir string) ([]byte, error) {
-	args := []string{configFile}
+func SigfetchConfig(configFile string, dir string, args []string) ([]byte, error) {
+	args = append(args, configFile)
 	return executeSigfetch(args, dir)
 }
 

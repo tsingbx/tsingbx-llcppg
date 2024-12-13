@@ -1,0 +1,3829 @@
+[{
+		"mangle":	"ASN1_OCTET_STRING_free",
+		"c++":	"ASN1_OCTET_STRING_free(int *)",
+		"go":	"ASN1OCTETSTRINGFree"
+	}, {
+		"mangle":	"ASN1_OCTET_STRING_it",
+		"c++":	"ASN1_OCTET_STRING_it()",
+		"go":	"ASN1OCTETSTRINGIt"
+	}, {
+		"mangle":	"ASN1_item_d2i",
+		"c++":	"ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long, const int *)",
+		"go":	"ASN1ItemD2i"
+	}, {
+		"mangle":	"ASN1_item_free",
+		"c++":	"ASN1_item_free(ASN1_VALUE *, const int *)",
+		"go":	"(*ASN1VALUE).ASN1ItemFree"
+	}, {
+		"mangle":	"ASN1_item_i2d",
+		"c++":	"ASN1_item_i2d(const ASN1_VALUE *, unsigned char **, const int *)",
+		"go":	"(*ASN1VALUE).ASN1ItemI2d"
+	}, {
+		"mangle":	"ASN1_item_new",
+		"c++":	"ASN1_item_new(const int *)",
+		"go":	"ASN1ItemNew"
+	}, {
+		"mangle":	"ASYNC_WAIT_CTX_free",
+		"c++":	"ASYNC_WAIT_CTX_free(ASYNC_WAIT_CTX *)",
+		"go":	"(*ASYNCWAITCTX).ASYNCWAITCTXFree"
+	}, {
+		"mangle":	"ASYNC_WAIT_CTX_get_all_fds",
+		"c++":	"ASYNC_WAIT_CTX_get_all_fds(ASYNC_WAIT_CTX *, int *, size_t *)",
+		"go":	"(*ASYNCWAITCTX).ASYNCWAITCTXGetAllFds"
+	}, {
+		"mangle":	"ASYNC_WAIT_CTX_get_changed_fds",
+		"c++":	"ASYNC_WAIT_CTX_get_changed_fds(ASYNC_WAIT_CTX *, int *, size_t *, int *, size_t *)",
+		"go":	"(*ASYNCWAITCTX).ASYNCWAITCTXGetChangedFds"
+	}, {
+		"mangle":	"ASYNC_WAIT_CTX_get_status",
+		"c++":	"ASYNC_WAIT_CTX_get_status(ASYNC_WAIT_CTX *)",
+		"go":	"(*ASYNCWAITCTX).ASYNCWAITCTXGetStatus"
+	}, {
+		"mangle":	"ASYNC_WAIT_CTX_new",
+		"c++":	"ASYNC_WAIT_CTX_new()",
+		"go":	"ASYNCWAITCTXNew"
+	}, {
+		"mangle":	"ASYNC_WAIT_CTX_set_callback",
+		"c++":	"ASYNC_WAIT_CTX_set_callback(ASYNC_WAIT_CTX *, ASYNC_callback_fn, void *)",
+		"go":	"(*ASYNCWAITCTX).ASYNCWAITCTXSetCallback"
+	}, {
+		"mangle":	"ASYNC_get_current_job",
+		"c++":	"ASYNC_get_current_job()",
+		"go":	"ASYNCGetCurrentJob"
+	}, {
+		"mangle":	"ASYNC_start_job",
+		"c++":	"ASYNC_start_job(ASYNC_JOB **, ASYNC_WAIT_CTX *, int *, int (*)(void *), void *, size_t)",
+		"go":	"ASYNCStartJob"
+	}, {
+		"mangle":	"BIO_ADDR_clear",
+		"c++":	"BIO_ADDR_clear(BIO_ADDR *)",
+		"go":	"(*BIOADDR).BIOADDRClear"
+	}, {
+		"mangle":	"BIO_ADDR_family",
+		"c++":	"BIO_ADDR_family(const BIO_ADDR *)",
+		"go":	"(*BIOADDR).BIOADDRFamily"
+	}, {
+		"mangle":	"BIO_ADDR_free",
+		"c++":	"BIO_ADDR_free(BIO_ADDR *)",
+		"go":	"(*BIOADDR).BIOADDRFree"
+	}, {
+		"mangle":	"BIO_ADDR_new",
+		"c++":	"BIO_ADDR_new()",
+		"go":	"BIOADDRNew"
+	}, {
+		"mangle":	"BIO_callback_ctrl",
+		"c++":	"BIO_callback_ctrl(int *, int, BIO_info_cb *)",
+		"go":	"BIOCallbackCtrl"
+	}, {
+		"mangle":	"BIO_clear_flags",
+		"c++":	"BIO_clear_flags(int *, int)",
+		"go":	"BIOClearFlags"
+	}, {
+		"mangle":	"BIO_copy_next_retry",
+		"c++":	"BIO_copy_next_retry(int *)",
+		"go":	"BIOCopyNextRetry"
+	}, {
+		"mangle":	"BIO_ctrl",
+		"c++":	"BIO_ctrl(int *, int, long, void *)",
+		"go":	"BIOCtrl"
+	}, {
+		"mangle":	"BIO_dump_indent",
+		"c++":	"BIO_dump_indent(int *, const void *, int, int)",
+		"go":	"BIODumpIndent"
+	}, {
+		"mangle":	"BIO_err_is_non_fatal",
+		"c++":	"BIO_err_is_non_fatal(unsigned int)",
+		"go":	"BIOErrIsNonFatal"
+	}, {
+		"mangle":	"BIO_f_buffer",
+		"c++":	"BIO_f_buffer()",
+		"go":	"BIOFBuffer"
+	}, {
+		"mangle":	"BIO_find_type",
+		"c++":	"BIO_find_type(int *, int)",
+		"go":	"BIOFindType"
+	}, {
+		"mangle":	"BIO_free",
+		"c++":	"BIO_free(int *)",
+		"go":	"BIOFree"
+	}, {
+		"mangle":	"BIO_free_all",
+		"c++":	"BIO_free_all(int *)",
+		"go":	"BIOFreeAll"
+	}, {
+		"mangle":	"BIO_get_data",
+		"c++":	"BIO_get_data(int *)",
+		"go":	"BIOGetData"
+	}, {
+		"mangle":	"BIO_get_init",
+		"c++":	"BIO_get_init(int *)",
+		"go":	"BIOGetInit"
+	}, {
+		"mangle":	"BIO_get_retry_reason",
+		"c++":	"BIO_get_retry_reason(int *)",
+		"go":	"BIOGetRetryReason"
+	}, {
+		"mangle":	"BIO_get_rpoll_descriptor",
+		"c++":	"BIO_get_rpoll_descriptor(int *, int *)",
+		"go":	"BIOGetRpollDescriptor"
+	}, {
+		"mangle":	"BIO_get_shutdown",
+		"c++":	"BIO_get_shutdown(int *)",
+		"go":	"BIOGetShutdown"
+	}, {
+		"mangle":	"BIO_get_wpoll_descriptor",
+		"c++":	"BIO_get_wpoll_descriptor(int *, int *)",
+		"go":	"BIOGetWpollDescriptor"
+	}, {
+		"mangle":	"BIO_indent",
+		"c++":	"BIO_indent(int *, int, int)",
+		"go":	"BIOIndent"
+	}, {
+		"mangle":	"BIO_int_ctrl",
+		"c++":	"BIO_int_ctrl(int *, int, long, int)",
+		"go":	"BIOIntCtrl"
+	}, {
+		"mangle":	"BIO_method_type",
+		"c++":	"BIO_method_type(const int *)",
+		"go":	"BIOMethodType"
+	}, {
+		"mangle":	"BIO_new",
+		"c++":	"BIO_new(const BIO_METHOD *)",
+		"go":	"(*BIOMETHOD).BIONew"
+	}, {
+		"mangle":	"BIO_new_file",
+		"c++":	"BIO_new_file(const char *, const char *)",
+		"go":	"BIONewFile"
+	}, {
+		"mangle":	"BIO_new_fp",
+		"c++":	"BIO_new_fp(FILE *, int)",
+		"go":	"BIONewFp"
+	}, {
+		"mangle":	"BIO_next",
+		"c++":	"BIO_next(int *)",
+		"go":	"BIONext"
+	}, {
+		"mangle":	"BIO_pop",
+		"c++":	"BIO_pop(int *)",
+		"go":	"BIOPop"
+	}, {
+		"mangle":	"BIO_printf",
+		"c++":	"BIO_printf(int *, const char *, ...)",
+		"go":	"BIOPrintf"
+	}, {
+		"mangle":	"BIO_push",
+		"c++":	"BIO_push(int *, int *)",
+		"go":	"BIOPush"
+	}, {
+		"mangle":	"BIO_puts",
+		"c++":	"BIO_puts(int *, const char *)",
+		"go":	"BIOPuts"
+	}, {
+		"mangle":	"BIO_read",
+		"c++":	"BIO_read(int *, void *, int)",
+		"go":	"BIORead"
+	}, {
+		"mangle":	"BIO_recvmmsg",
+		"c++":	"BIO_recvmmsg(int *, int *, size_t, size_t, int, size_t *)",
+		"go":	"BIORecvmmsg"
+	}, {
+		"mangle":	"BIO_s_connect",
+		"c++":	"BIO_s_connect()",
+		"go":	"BIOSConnect"
+	}, {
+		"mangle":	"BIO_s_datagram",
+		"c++":	"BIO_s_datagram()",
+		"go":	"BIOSDatagram"
+	}, {
+		"mangle":	"BIO_s_dgram_mem",
+		"c++":	"BIO_s_dgram_mem()",
+		"go":	"BIOSDgramMem"
+	}, {
+		"mangle":	"BIO_s_file",
+		"c++":	"BIO_s_file()",
+		"go":	"BIOSFile"
+	}, {
+		"mangle":	"BIO_s_mem",
+		"c++":	"BIO_s_mem()",
+		"go":	"BIOSMem"
+	}, {
+		"mangle":	"BIO_s_null",
+		"c++":	"BIO_s_null()",
+		"go":	"BIOSNull"
+	}, {
+		"mangle":	"BIO_s_socket",
+		"c++":	"BIO_s_socket()",
+		"go":	"BIOSSocket"
+	}, {
+		"mangle":	"BIO_sendmmsg",
+		"c++":	"BIO_sendmmsg(int *, int *, size_t, size_t, int, size_t *)",
+		"go":	"BIOSendmmsg"
+	}, {
+		"mangle":	"BIO_set_data",
+		"c++":	"BIO_set_data(int *, void *)",
+		"go":	"BIOSetData"
+	}, {
+		"mangle":	"BIO_set_flags",
+		"c++":	"BIO_set_flags(int *, int)",
+		"go":	"BIOSetFlags"
+	}, {
+		"mangle":	"BIO_set_init",
+		"c++":	"BIO_set_init(int *, int)",
+		"go":	"BIOSetInit"
+	}, {
+		"mangle":	"BIO_set_next",
+		"c++":	"BIO_set_next(int *, int *)",
+		"go":	"BIOSetNext"
+	}, {
+		"mangle":	"BIO_set_retry_reason",
+		"c++":	"BIO_set_retry_reason(int *, int)",
+		"go":	"BIOSetRetryReason"
+	}, {
+		"mangle":	"BIO_set_shutdown",
+		"c++":	"BIO_set_shutdown(int *, int)",
+		"go":	"BIOSetShutdown"
+	}, {
+		"mangle":	"BIO_snprintf",
+		"c++":	"BIO_snprintf(char *, size_t, const char *, ...)",
+		"go":	"BIOSnprintf"
+	}, {
+		"mangle":	"BIO_ssl_copy_session_id",
+		"c++":	"BIO_ssl_copy_session_id(int *, int *)",
+		"go":	"BIOSslCopySessionId"
+	}, {
+		"mangle":	"BIO_ssl_shutdown",
+		"c++":	"BIO_ssl_shutdown(int *)",
+		"go":	"BIOSslShutdown"
+	}, {
+		"mangle":	"BIO_test_flags",
+		"c++":	"BIO_test_flags(const int *, int)",
+		"go":	"BIOTestFlags"
+	}, {
+		"mangle":	"BIO_up_ref",
+		"c++":	"BIO_up_ref(int *)",
+		"go":	"BIOUpRef"
+	}, {
+		"mangle":	"BIO_write",
+		"c++":	"BIO_write(int *, const void *, int)",
+		"go":	"BIOWrite"
+	}, {
+		"mangle":	"BIO_write_ex",
+		"c++":	"BIO_write_ex(int *, const void *, size_t, size_t *)",
+		"go":	"BIOWriteEx"
+	}, {
+		"mangle":	"BN_bin2bn",
+		"c++":	"BN_bin2bn(const unsigned char *, int, int *)",
+		"go":	"BNBin2bn"
+	}, {
+		"mangle":	"BN_bn2bin",
+		"c++":	"BN_bn2bin(const int *, unsigned char *)",
+		"go":	"BNBn2bin"
+	}, {
+		"mangle":	"BN_clear_free",
+		"c++":	"BN_clear_free(int *)",
+		"go":	"BNClearFree"
+	}, {
+		"mangle":	"BN_copy",
+		"c++":	"BN_copy(int *, const int *)",
+		"go":	"BNCopy"
+	}, {
+		"mangle":	"BN_dup",
+		"c++":	"BN_dup(const int *)",
+		"go":	"BNDup"
+	}, {
+		"mangle":	"BN_free",
+		"c++":	"BN_free(int *)",
+		"go":	"BNFree"
+	}, {
+		"mangle":	"BN_get_rfc2409_prime_1024",
+		"c++":	"BN_get_rfc2409_prime_1024(int *)",
+		"go":	"BNGetRfc2409Prime1024"
+	}, {
+		"mangle":	"BN_get_rfc3526_prime_2048",
+		"c++":	"BN_get_rfc3526_prime_2048(int *)",
+		"go":	"BNGetRfc3526Prime2048"
+	}, {
+		"mangle":	"BN_get_rfc3526_prime_3072",
+		"c++":	"BN_get_rfc3526_prime_3072(int *)",
+		"go":	"BNGetRfc3526Prime3072"
+	}, {
+		"mangle":	"BN_get_rfc3526_prime_4096",
+		"c++":	"BN_get_rfc3526_prime_4096(int *)",
+		"go":	"BNGetRfc3526Prime4096"
+	}, {
+		"mangle":	"BN_get_rfc3526_prime_8192",
+		"c++":	"BN_get_rfc3526_prime_8192(int *)",
+		"go":	"BNGetRfc3526Prime8192"
+	}, {
+		"mangle":	"BN_is_zero",
+		"c++":	"BN_is_zero(const int *)",
+		"go":	"BNIsZero"
+	}, {
+		"mangle":	"BN_num_bits",
+		"c++":	"BN_num_bits(const int *)",
+		"go":	"BNNumBits"
+	}, {
+		"mangle":	"BN_ucmp",
+		"c++":	"BN_ucmp(const int *, const int *)",
+		"go":	"BNUcmp"
+	}, {
+		"mangle":	"BUF_MEM_free",
+		"c++":	"BUF_MEM_free(int *)",
+		"go":	"BUFMEMFree"
+	}, {
+		"mangle":	"BUF_MEM_grow",
+		"c++":	"BUF_MEM_grow(int *, size_t)",
+		"go":	"BUFMEMGrow"
+	}, {
+		"mangle":	"BUF_MEM_grow_clean",
+		"c++":	"BUF_MEM_grow_clean(int *, size_t)",
+		"go":	"BUFMEMGrowClean"
+	}, {
+		"mangle":	"BUF_MEM_new",
+		"c++":	"BUF_MEM_new()",
+		"go":	"BUFMEMNew"
+	}, {
+		"mangle":	"BUF_reverse",
+		"c++":	"BUF_reverse(unsigned char *, const unsigned char *, size_t)",
+		"go":	"BUFReverse"
+	}, {
+		"mangle":	"COMP_CTX_free",
+		"c++":	"COMP_CTX_free(int *)",
+		"go":	"COMPCTXFree"
+	}, {
+		"mangle":	"COMP_CTX_get_method",
+		"c++":	"COMP_CTX_get_method(const int *)",
+		"go":	"COMPCTXGetMethod"
+	}, {
+		"mangle":	"COMP_CTX_new",
+		"c++":	"COMP_CTX_new(int *)",
+		"go":	"COMPCTXNew"
+	}, {
+		"mangle":	"COMP_compress_block",
+		"c++":	"COMP_compress_block(int *, unsigned char *, int, unsigned char *, int)",
+		"go":	"COMPCompressBlock"
+	}, {
+		"mangle":	"COMP_expand_block",
+		"c++":	"COMP_expand_block(int *, unsigned char *, int, unsigned char *, int)",
+		"go":	"COMPExpandBlock"
+	}, {
+		"mangle":	"COMP_get_name",
+		"c++":	"COMP_get_name(const int *)",
+		"go":	"COMPGetName"
+	}, {
+		"mangle":	"COMP_get_type",
+		"c++":	"COMP_get_type(const int *)",
+		"go":	"COMPGetType"
+	}, {
+		"mangle":	"COMP_zlib",
+		"c++":	"COMP_zlib()",
+		"go":	"COMPZlib"
+	}, {
+		"mangle":	"CONF_parse_list",
+		"c++":	"CONF_parse_list(const char *, int, int, int (*)(const char *, int, void *), void *)",
+		"go":	"CONFParseList"
+	}, {
+		"mangle":	"CRYPTO_THREAD_lock_free",
+		"c++":	"CRYPTO_THREAD_lock_free(CRYPTO_RWLOCK *)",
+		"go":	"(*CRYPTORWLOCK).CRYPTOTHREADLockFree"
+	}, {
+		"mangle":	"CRYPTO_THREAD_lock_new",
+		"c++":	"CRYPTO_THREAD_lock_new()",
+		"go":	"CRYPTOTHREADLockNew"
+	}, {
+		"mangle":	"CRYPTO_THREAD_read_lock",
+		"c++":	"CRYPTO_THREAD_read_lock(CRYPTO_RWLOCK *)",
+		"go":	"(*CRYPTORWLOCK).CRYPTOTHREADReadLock"
+	}, {
+		"mangle":	"CRYPTO_THREAD_run_once",
+		"c++":	"CRYPTO_THREAD_run_once(CRYPTO_ONCE *, void (*)(void))",
+		"go":	"(*CRYPTOONCE).CRYPTOTHREADRunOnce"
+	}, {
+		"mangle":	"CRYPTO_THREAD_unlock",
+		"c++":	"CRYPTO_THREAD_unlock(CRYPTO_RWLOCK *)",
+		"go":	"(*CRYPTORWLOCK).CRYPTOTHREADUnlock"
+	}, {
+		"mangle":	"CRYPTO_THREAD_write_lock",
+		"c++":	"CRYPTO_THREAD_write_lock(CRYPTO_RWLOCK *)",
+		"go":	"(*CRYPTORWLOCK).CRYPTOTHREADWriteLock"
+	}, {
+		"mangle":	"CRYPTO_clear_free",
+		"c++":	"CRYPTO_clear_free(void *, size_t, const char *, int)",
+		"go":	"CRYPTOClearFree"
+	}, {
+		"mangle":	"CRYPTO_dup_ex_data",
+		"c++":	"CRYPTO_dup_ex_data(int, int *, const int *)",
+		"go":	"CRYPTODupExData"
+	}, {
+		"mangle":	"CRYPTO_free",
+		"c++":	"CRYPTO_free(void *, const char *, int)",
+		"go":	"CRYPTOFree"
+	}, {
+		"mangle":	"CRYPTO_free_ex_data",
+		"c++":	"CRYPTO_free_ex_data(int, void *, int *)",
+		"go":	"CRYPTOFreeExData"
+	}, {
+		"mangle":	"CRYPTO_get_ex_data",
+		"c++":	"CRYPTO_get_ex_data(const int *, int)",
+		"go":	"CRYPTOGetExData"
+	}, {
+		"mangle":	"CRYPTO_get_ex_new_index",
+		"c++":	"CRYPTO_get_ex_new_index(int, long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *, CRYPTO_EX_free *)",
+		"go":	"CRYPTOGetExNewIndex"
+	}, {
+		"mangle":	"CRYPTO_malloc",
+		"c++":	"CRYPTO_malloc(size_t, const char *, int)",
+		"go":	"CRYPTOMalloc"
+	}, {
+		"mangle":	"CRYPTO_memcmp",
+		"c++":	"CRYPTO_memcmp(const void *, const void *, size_t)",
+		"go":	"CRYPTOMemcmp"
+	}, {
+		"mangle":	"CRYPTO_memdup",
+		"c++":	"CRYPTO_memdup(const void *, size_t, const char *, int)",
+		"go":	"CRYPTOMemdup"
+	}, {
+		"mangle":	"CRYPTO_new_ex_data",
+		"c++":	"CRYPTO_new_ex_data(int, void *, int *)",
+		"go":	"CRYPTONewExData"
+	}, {
+		"mangle":	"CRYPTO_realloc",
+		"c++":	"CRYPTO_realloc(void *, size_t, const char *, int)",
+		"go":	"CRYPTORealloc"
+	}, {
+		"mangle":	"CRYPTO_secure_free",
+		"c++":	"CRYPTO_secure_free(void *, const char *, int)",
+		"go":	"CRYPTOSecureFree"
+	}, {
+		"mangle":	"CRYPTO_secure_zalloc",
+		"c++":	"CRYPTO_secure_zalloc(size_t, const char *, int)",
+		"go":	"CRYPTOSecureZalloc"
+	}, {
+		"mangle":	"CRYPTO_set_ex_data",
+		"c++":	"CRYPTO_set_ex_data(int *, int, void *)",
+		"go":	"CRYPTOSetExData"
+	}, {
+		"mangle":	"CRYPTO_strdup",
+		"c++":	"CRYPTO_strdup(const char *, const char *, int)",
+		"go":	"CRYPTOStrdup"
+	}, {
+		"mangle":	"CRYPTO_strndup",
+		"c++":	"CRYPTO_strndup(const char *, size_t, const char *, int)",
+		"go":	"CRYPTOStrndup"
+	}, {
+		"mangle":	"CRYPTO_zalloc",
+		"c++":	"CRYPTO_zalloc(size_t, const char *, int)",
+		"go":	"CRYPTOZalloc"
+	}, {
+		"mangle":	"CTLOG_STORE_free",
+		"c++":	"CTLOG_STORE_free(int *)",
+		"go":	"CTLOGSTOREFree"
+	}, {
+		"mangle":	"CTLOG_STORE_load_default_file",
+		"c++":	"CTLOG_STORE_load_default_file(int *)",
+		"go":	"CTLOGSTORELoadDefaultFile"
+	}, {
+		"mangle":	"CTLOG_STORE_load_file",
+		"c++":	"CTLOG_STORE_load_file(int *, const char *)",
+		"go":	"CTLOGSTORELoadFile"
+	}, {
+		"mangle":	"CTLOG_STORE_new_ex",
+		"c++":	"CTLOG_STORE_new_ex(int *, const char *)",
+		"go":	"CTLOGSTORENewEx"
+	}, {
+		"mangle":	"CT_POLICY_EVAL_CTX_free",
+		"c++":	"CT_POLICY_EVAL_CTX_free(int *)",
+		"go":	"CTPOLICYEVALCTXFree"
+	}, {
+		"mangle":	"CT_POLICY_EVAL_CTX_new_ex",
+		"c++":	"CT_POLICY_EVAL_CTX_new_ex(int *, const char *)",
+		"go":	"CTPOLICYEVALCTXNewEx"
+	}, {
+		"mangle":	"CT_POLICY_EVAL_CTX_set1_cert",
+		"c++":	"CT_POLICY_EVAL_CTX_set1_cert(int *, int *)",
+		"go":	"CTPOLICYEVALCTXSet1Cert"
+	}, {
+		"mangle":	"CT_POLICY_EVAL_CTX_set1_issuer",
+		"c++":	"CT_POLICY_EVAL_CTX_set1_issuer(int *, int *)",
+		"go":	"CTPOLICYEVALCTXSet1Issuer"
+	}, {
+		"mangle":	"CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE",
+		"c++":	"CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE(int *, int *)",
+		"go":	"CTPOLICYEVALCTXSetSharedCTLOGSTORE"
+	}, {
+		"mangle":	"CT_POLICY_EVAL_CTX_set_time",
+		"c++":	"CT_POLICY_EVAL_CTX_set_time(int *, int)",
+		"go":	"CTPOLICYEVALCTXSetTime"
+	}, {
+		"mangle":	"DTLS_set_timer_cb",
+		"c++":	"DTLS_set_timer_cb(int *, DTLS_timer_cb)",
+		"go":	"DTLSSetTimerCb"
+	}, {
+		"mangle":	"DTLSv1_2_client_method",
+		"c++":	"DTLSv1_2_client_method()",
+		"go":	"DTLSv12ClientMethod"
+	}, {
+		"mangle":	"DTLSv1_2_method",
+		"c++":	"DTLSv1_2_method()",
+		"go":	"DTLSv12Method"
+	}, {
+		"mangle":	"DTLSv1_2_server_method",
+		"c++":	"DTLSv1_2_server_method()",
+		"go":	"DTLSv12ServerMethod"
+	}, {
+		"mangle":	"DTLSv1_client_method",
+		"c++":	"DTLSv1_client_method()",
+		"go":	"DTLSv1ClientMethod"
+	}, {
+		"mangle":	"DTLSv1_listen",
+		"c++":	"DTLSv1_listen(int *, int *)",
+		"go":	"DTLSv1Listen"
+	}, {
+		"mangle":	"DTLSv1_method",
+		"c++":	"DTLSv1_method()",
+		"go":	"DTLSv1Method"
+	}, {
+		"mangle":	"DTLSv1_server_method",
+		"c++":	"DTLSv1_server_method()",
+		"go":	"DTLSv1ServerMethod"
+	}, {
+		"mangle":	"EC_GROUP_get_curve_name",
+		"c++":	"EC_GROUP_get_curve_name(const EC_GROUP *)",
+		"go":	"(*ECGROUP).ECGROUPGetCurveName"
+	}, {
+		"mangle":	"ENGINE_finish",
+		"c++":	"ENGINE_finish(int *)",
+		"go":	"ENGINEFinish"
+	}, {
+		"mangle":	"ENGINE_init",
+		"c++":	"ENGINE_init(int *)",
+		"go":	"ENGINEInit"
+	}, {
+		"mangle":	"ENGINE_load_ssl_client_cert",
+		"c++":	"ENGINE_load_ssl_client_cert(int *, int *, int (*)())",
+		"go":	"ENGINELoadSslClientCert"
+	}, {
+		"mangle":	"ERR_clear_error",
+		"c++":	"ERR_clear_error()",
+		"go":	"ERRClearError"
+	}, {
+		"mangle":	"ERR_clear_last_mark",
+		"c++":	"ERR_clear_last_mark()",
+		"go":	"ERRClearLastMark"
+	}, {
+		"mangle":	"ERR_count_to_mark",
+		"c++":	"ERR_count_to_mark()",
+		"go":	"ERRCountToMark"
+	}, {
+		"mangle":	"ERR_load_SSL_strings",
+		"c++":	"ERR_load_SSL_strings()",
+		"go":	"ERRLoadSSLStrings"
+	}, {
+		"mangle":	"ERR_load_strings_const",
+		"c++":	"ERR_load_strings_const(const ERR_STRING_DATA *)",
+		"go":	"(*ERRSTRINGDATA).ERRLoadStringsConst"
+	}, {
+		"mangle":	"ERR_new",
+		"c++":	"ERR_new()",
+		"go":	"ERRNew"
+	}, {
+		"mangle":	"ERR_peek_error",
+		"c++":	"ERR_peek_error()",
+		"go":	"ERRPeekError"
+	}, {
+		"mangle":	"ERR_peek_last_error",
+		"c++":	"ERR_peek_last_error()",
+		"go":	"ERRPeekLastError"
+	}, {
+		"mangle":	"ERR_pop_to_mark",
+		"c++":	"ERR_pop_to_mark()",
+		"go":	"ERRPopToMark"
+	}, {
+		"mangle":	"ERR_reason_error_string",
+		"c++":	"ERR_reason_error_string(unsigned long)",
+		"go":	"ERRReasonErrorString"
+	}, {
+		"mangle":	"ERR_set_debug",
+		"c++":	"ERR_set_debug(const char *, int, const char *)",
+		"go":	"ERRSetDebug"
+	}, {
+		"mangle":	"ERR_set_error",
+		"c++":	"ERR_set_error(int, int, const char *, ...)",
+		"go":	"ERRSetError"
+	}, {
+		"mangle":	"ERR_set_mark",
+		"c++":	"ERR_set_mark()",
+		"go":	"ERRSetMark"
+	}, {
+		"mangle":	"ERR_vset_error",
+		"c++":	"ERR_vset_error(int, int, const char *, struct __va_list_tag *)",
+		"go":	"ERRVsetError"
+	}, {
+		"mangle":	"EVP_CIPHER_CTX_ctrl",
+		"c++":	"EVP_CIPHER_CTX_ctrl(int *, int, int, void *)",
+		"go":	"EVPCIPHERCTXCtrl"
+	}, {
+		"mangle":	"EVP_CIPHER_CTX_free",
+		"c++":	"EVP_CIPHER_CTX_free(int *)",
+		"go":	"EVPCIPHERCTXFree"
+	}, {
+		"mangle":	"EVP_CIPHER_CTX_get0_cipher",
+		"c++":	"EVP_CIPHER_CTX_get0_cipher(const int *)",
+		"go":	"EVPCIPHERCTXGet0Cipher"
+	}, {
+		"mangle":	"EVP_CIPHER_CTX_get_block_size",
+		"c++":	"EVP_CIPHER_CTX_get_block_size(const int *)",
+		"go":	"EVPCIPHERCTXGetBlockSize"
+	}, {
+		"mangle":	"EVP_CIPHER_CTX_get_iv_length",
+		"c++":	"EVP_CIPHER_CTX_get_iv_length(const int *)",
+		"go":	"EVPCIPHERCTXGetIvLength"
+	}, {
+		"mangle":	"EVP_CIPHER_CTX_get_params",
+		"c++":	"EVP_CIPHER_CTX_get_params(int *, int *)",
+		"go":	"EVPCIPHERCTXGetParams"
+	}, {
+		"mangle":	"EVP_CIPHER_CTX_new",
+		"c++":	"EVP_CIPHER_CTX_new()",
+		"go":	"EVPCIPHERCTXNew"
+	}, {
+		"mangle":	"EVP_CIPHER_CTX_set_params",
+		"c++":	"EVP_CIPHER_CTX_set_params(int *, const int *)",
+		"go":	"EVPCIPHERCTXSetParams"
+	}, {
+		"mangle":	"EVP_CIPHER_fetch",
+		"c++":	"EVP_CIPHER_fetch(int *, const char *, const char *)",
+		"go":	"EVPCIPHERFetch"
+	}, {
+		"mangle":	"EVP_CIPHER_free",
+		"c++":	"EVP_CIPHER_free(int *)",
+		"go":	"EVPCIPHERFree"
+	}, {
+		"mangle":	"EVP_CIPHER_get0_provider",
+		"c++":	"EVP_CIPHER_get0_provider(const int *)",
+		"go":	"EVPCIPHERGet0Provider"
+	}, {
+		"mangle":	"EVP_CIPHER_get_block_size",
+		"c++":	"EVP_CIPHER_get_block_size(const int *)",
+		"go":	"EVPCIPHERGetBlockSize"
+	}, {
+		"mangle":	"EVP_CIPHER_get_flags",
+		"c++":	"EVP_CIPHER_get_flags(const int *)",
+		"go":	"EVPCIPHERGetFlags"
+	}, {
+		"mangle":	"EVP_CIPHER_get_iv_length",
+		"c++":	"EVP_CIPHER_get_iv_length(const int *)",
+		"go":	"EVPCIPHERGetIvLength"
+	}, {
+		"mangle":	"EVP_CIPHER_get_key_length",
+		"c++":	"EVP_CIPHER_get_key_length(const int *)",
+		"go":	"EVPCIPHERGetKeyLength"
+	}, {
+		"mangle":	"EVP_CIPHER_get_mode",
+		"c++":	"EVP_CIPHER_get_mode(const int *)",
+		"go":	"EVPCIPHERGetMode"
+	}, {
+		"mangle":	"EVP_CIPHER_is_a",
+		"c++":	"EVP_CIPHER_is_a(const int *, const char *)",
+		"go":	"EVPCIPHERIsA"
+	}, {
+		"mangle":	"EVP_CIPHER_up_ref",
+		"c++":	"EVP_CIPHER_up_ref(int *)",
+		"go":	"EVPCIPHERUpRef"
+	}, {
+		"mangle":	"EVP_Cipher",
+		"c++":	"EVP_Cipher(int *, unsigned char *, const unsigned char *, unsigned int)",
+		"go":	"EVPCipher"
+	}, {
+		"mangle":	"EVP_CipherFinal_ex",
+		"c++":	"EVP_CipherFinal_ex(int *, unsigned char *, int *)",
+		"go":	"EVPCipherFinalEx"
+	}, {
+		"mangle":	"EVP_CipherInit_ex",
+		"c++":	"EVP_CipherInit_ex(int *, const int *, int *, const unsigned char *, const unsigned char *, int)",
+		"go":	"EVPCipherInitEx"
+	}, {
+		"mangle":	"EVP_CipherUpdate",
+		"c++":	"EVP_CipherUpdate(int *, unsigned char *, int *, const unsigned char *, int)",
+		"go":	"EVPCipherUpdate"
+	}, {
+		"mangle":	"EVP_DecryptFinal",
+		"c++":	"EVP_DecryptFinal(int *, unsigned char *, int *)",
+		"go":	"EVPDecryptFinal"
+	}, {
+		"mangle":	"EVP_DecryptInit_ex",
+		"c++":	"EVP_DecryptInit_ex(int *, const int *, int *, const unsigned char *, const unsigned char *)",
+		"go":	"EVPDecryptInitEx"
+	}, {
+		"mangle":	"EVP_DecryptUpdate",
+		"c++":	"EVP_DecryptUpdate(int *, unsigned char *, int *, const unsigned char *, int)",
+		"go":	"EVPDecryptUpdate"
+	}, {
+		"mangle":	"EVP_Digest",
+		"c++":	"EVP_Digest(const void *, size_t, unsigned char *, unsigned int *, const int *, int *)",
+		"go":	"EVPDigest"
+	}, {
+		"mangle":	"EVP_DigestFinal",
+		"c++":	"EVP_DigestFinal(int *, unsigned char *, unsigned int *)",
+		"go":	"EVPDigestFinal"
+	}, {
+		"mangle":	"EVP_DigestFinal_ex",
+		"c++":	"EVP_DigestFinal_ex(int *, unsigned char *, unsigned int *)",
+		"go":	"EVPDigestFinalEx"
+	}, {
+		"mangle":	"EVP_DigestInit",
+		"c++":	"EVP_DigestInit(int *, const int *)",
+		"go":	"EVPDigestInit"
+	}, {
+		"mangle":	"EVP_DigestInit_ex",
+		"c++":	"EVP_DigestInit_ex(int *, const int *, int *)",
+		"go":	"EVPDigestInitEx"
+	}, {
+		"mangle":	"EVP_DigestSign",
+		"c++":	"EVP_DigestSign(int *, unsigned char *, size_t *, const unsigned char *, size_t)",
+		"go":	"EVPDigestSign"
+	}, {
+		"mangle":	"EVP_DigestSignFinal",
+		"c++":	"EVP_DigestSignFinal(int *, unsigned char *, size_t *)",
+		"go":	"EVPDigestSignFinal"
+	}, {
+		"mangle":	"EVP_DigestSignInit_ex",
+		"c++":	"EVP_DigestSignInit_ex(int *, int **, const char *, int *, const char *, int *, const int *)",
+		"go":	"EVPDigestSignInitEx"
+	}, {
+		"mangle":	"EVP_DigestSignUpdate",
+		"c++":	"EVP_DigestSignUpdate(int *, const void *, size_t)",
+		"go":	"EVPDigestSignUpdate"
+	}, {
+		"mangle":	"EVP_DigestUpdate",
+		"c++":	"EVP_DigestUpdate(int *, const void *, size_t)",
+		"go":	"EVPDigestUpdate"
+	}, {
+		"mangle":	"EVP_DigestVerify",
+		"c++":	"EVP_DigestVerify(int *, const unsigned char *, size_t, const unsigned char *, size_t)",
+		"go":	"EVPDigestVerify"
+	}, {
+		"mangle":	"EVP_DigestVerifyFinal",
+		"c++":	"EVP_DigestVerifyFinal(int *, const unsigned char *, size_t)",
+		"go":	"EVPDigestVerifyFinal"
+	}, {
+		"mangle":	"EVP_DigestVerifyInit_ex",
+		"c++":	"EVP_DigestVerifyInit_ex(int *, int **, const char *, int *, const char *, int *, const int *)",
+		"go":	"EVPDigestVerifyInitEx"
+	}, {
+		"mangle":	"EVP_DigestVerifyUpdate",
+		"c++":	"EVP_DigestVerifyUpdate(int *, const void *, size_t)",
+		"go":	"EVPDigestVerifyUpdate"
+	}, {
+		"mangle":	"EVP_EncryptFinal",
+		"c++":	"EVP_EncryptFinal(int *, unsigned char *, int *)",
+		"go":	"EVPEncryptFinal"
+	}, {
+		"mangle":	"EVP_EncryptInit_ex",
+		"c++":	"EVP_EncryptInit_ex(int *, const int *, int *, const unsigned char *, const unsigned char *)",
+		"go":	"EVPEncryptInitEx"
+	}, {
+		"mangle":	"EVP_EncryptInit_ex2",
+		"c++":	"EVP_EncryptInit_ex2(int *, const int *, const unsigned char *, const unsigned char *, const int *)",
+		"go":	"EVPEncryptInitEx2"
+	}, {
+		"mangle":	"EVP_EncryptUpdate",
+		"c++":	"EVP_EncryptUpdate(int *, unsigned char *, int *, const unsigned char *, int)",
+		"go":	"EVPEncryptUpdate"
+	}, {
+		"mangle":	"EVP_KDF_CTX_free",
+		"c++":	"EVP_KDF_CTX_free(int *)",
+		"go":	"EVPKDFCTXFree"
+	}, {
+		"mangle":	"EVP_KDF_CTX_new",
+		"c++":	"EVP_KDF_CTX_new(int *)",
+		"go":	"EVPKDFCTXNew"
+	}, {
+		"mangle":	"EVP_KDF_derive",
+		"c++":	"EVP_KDF_derive(int *, unsigned char *, size_t, const int *)",
+		"go":	"EVPKDFDerive"
+	}, {
+		"mangle":	"EVP_KDF_fetch",
+		"c++":	"EVP_KDF_fetch(int *, const char *, const char *)",
+		"go":	"EVPKDFFetch"
+	}, {
+		"mangle":	"EVP_KDF_free",
+		"c++":	"EVP_KDF_free(int *)",
+		"go":	"EVPKDFFree"
+	}, {
+		"mangle":	"EVP_KEYEXCH_fetch",
+		"c++":	"EVP_KEYEXCH_fetch(int *, const char *, const char *)",
+		"go":	"EVPKEYEXCHFetch"
+	}, {
+		"mangle":	"EVP_KEYEXCH_free",
+		"c++":	"EVP_KEYEXCH_free(int *)",
+		"go":	"EVPKEYEXCHFree"
+	}, {
+		"mangle":	"EVP_KEYMGMT_fetch",
+		"c++":	"EVP_KEYMGMT_fetch(int *, const char *, const char *)",
+		"go":	"EVPKEYMGMTFetch"
+	}, {
+		"mangle":	"EVP_KEYMGMT_free",
+		"c++":	"EVP_KEYMGMT_free(int *)",
+		"go":	"EVPKEYMGMTFree"
+	}, {
+		"mangle":	"EVP_KEYMGMT_get0_provider",
+		"c++":	"EVP_KEYMGMT_get0_provider(const int *)",
+		"go":	"EVPKEYMGMTGet0Provider"
+	}, {
+		"mangle":	"EVP_MAC_CTX_free",
+		"c++":	"EVP_MAC_CTX_free(int *)",
+		"go":	"EVPMACCTXFree"
+	}, {
+		"mangle":	"EVP_MAC_CTX_get_mac_size",
+		"c++":	"EVP_MAC_CTX_get_mac_size(int *)",
+		"go":	"EVPMACCTXGetMacSize"
+	}, {
+		"mangle":	"EVP_MAC_CTX_new",
+		"c++":	"EVP_MAC_CTX_new(int *)",
+		"go":	"EVPMACCTXNew"
+	}, {
+		"mangle":	"EVP_MAC_fetch",
+		"c++":	"EVP_MAC_fetch(int *, const char *, const char *)",
+		"go":	"EVPMACFetch"
+	}, {
+		"mangle":	"EVP_MAC_final",
+		"c++":	"EVP_MAC_final(int *, unsigned char *, size_t *, size_t)",
+		"go":	"EVPMACFinal"
+	}, {
+		"mangle":	"EVP_MAC_free",
+		"c++":	"EVP_MAC_free(int *)",
+		"go":	"EVPMACFree"
+	}, {
+		"mangle":	"EVP_MAC_init",
+		"c++":	"EVP_MAC_init(int *, const unsigned char *, size_t, const int *)",
+		"go":	"EVPMACInit"
+	}, {
+		"mangle":	"EVP_MAC_update",
+		"c++":	"EVP_MAC_update(int *, const unsigned char *, size_t)",
+		"go":	"EVPMACUpdate"
+	}, {
+		"mangle":	"EVP_MD_CTX_copy",
+		"c++":	"EVP_MD_CTX_copy(int *, const int *)",
+		"go":	"EVPMDCTXCopy"
+	}, {
+		"mangle":	"EVP_MD_CTX_copy_ex",
+		"c++":	"EVP_MD_CTX_copy_ex(int *, const int *)",
+		"go":	"EVPMDCTXCopyEx"
+	}, {
+		"mangle":	"EVP_MD_CTX_ctrl",
+		"c++":	"EVP_MD_CTX_ctrl(int *, int, int, void *)",
+		"go":	"EVPMDCTXCtrl"
+	}, {
+		"mangle":	"EVP_MD_CTX_free",
+		"c++":	"EVP_MD_CTX_free(int *)",
+		"go":	"EVPMDCTXFree"
+	}, {
+		"mangle":	"EVP_MD_CTX_get0_md",
+		"c++":	"EVP_MD_CTX_get0_md(const int *)",
+		"go":	"EVPMDCTXGet0Md"
+	}, {
+		"mangle":	"EVP_MD_CTX_get_pkey_ctx",
+		"c++":	"EVP_MD_CTX_get_pkey_ctx(const int *)",
+		"go":	"EVPMDCTXGetPkeyCtx"
+	}, {
+		"mangle":	"EVP_MD_CTX_new",
+		"c++":	"EVP_MD_CTX_new()",
+		"go":	"EVPMDCTXNew"
+	}, {
+		"mangle":	"EVP_MD_CTX_set_params",
+		"c++":	"EVP_MD_CTX_set_params(int *, const int *)",
+		"go":	"EVPMDCTXSetParams"
+	}, {
+		"mangle":	"EVP_MD_free",
+		"c++":	"EVP_MD_free(int *)",
+		"go":	"EVPMDFree"
+	}, {
+		"mangle":	"EVP_MD_get0_name",
+		"c++":	"EVP_MD_get0_name(const int *)",
+		"go":	"EVPMDGet0Name"
+	}, {
+		"mangle":	"EVP_MD_get0_provider",
+		"c++":	"EVP_MD_get0_provider(const int *)",
+		"go":	"EVPMDGet0Provider"
+	}, {
+		"mangle":	"EVP_MD_get_size",
+		"c++":	"EVP_MD_get_size(const int *)",
+		"go":	"EVPMDGetSize"
+	}, {
+		"mangle":	"EVP_MD_get_type",
+		"c++":	"EVP_MD_get_type(const int *)",
+		"go":	"EVPMDGetType"
+	}, {
+		"mangle":	"EVP_MD_is_a",
+		"c++":	"EVP_MD_is_a(const int *, const char *)",
+		"go":	"EVPMDIsA"
+	}, {
+		"mangle":	"EVP_MD_up_ref",
+		"c++":	"EVP_MD_up_ref(int *)",
+		"go":	"EVPMDUpRef"
+	}, {
+		"mangle":	"EVP_PKEY_CTX_ctrl",
+		"c++":	"EVP_PKEY_CTX_ctrl(int *, int, int, int, int, void *)",
+		"go":	"EVPPKEYCTXCtrl"
+	}, {
+		"mangle":	"EVP_PKEY_CTX_free",
+		"c++":	"EVP_PKEY_CTX_free(int *)",
+		"go":	"EVPPKEYCTXFree"
+	}, {
+		"mangle":	"EVP_PKEY_CTX_new_from_name",
+		"c++":	"EVP_PKEY_CTX_new_from_name(int *, const char *, const char *)",
+		"go":	"EVPPKEYCTXNewFromName"
+	}, {
+		"mangle":	"EVP_PKEY_CTX_new_from_pkey",
+		"c++":	"EVP_PKEY_CTX_new_from_pkey(int *, int *, const char *)",
+		"go":	"EVPPKEYCTXNewFromPkey"
+	}, {
+		"mangle":	"EVP_PKEY_CTX_set_dh_pad",
+		"c++":	"EVP_PKEY_CTX_set_dh_pad(int *, int)",
+		"go":	"EVPPKEYCTXSetDhPad"
+	}, {
+		"mangle":	"EVP_PKEY_CTX_set_group_name",
+		"c++":	"EVP_PKEY_CTX_set_group_name(int *, const char *)",
+		"go":	"EVPPKEYCTXSetGroupName"
+	}, {
+		"mangle":	"EVP_PKEY_CTX_set_params",
+		"c++":	"EVP_PKEY_CTX_set_params(int *, const int *)",
+		"go":	"EVPPKEYCTXSetParams"
+	}, {
+		"mangle":	"EVP_PKEY_CTX_set_rsa_padding",
+		"c++":	"EVP_PKEY_CTX_set_rsa_padding(int *, int)",
+		"go":	"EVPPKEYCTXSetRsaPadding"
+	}, {
+		"mangle":	"EVP_PKEY_CTX_set_rsa_pss_saltlen",
+		"c++":	"EVP_PKEY_CTX_set_rsa_pss_saltlen(int *, int)",
+		"go":	"EVPPKEYCTXSetRsaPssSaltlen"
+	}, {
+		"mangle":	"EVP_PKEY_asn1_find_str",
+		"c++":	"EVP_PKEY_asn1_find_str(int **, const char *, int)",
+		"go":	"EVPPKEYAsn1FindStr"
+	}, {
+		"mangle":	"EVP_PKEY_asn1_get0_info",
+		"c++":	"EVP_PKEY_asn1_get0_info(int *, int *, int *, const char **, const char **, const int *)",
+		"go":	"EVPPKEYAsn1Get0Info"
+	}, {
+		"mangle":	"EVP_PKEY_assign",
+		"c++":	"EVP_PKEY_assign(int *, int, void *)",
+		"go":	"EVPPKEYAssign"
+	}, {
+		"mangle":	"EVP_PKEY_can_sign",
+		"c++":	"EVP_PKEY_can_sign(const int *)",
+		"go":	"EVPPKEYCanSign"
+	}, {
+		"mangle":	"EVP_PKEY_copy_parameters",
+		"c++":	"EVP_PKEY_copy_parameters(int *, const int *)",
+		"go":	"EVPPKEYCopyParameters"
+	}, {
+		"mangle":	"EVP_PKEY_decapsulate",
+		"c++":	"EVP_PKEY_decapsulate(int *, unsigned char *, size_t *, const unsigned char *, size_t)",
+		"go":	"EVPPKEYDecapsulate"
+	}, {
+		"mangle":	"EVP_PKEY_decapsulate_init",
+		"c++":	"EVP_PKEY_decapsulate_init(int *, const int *)",
+		"go":	"EVPPKEYDecapsulateInit"
+	}, {
+		"mangle":	"EVP_PKEY_decrypt",
+		"c++":	"EVP_PKEY_decrypt(int *, unsigned char *, size_t *, const unsigned char *, size_t)",
+		"go":	"EVPPKEYDecrypt"
+	}, {
+		"mangle":	"EVP_PKEY_decrypt_init",
+		"c++":	"EVP_PKEY_decrypt_init(int *)",
+		"go":	"EVPPKEYDecryptInit"
+	}, {
+		"mangle":	"EVP_PKEY_derive",
+		"c++":	"EVP_PKEY_derive(int *, unsigned char *, size_t *)",
+		"go":	"EVPPKEYDerive"
+	}, {
+		"mangle":	"EVP_PKEY_derive_init",
+		"c++":	"EVP_PKEY_derive_init(int *)",
+		"go":	"EVPPKEYDeriveInit"
+	}, {
+		"mangle":	"EVP_PKEY_derive_set_peer",
+		"c++":	"EVP_PKEY_derive_set_peer(int *, int *)",
+		"go":	"EVPPKEYDeriveSetPeer"
+	}, {
+		"mangle":	"EVP_PKEY_digestsign_supports_digest",
+		"c++":	"EVP_PKEY_digestsign_supports_digest(int *, int *, const char *, const char *)",
+		"go":	"EVPPKEYDigestsignSupportsDigest"
+	}, {
+		"mangle":	"EVP_PKEY_encapsulate",
+		"c++":	"EVP_PKEY_encapsulate(int *, unsigned char *, size_t *, unsigned char *, size_t *)",
+		"go":	"EVPPKEYEncapsulate"
+	}, {
+		"mangle":	"EVP_PKEY_encapsulate_init",
+		"c++":	"EVP_PKEY_encapsulate_init(int *, const int *)",
+		"go":	"EVPPKEYEncapsulateInit"
+	}, {
+		"mangle":	"EVP_PKEY_encrypt",
+		"c++":	"EVP_PKEY_encrypt(int *, unsigned char *, size_t *, const unsigned char *, size_t)",
+		"go":	"EVPPKEYEncrypt"
+	}, {
+		"mangle":	"EVP_PKEY_encrypt_init",
+		"c++":	"EVP_PKEY_encrypt_init(int *)",
+		"go":	"EVPPKEYEncryptInit"
+	}, {
+		"mangle":	"EVP_PKEY_eq",
+		"c++":	"EVP_PKEY_eq(const int *, const int *)",
+		"go":	"EVPPKEYEq"
+	}, {
+		"mangle":	"EVP_PKEY_free",
+		"c++":	"EVP_PKEY_free(int *)",
+		"go":	"EVPPKEYFree"
+	}, {
+		"mangle":	"EVP_PKEY_fromdata",
+		"c++":	"EVP_PKEY_fromdata(int *, int **, int, int *)",
+		"go":	"EVPPKEYFromdata"
+	}, {
+		"mangle":	"EVP_PKEY_fromdata_init",
+		"c++":	"EVP_PKEY_fromdata_init(int *)",
+		"go":	"EVPPKEYFromdataInit"
+	}, {
+		"mangle":	"EVP_PKEY_get1_encoded_public_key",
+		"c++":	"EVP_PKEY_get1_encoded_public_key(int *, unsigned char **)",
+		"go":	"EVPPKEYGet1EncodedPublicKey"
+	}, {
+		"mangle":	"EVP_PKEY_get_bits",
+		"c++":	"EVP_PKEY_get_bits(const int *)",
+		"go":	"EVPPKEYGetBits"
+	}, {
+		"mangle":	"EVP_PKEY_get_bn_param",
+		"c++":	"EVP_PKEY_get_bn_param(const int *, const char *, int **)",
+		"go":	"EVPPKEYGetBnParam"
+	}, {
+		"mangle":	"EVP_PKEY_get_ec_point_conv_form",
+		"c++":	"EVP_PKEY_get_ec_point_conv_form(const int *)",
+		"go":	"EVPPKEYGetEcPointConvForm"
+	}, {
+		"mangle":	"EVP_PKEY_get_field_type",
+		"c++":	"EVP_PKEY_get_field_type(const int *)",
+		"go":	"EVPPKEYGetFieldType"
+	}, {
+		"mangle":	"EVP_PKEY_get_group_name",
+		"c++":	"EVP_PKEY_get_group_name(const int *, char *, size_t, size_t *)",
+		"go":	"EVPPKEYGetGroupName"
+	}, {
+		"mangle":	"EVP_PKEY_get_id",
+		"c++":	"EVP_PKEY_get_id(const int *)",
+		"go":	"EVPPKEYGetId"
+	}, {
+		"mangle":	"EVP_PKEY_get_security_bits",
+		"c++":	"EVP_PKEY_get_security_bits(const int *)",
+		"go":	"EVPPKEYGetSecurityBits"
+	}, {
+		"mangle":	"EVP_PKEY_get_size",
+		"c++":	"EVP_PKEY_get_size(const int *)",
+		"go":	"EVPPKEYGetSize"
+	}, {
+		"mangle":	"EVP_PKEY_is_a",
+		"c++":	"EVP_PKEY_is_a(const int *, const char *)",
+		"go":	"EVPPKEYIsA"
+	}, {
+		"mangle":	"EVP_PKEY_keygen",
+		"c++":	"EVP_PKEY_keygen(int *, int **)",
+		"go":	"EVPPKEYKeygen"
+	}, {
+		"mangle":	"EVP_PKEY_keygen_init",
+		"c++":	"EVP_PKEY_keygen_init(int *)",
+		"go":	"EVPPKEYKeygenInit"
+	}, {
+		"mangle":	"EVP_PKEY_missing_parameters",
+		"c++":	"EVP_PKEY_missing_parameters(const int *)",
+		"go":	"EVPPKEYMissingParameters"
+	}, {
+		"mangle":	"EVP_PKEY_new",
+		"c++":	"EVP_PKEY_new()",
+		"go":	"EVPPKEYNew"
+	}, {
+		"mangle":	"EVP_PKEY_new_mac_key",
+		"c++":	"EVP_PKEY_new_mac_key(int, int *, const unsigned char *, int)",
+		"go":	"EVPPKEYNewMacKey"
+	}, {
+		"mangle":	"EVP_PKEY_new_raw_private_key_ex",
+		"c++":	"EVP_PKEY_new_raw_private_key_ex(int *, const char *, const char *, const unsigned char *, size_t)",
+		"go":	"EVPPKEYNewRawPrivateKeyEx"
+	}, {
+		"mangle":	"EVP_PKEY_param_check_quick",
+		"c++":	"EVP_PKEY_param_check_quick(int *)",
+		"go":	"EVPPKEYParamCheckQuick"
+	}, {
+		"mangle":	"EVP_PKEY_paramgen",
+		"c++":	"EVP_PKEY_paramgen(int *, int **)",
+		"go":	"EVPPKEYParamgen"
+	}, {
+		"mangle":	"EVP_PKEY_paramgen_init",
+		"c++":	"EVP_PKEY_paramgen_init(int *)",
+		"go":	"EVPPKEYParamgenInit"
+	}, {
+		"mangle":	"EVP_PKEY_print_public",
+		"c++":	"EVP_PKEY_print_public(int *, const int *, int, int *)",
+		"go":	"EVPPKEYPrintPublic"
+	}, {
+		"mangle":	"EVP_PKEY_public_check",
+		"c++":	"EVP_PKEY_public_check(int *)",
+		"go":	"EVPPKEYPublicCheck"
+	}, {
+		"mangle":	"EVP_PKEY_set1_DH",
+		"c++":	"EVP_PKEY_set1_DH(int *, struct dh_st *)",
+		"go":	"EVPPKEYSet1DH"
+	}, {
+		"mangle":	"EVP_PKEY_set1_encoded_public_key",
+		"c++":	"EVP_PKEY_set1_encoded_public_key(int *, const unsigned char *, size_t)",
+		"go":	"EVPPKEYSet1EncodedPublicKey"
+	}, {
+		"mangle":	"EVP_PKEY_set_type",
+		"c++":	"EVP_PKEY_set_type(int *, int)",
+		"go":	"EVPPKEYSetType"
+	}, {
+		"mangle":	"EVP_PKEY_up_ref",
+		"c++":	"EVP_PKEY_up_ref(int *)",
+		"go":	"EVPPKEYUpRef"
+	}, {
+		"mangle":	"EVP_Q_mac",
+		"c++":	"EVP_Q_mac(int *, const char *, const char *, const char *, const int *, const void *, size_t, const unsigned char *, size_t, unsigned char *, size_t, size_t *)",
+		"go":	"EVPQMac"
+	}, {
+		"mangle":	"EVP_SIGNATURE_fetch",
+		"c++":	"EVP_SIGNATURE_fetch(int *, const char *, const char *)",
+		"go":	"EVPSIGNATUREFetch"
+	}, {
+		"mangle":	"EVP_SIGNATURE_free",
+		"c++":	"EVP_SIGNATURE_free(int *)",
+		"go":	"EVPSIGNATUREFree"
+	}, {
+		"mangle":	"EVP_get_cipherbyname",
+		"c++":	"EVP_get_cipherbyname(const char *)",
+		"go":	"EVPGetCipherbyname"
+	}, {
+		"mangle":	"EVP_get_digestbyname",
+		"c++":	"EVP_get_digestbyname(const char *)",
+		"go":	"EVPGetDigestbyname"
+	}, {
+		"mangle":	"HMAC_CTX_free",
+		"c++":	"HMAC_CTX_free(int *)",
+		"go":	"HMACCTXFree"
+	}, {
+		"mangle":	"HMAC_Final",
+		"c++":	"HMAC_Final(int *, unsigned char *, unsigned int *)",
+		"go":	"HMACFinal"
+	}, {
+		"mangle":	"HMAC_Init_ex",
+		"c++":	"HMAC_Init_ex(int *, const void *, int, const int *, int *)",
+		"go":	"HMACInitEx"
+	}, {
+		"mangle":	"HMAC_Update",
+		"c++":	"HMAC_Update(int *, const unsigned char *, int)",
+		"go":	"HMACUpdate"
+	}, {
+		"mangle":	"MD5_Init",
+		"c++":	"MD5_Init(MD5_CTX *)",
+		"go":	"(*MD5CTX).MD5Init"
+	}, {
+		"mangle":	"MD5_Transform",
+		"c++":	"MD5_Transform(MD5_CTX *, const unsigned char *)",
+		"go":	"(*MD5CTX).MD5Transform"
+	}, {
+		"mangle":	"OBJ_add_sigid",
+		"c++":	"OBJ_add_sigid(int, int, int)",
+		"go":	"OBJAddSigid"
+	}, {
+		"mangle":	"OBJ_bsearch_",
+		"c++":	"OBJ_bsearch_(const void *, const void *, int, int, int (*)(const void *, const void *))",
+		"go":	"OBJBsearch"
+	}, {
+		"mangle":	"OBJ_create",
+		"c++":	"OBJ_create(const char *, const char *, const char *)",
+		"go":	"OBJCreate"
+	}, {
+		"mangle":	"OBJ_ln2nid",
+		"c++":	"OBJ_ln2nid(const char *)",
+		"go":	"OBJLn2nid"
+	}, {
+		"mangle":	"OBJ_nid2ln",
+		"c++":	"OBJ_nid2ln(int)",
+		"go":	"OBJNid2ln"
+	}, {
+		"mangle":	"OBJ_nid2sn",
+		"c++":	"OBJ_nid2sn(int)",
+		"go":	"OBJNid2sn"
+	}, {
+		"mangle":	"OBJ_sn2nid",
+		"c++":	"OBJ_sn2nid(const char *)",
+		"go":	"OBJSn2nid"
+	}, {
+		"mangle":	"OBJ_txt2nid",
+		"c++":	"OBJ_txt2nid(const char *)",
+		"go":	"OBJTxt2nid"
+	}, {
+		"mangle":	"OCSP_SINGLERESP_get1_ext_d2i",
+		"c++":	"OCSP_SINGLERESP_get1_ext_d2i(int *, int, int *, int *)",
+		"go":	"OCSPSINGLERESPGet1ExtD2i"
+	}, {
+		"mangle":	"OCSP_resp_count",
+		"c++":	"OCSP_resp_count(OCSP_BASICRESP *)",
+		"go":	"(*OCSPBASICRESP).OCSPRespCount"
+	}, {
+		"mangle":	"OCSP_resp_get0",
+		"c++":	"OCSP_resp_get0(OCSP_BASICRESP *, int)",
+		"go":	"(*OCSPBASICRESP).OCSPRespGet0"
+	}, {
+		"mangle":	"OCSP_response_get1_basic",
+		"c++":	"OCSP_response_get1_basic(int *)",
+		"go":	"OCSPResponseGet1Basic"
+	}, {
+		"mangle":	"OPENSSL_LH_delete",
+		"c++":	"OPENSSL_LH_delete(OPENSSL_LHASH *, const void *)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHDelete"
+	}, {
+		"mangle":	"OPENSSL_LH_doall",
+		"c++":	"OPENSSL_LH_doall(OPENSSL_LHASH *, OPENSSL_LH_DOALL_FUNC)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHDoall"
+	}, {
+		"mangle":	"OPENSSL_LH_doall_arg",
+		"c++":	"OPENSSL_LH_doall_arg(OPENSSL_LHASH *, OPENSSL_LH_DOALL_FUNCARG, void *)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHDoallArg"
+	}, {
+		"mangle":	"OPENSSL_LH_error",
+		"c++":	"OPENSSL_LH_error(OPENSSL_LHASH *)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHError"
+	}, {
+		"mangle":	"OPENSSL_LH_free",
+		"c++":	"OPENSSL_LH_free(OPENSSL_LHASH *)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHFree"
+	}, {
+		"mangle":	"OPENSSL_LH_get_down_load",
+		"c++":	"OPENSSL_LH_get_down_load(const OPENSSL_LHASH *)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHGetDownLoad"
+	}, {
+		"mangle":	"OPENSSL_LH_insert",
+		"c++":	"OPENSSL_LH_insert(OPENSSL_LHASH *, void *)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHInsert"
+	}, {
+		"mangle":	"OPENSSL_LH_new",
+		"c++":	"OPENSSL_LH_new(OPENSSL_LH_HASHFUNC, OPENSSL_LH_COMPFUNC)",
+		"go":	"OPENSSLLHHASHFUNC.OPENSSLLHNew"
+	}, {
+		"mangle":	"OPENSSL_LH_num_items",
+		"c++":	"OPENSSL_LH_num_items(const OPENSSL_LHASH *)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHNumItems"
+	}, {
+		"mangle":	"OPENSSL_LH_retrieve",
+		"c++":	"OPENSSL_LH_retrieve(OPENSSL_LHASH *, const void *)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHRetrieve"
+	}, {
+		"mangle":	"OPENSSL_LH_set_down_load",
+		"c++":	"OPENSSL_LH_set_down_load(OPENSSL_LHASH *, unsigned long)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHSetDownLoad"
+	}, {
+		"mangle":	"OPENSSL_LH_set_thunks",
+		"c++":	"OPENSSL_LH_set_thunks(OPENSSL_LHASH *, OPENSSL_LH_HASHFUNCTHUNK, OPENSSL_LH_COMPFUNCTHUNK, OPENSSL_LH_DOALL_FUNC_THUNK, OPENSSL_LH_DOALL_FUNCARG_THUNK)",
+		"go":	"(*OPENSSLLHASH).OPENSSLLHSetThunks"
+	}, {
+		"mangle":	"OPENSSL_atexit",
+		"c++":	"OPENSSL_atexit(void (*)(void))",
+		"go":	"OPENSSLAtexit"
+	}, {
+		"mangle":	"OPENSSL_cipher_name",
+		"c++":	"OPENSSL_cipher_name(const char *)",
+		"go":	"OPENSSLCipherName"
+	}, {
+		"mangle":	"OPENSSL_cleanse",
+		"c++":	"OPENSSL_cleanse(void *, size_t)",
+		"go":	"OPENSSLCleanse"
+	}, {
+		"mangle":	"OPENSSL_die",
+		"c++":	"OPENSSL_die(const char *, const char *, int)",
+		"go":	"OPENSSLDie"
+	}, {
+		"mangle":	"OPENSSL_init_crypto",
+		"c++":	"OPENSSL_init_crypto(uint64_t, const int *)",
+		"go":	"OPENSSLInitCrypto"
+	}, {
+		"mangle":	"OPENSSL_init_ssl",
+		"c++":	"OPENSSL_init_ssl(int, const int *)",
+		"go":	"OPENSSLInitSsl"
+	}, {
+		"mangle":	"OPENSSL_issetugid",
+		"c++":	"OPENSSL_issetugid()",
+		"go":	"OPENSSLIssetugid"
+	}, {
+		"mangle":	"OPENSSL_sk_delete",
+		"c++":	"OPENSSL_sk_delete(OPENSSL_STACK *, int)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkDelete"
+	}, {
+		"mangle":	"OPENSSL_sk_dup",
+		"c++":	"OPENSSL_sk_dup(const OPENSSL_STACK *)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkDup"
+	}, {
+		"mangle":	"OPENSSL_sk_find",
+		"c++":	"OPENSSL_sk_find(OPENSSL_STACK *, const void *)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkFind"
+	}, {
+		"mangle":	"OPENSSL_sk_free",
+		"c++":	"OPENSSL_sk_free(OPENSSL_STACK *)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkFree"
+	}, {
+		"mangle":	"OPENSSL_sk_insert",
+		"c++":	"OPENSSL_sk_insert(OPENSSL_STACK *, const void *, int)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkInsert"
+	}, {
+		"mangle":	"OPENSSL_sk_new",
+		"c++":	"OPENSSL_sk_new(OPENSSL_sk_compfunc)",
+		"go":	"OPENSSLSkCompfunc.OPENSSLSkNew"
+	}, {
+		"mangle":	"OPENSSL_sk_new_null",
+		"c++":	"OPENSSL_sk_new_null()",
+		"go":	"OPENSSLSkNewNull"
+	}, {
+		"mangle":	"OPENSSL_sk_new_reserve",
+		"c++":	"OPENSSL_sk_new_reserve(OPENSSL_sk_compfunc, int)",
+		"go":	"OPENSSLSkCompfunc.OPENSSLSkNewReserve"
+	}, {
+		"mangle":	"OPENSSL_sk_num",
+		"c++":	"OPENSSL_sk_num(const OPENSSL_STACK *)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkNum"
+	}, {
+		"mangle":	"OPENSSL_sk_pop",
+		"c++":	"OPENSSL_sk_pop(OPENSSL_STACK *)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkPop"
+	}, {
+		"mangle":	"OPENSSL_sk_pop_free",
+		"c++":	"OPENSSL_sk_pop_free(OPENSSL_STACK *, void (*)(void *))",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkPopFree"
+	}, {
+		"mangle":	"OPENSSL_sk_push",
+		"c++":	"OPENSSL_sk_push(OPENSSL_STACK *, const void *)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkPush"
+	}, {
+		"mangle":	"OPENSSL_sk_set_cmp_func",
+		"c++":	"OPENSSL_sk_set_cmp_func(OPENSSL_STACK *, OPENSSL_sk_compfunc)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkSetCmpFunc"
+	}, {
+		"mangle":	"OPENSSL_sk_shift",
+		"c++":	"OPENSSL_sk_shift(OPENSSL_STACK *)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkShift"
+	}, {
+		"mangle":	"OPENSSL_sk_sort",
+		"c++":	"OPENSSL_sk_sort(OPENSSL_STACK *)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkSort"
+	}, {
+		"mangle":	"OPENSSL_sk_unshift",
+		"c++":	"OPENSSL_sk_unshift(OPENSSL_STACK *, const void *)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkUnshift"
+	}, {
+		"mangle":	"OPENSSL_sk_value",
+		"c++":	"OPENSSL_sk_value(const OPENSSL_STACK *, int)",
+		"go":	"(*OPENSSLSTACK).OPENSSLSkValue"
+	}, {
+		"mangle":	"OPENSSL_strcasecmp",
+		"c++":	"OPENSSL_strcasecmp(const char *, const char *)",
+		"go":	"OPENSSLStrcasecmp"
+	}, {
+		"mangle":	"OPENSSL_strncasecmp",
+		"c++":	"OPENSSL_strncasecmp(const char *, const char *, size_t)",
+		"go":	"OPENSSLStrncasecmp"
+	}, {
+		"mangle":	"OPENSSL_strnlen",
+		"c++":	"OPENSSL_strnlen(const char *, size_t)",
+		"go":	"OPENSSLStrnlen"
+	}, {
+		"mangle":	"OSSL_DECODER_CTX_free",
+		"c++":	"OSSL_DECODER_CTX_free(int *)",
+		"go":	"OSSLDECODERCTXFree"
+	}, {
+		"mangle":	"OSSL_DECODER_CTX_new_for_pkey",
+		"c++":	"OSSL_DECODER_CTX_new_for_pkey(int **, const char *, const char *, const char *, int, int *, const char *)",
+		"go":	"OSSLDECODERCTXNewForPkey"
+	}, {
+		"mangle":	"OSSL_DECODER_from_bio",
+		"c++":	"OSSL_DECODER_from_bio(int *, int *)",
+		"go":	"OSSLDECODERFromBio"
+	}, {
+		"mangle":	"OSSL_ERR_STATE_free",
+		"c++":	"OSSL_ERR_STATE_free(int *)",
+		"go":	"OSSLERRSTATEFree"
+	}, {
+		"mangle":	"OSSL_ERR_STATE_new",
+		"c++":	"OSSL_ERR_STATE_new()",
+		"go":	"OSSLERRSTATENew"
+	}, {
+		"mangle":	"OSSL_ERR_STATE_restore",
+		"c++":	"OSSL_ERR_STATE_restore(const int *)",
+		"go":	"OSSLERRSTATERestore"
+	}, {
+		"mangle":	"OSSL_ERR_STATE_save",
+		"c++":	"OSSL_ERR_STATE_save(int *)",
+		"go":	"OSSLERRSTATESave"
+	}, {
+		"mangle":	"OSSL_ERR_STATE_save_to_mark",
+		"c++":	"OSSL_ERR_STATE_save_to_mark(int *)",
+		"go":	"OSSLERRSTATESaveToMark"
+	}, {
+		"mangle":	"OSSL_LIB_CTX_set0_default",
+		"c++":	"OSSL_LIB_CTX_set0_default(int *)",
+		"go":	"OSSLLIBCTXSet0Default"
+	}, {
+		"mangle":	"OSSL_PARAM_BLD_free",
+		"c++":	"OSSL_PARAM_BLD_free(int *)",
+		"go":	"OSSLPARAMBLDFree"
+	}, {
+		"mangle":	"OSSL_PARAM_BLD_new",
+		"c++":	"OSSL_PARAM_BLD_new()",
+		"go":	"OSSLPARAMBLDNew"
+	}, {
+		"mangle":	"OSSL_PARAM_BLD_push_BN",
+		"c++":	"OSSL_PARAM_BLD_push_BN(int *, const char *, const int *)",
+		"go":	"OSSLPARAMBLDPushBN"
+	}, {
+		"mangle":	"OSSL_PARAM_BLD_push_uint",
+		"c++":	"OSSL_PARAM_BLD_push_uint(int *, const char *, unsigned int)",
+		"go":	"OSSLPARAMBLDPushUint"
+	}, {
+		"mangle":	"OSSL_PARAM_BLD_to_param",
+		"c++":	"OSSL_PARAM_BLD_to_param(int *)",
+		"go":	"OSSLPARAMBLDToParam"
+	}, {
+		"mangle":	"OSSL_PARAM_construct_end",
+		"c++":	"OSSL_PARAM_construct_end()",
+		"go":	"OSSLPARAMConstructEnd"
+	}, {
+		"mangle":	"OSSL_PARAM_construct_int",
+		"c++":	"OSSL_PARAM_construct_int(const char *, int *)",
+		"go":	"OSSLPARAMConstructInt"
+	}, {
+		"mangle":	"OSSL_PARAM_construct_octet_ptr",
+		"c++":	"OSSL_PARAM_construct_octet_ptr(const char *, void **, int)",
+		"go":	"OSSLPARAMConstructOctetPtr"
+	}, {
+		"mangle":	"OSSL_PARAM_construct_octet_string",
+		"c++":	"OSSL_PARAM_construct_octet_string(const char *, void *, int)",
+		"go":	"OSSLPARAMConstructOctetString"
+	}, {
+		"mangle":	"OSSL_PARAM_construct_size_t",
+		"c++":	"OSSL_PARAM_construct_size_t(const char *, int *)",
+		"go":	"OSSLPARAMConstructSizeT"
+	}, {
+		"mangle":	"OSSL_PARAM_construct_uint",
+		"c++":	"OSSL_PARAM_construct_uint(const char *, unsigned int *)",
+		"go":	"OSSLPARAMConstructUint"
+	}, {
+		"mangle":	"OSSL_PARAM_construct_uint32",
+		"c++":	"OSSL_PARAM_construct_uint32(const char *, int *)",
+		"go":	"OSSLPARAMConstructUint32"
+	}, {
+		"mangle":	"OSSL_PARAM_construct_uint64",
+		"c++":	"OSSL_PARAM_construct_uint64(const char *, int *)",
+		"go":	"OSSLPARAMConstructUint64"
+	}, {
+		"mangle":	"OSSL_PARAM_construct_utf8_string",
+		"c++":	"OSSL_PARAM_construct_utf8_string(const char *, char *, int)",
+		"go":	"OSSLPARAMConstructUtf8String"
+	}, {
+		"mangle":	"OSSL_PARAM_free",
+		"c++":	"OSSL_PARAM_free(int *)",
+		"go":	"OSSLPARAMFree"
+	}, {
+		"mangle":	"OSSL_PARAM_get_int",
+		"c++":	"OSSL_PARAM_get_int(const int *, int *)",
+		"go":	"OSSLPARAMGetInt"
+	}, {
+		"mangle":	"OSSL_PARAM_get_size_t",
+		"c++":	"OSSL_PARAM_get_size_t(const int *, int *)",
+		"go":	"OSSLPARAMGetSizeT"
+	}, {
+		"mangle":	"OSSL_PARAM_get_uint",
+		"c++":	"OSSL_PARAM_get_uint(const int *, unsigned int *)",
+		"go":	"OSSLPARAMGetUint"
+	}, {
+		"mangle":	"OSSL_PARAM_get_uint32",
+		"c++":	"OSSL_PARAM_get_uint32(const int *, int *)",
+		"go":	"OSSLPARAMGetUint32"
+	}, {
+		"mangle":	"OSSL_PARAM_get_uint64",
+		"c++":	"OSSL_PARAM_get_uint64(const int *, int *)",
+		"go":	"OSSLPARAMGetUint64"
+	}, {
+		"mangle":	"OSSL_PARAM_locate_const",
+		"c++":	"OSSL_PARAM_locate_const(const int *, const char *)",
+		"go":	"OSSLPARAMLocateConst"
+	}, {
+		"mangle":	"OSSL_PROVIDER_do_all",
+		"c++":	"OSSL_PROVIDER_do_all(int *, int (*)(int *, void *), void *)",
+		"go":	"OSSLPROVIDERDoAll"
+	}, {
+		"mangle":	"OSSL_PROVIDER_get_capabilities",
+		"c++":	"OSSL_PROVIDER_get_capabilities(const int *, const char *, int *, void *)",
+		"go":	"OSSLPROVIDERGetCapabilities"
+	}, {
+		"mangle":	"OSSL_STACK_OF_X509_free",
+		"c++":	"OSSL_STACK_OF_X509_free(int (*)())",
+		"go":	"OSSLSTACKOFX509Free"
+	}, {
+		"mangle":	"OSSL_STORE_INFO_free",
+		"c++":	"OSSL_STORE_INFO_free(int *)",
+		"go":	"OSSLSTOREINFOFree"
+	}, {
+		"mangle":	"OSSL_STORE_INFO_get0_CERT",
+		"c++":	"OSSL_STORE_INFO_get0_CERT(const int *)",
+		"go":	"OSSLSTOREINFOGet0CERT"
+	}, {
+		"mangle":	"OSSL_STORE_INFO_get0_NAME",
+		"c++":	"OSSL_STORE_INFO_get0_NAME(const int *)",
+		"go":	"OSSLSTOREINFOGet0NAME"
+	}, {
+		"mangle":	"OSSL_STORE_INFO_get_type",
+		"c++":	"OSSL_STORE_INFO_get_type(const int *)",
+		"go":	"OSSLSTOREINFOGetType"
+	}, {
+		"mangle":	"OSSL_STORE_close",
+		"c++":	"OSSL_STORE_close(OSSL_STORE_CTX *)",
+		"go":	"(*OSSLSTORECTX).OSSLSTOREClose"
+	}, {
+		"mangle":	"OSSL_STORE_eof",
+		"c++":	"OSSL_STORE_eof(OSSL_STORE_CTX *)",
+		"go":	"(*OSSLSTORECTX).OSSLSTOREEof"
+	}, {
+		"mangle":	"OSSL_STORE_error",
+		"c++":	"OSSL_STORE_error(OSSL_STORE_CTX *)",
+		"go":	"(*OSSLSTORECTX).OSSLSTOREError"
+	}, {
+		"mangle":	"OSSL_STORE_load",
+		"c++":	"OSSL_STORE_load(OSSL_STORE_CTX *)",
+		"go":	"(*OSSLSTORECTX).OSSLSTORELoad"
+	}, {
+		"mangle":	"OSSL_STORE_open",
+		"c++":	"OSSL_STORE_open(const char *, const int *, void *, OSSL_STORE_post_process_info_fn, void *)",
+		"go":	"OSSLSTOREOpen"
+	}, {
+		"mangle":	"OSSL_default_cipher_list",
+		"c++":	"OSSL_default_cipher_list()",
+		"go":	"OSSLDefaultCipherList"
+	}, {
+		"mangle":	"OSSL_default_ciphersuites",
+		"c++":	"OSSL_default_ciphersuites()",
+		"go":	"OSSLDefaultCiphersuites"
+	}, {
+		"mangle":	"OpenSSL_version",
+		"c++":	"OpenSSL_version(int)",
+		"go":	"OpenSSLVersion"
+	}, {
+		"mangle":	"PEM_ASN1_read",
+		"c++":	"PEM_ASN1_read(int *, const char *, FILE *, void **, int *, void *)",
+		"go":	"PEMASN1Read"
+	}, {
+		"mangle":	"PEM_ASN1_read_bio",
+		"c++":	"PEM_ASN1_read_bio(int *, const char *, int *, void **, int *, void *)",
+		"go":	"PEMASN1ReadBio"
+	}, {
+		"mangle":	"PEM_ASN1_write",
+		"c++":	"PEM_ASN1_write(int *, const char *, FILE *, const void *, const int *, const unsigned char *, int, int *, void *)",
+		"go":	"PEMASN1Write"
+	}, {
+		"mangle":	"PEM_ASN1_write_bio",
+		"c++":	"PEM_ASN1_write_bio(int *, const char *, int *, const void *, const int *, const unsigned char *, int, int *, void *)",
+		"go":	"PEMASN1WriteBio"
+	}, {
+		"mangle":	"PEM_read_bio",
+		"c++":	"PEM_read_bio(int *, char **, char **, unsigned char **, long *)",
+		"go":	"PEMReadBio"
+	}, {
+		"mangle":	"PEM_read_bio_PrivateKey_ex",
+		"c++":	"PEM_read_bio_PrivateKey_ex(int *, int **, int *, void *, int *, const char *)",
+		"go":	"PEMReadBioPrivateKeyEx"
+	}, {
+		"mangle":	"PEM_read_bio_X509",
+		"c++":	"PEM_read_bio_X509(int *, int **, int *, void *)",
+		"go":	"PEMReadBioX509"
+	}, {
+		"mangle":	"PEM_read_bio_X509_AUX",
+		"c++":	"PEM_read_bio_X509_AUX(int *, int **, int *, void *)",
+		"go":	"PEMReadBioX509AUX"
+	}, {
+		"mangle":	"PEM_write_bio_X509",
+		"c++":	"PEM_write_bio_X509(int *, const int *)",
+		"go":	"PEMWriteBioX509"
+	}, {
+		"mangle":	"RAND_bytes_ex",
+		"c++":	"RAND_bytes_ex(int *, unsigned char *, size_t, unsigned int)",
+		"go":	"RANDBytesEx"
+	}, {
+		"mangle":	"RAND_priv_bytes_ex",
+		"c++":	"RAND_priv_bytes_ex(int *, unsigned char *, size_t, unsigned int)",
+		"go":	"RANDPrivBytesEx"
+	}, {
+		"mangle":	"RSA_free",
+		"c++":	"RSA_free(int *)",
+		"go":	"RSAFree"
+	}, {
+		"mangle":	"RSA_up_ref",
+		"c++":	"RSA_up_ref(int *)",
+		"go":	"RSAUpRef"
+	}, {
+		"mangle":	"SCT_LIST_free",
+		"c++":	"SCT_LIST_free(int (*)())",
+		"go":	"SCTLISTFree"
+	}, {
+		"mangle":	"SCT_LIST_validate",
+		"c++":	"SCT_LIST_validate(const int (*)())",
+		"go":	"SCTLISTValidate"
+	}, {
+		"mangle":	"SCT_free",
+		"c++":	"SCT_free(int *)",
+		"go":	"SCTFree"
+	}, {
+		"mangle":	"SCT_get_validation_status",
+		"c++":	"SCT_get_validation_status(const int *)",
+		"go":	"SCTGetValidationStatus"
+	}, {
+		"mangle":	"SCT_set_source",
+		"c++":	"SCT_set_source(int *, sct_source_t)",
+		"go":	"SCTSetSource"
+	}, {
+		"mangle":	"SHA1_Init",
+		"c++":	"SHA1_Init(SHA_CTX *)",
+		"go":	"(*SHACTX).SHA1Init"
+	}, {
+		"mangle":	"SHA1_Transform",
+		"c++":	"SHA1_Transform(SHA_CTX *, const unsigned char *)",
+		"go":	"(*SHACTX).SHA1Transform"
+	}, {
+		"mangle":	"SHA224_Init",
+		"c++":	"SHA224_Init(SHA256_CTX *)",
+		"go":	"(*SHA256CTX).SHA224Init"
+	}, {
+		"mangle":	"SHA256_Init",
+		"c++":	"SHA256_Init(SHA256_CTX *)",
+		"go":	"(*SHA256CTX).SHA256Init"
+	}, {
+		"mangle":	"SHA256_Transform",
+		"c++":	"SHA256_Transform(SHA256_CTX *, const unsigned char *)",
+		"go":	"(*SHA256CTX).SHA256Transform"
+	}, {
+		"mangle":	"SHA384_Init",
+		"c++":	"SHA384_Init(SHA512_CTX *)",
+		"go":	"(*SHA512CTX).SHA384Init"
+	}, {
+		"mangle":	"SHA512_Init",
+		"c++":	"SHA512_Init(SHA512_CTX *)",
+		"go":	"(*SHA512CTX).SHA512Init"
+	}, {
+		"mangle":	"SHA512_Transform",
+		"c++":	"SHA512_Transform(SHA512_CTX *, const unsigned char *)",
+		"go":	"(*SHA512CTX).SHA512Transform"
+	}, {
+		"mangle":	"SRP_Calc_A_param",
+		"c++":	"SRP_Calc_A_param(int *)",
+		"go":	"SRPCalcAParam"
+	}, {
+		"mangle":	"SRP_Verify_A_mod_N",
+		"c++":	"SRP_Verify_A_mod_N(const int *, const int *)",
+		"go":	"SRPVerifyAModN"
+	}, {
+		"mangle":	"SRP_Verify_B_mod_N",
+		"c++":	"SRP_Verify_B_mod_N(const int *, const int *)",
+		"go":	"SRPVerifyBModN"
+	}, {
+		"mangle":	"SRP_check_known_gN_param",
+		"c++":	"SRP_check_known_gN_param(const int *, const int *)",
+		"go":	"SRPCheckKnownGNParam"
+	}, {
+		"mangle":	"SRP_create_verifier_BN_ex",
+		"c++":	"SRP_create_verifier_BN_ex(const char *, const char *, int **, int **, const int *, const int *, int *, const char *)",
+		"go":	"SRPCreateVerifierBNEx"
+	}, {
+		"mangle":	"SSL_CIPHER_description",
+		"c++":	"SSL_CIPHER_description(const SSL_CIPHER *, char *, int)",
+		"go":	"(*SSLCIPHER).SSLCIPHERDescription"
+	}, {
+		"mangle":	"SSL_CIPHER_find",
+		"c++":	"SSL_CIPHER_find(int *, const unsigned char *)",
+		"go":	"SSLCIPHERFind"
+	}, {
+		"mangle":	"SSL_CIPHER_get_auth_nid",
+		"c++":	"SSL_CIPHER_get_auth_nid(const SSL_CIPHER *)",
+		"go":	"(*SSLCIPHER).SSLCIPHERGetAuthNid"
+	}, {
+		"mangle":	"SSL_CIPHER_get_bits",
+		"c++":	"SSL_CIPHER_get_bits(const SSL_CIPHER *, int *)",
+		"go":	"(*SSLCIPHER).SSLCIPHERGetBits"
+	}, {
+		"mangle":	"SSL_CIPHER_get_cipher_nid",
+		"c++":	"SSL_CIPHER_get_cipher_nid(const SSL_CIPHER *)",
+		"go":	"(*SSLCIPHER).SSLCIPHERGetCipherNid"
+	}, {
+		"mangle":	"SSL_CIPHER_get_digest_nid",
+		"c++":	"SSL_CIPHER_get_digest_nid(const SSL_CIPHER *)",
+		"go":	"(*SSLCIPHER).SSLCIPHERGetDigestNid"
+	}, {
+		"mangle":	"SSL_CIPHER_get_kx_nid",
+		"c++":	"SSL_CIPHER_get_kx_nid(const SSL_CIPHER *)",
+		"go":	"(*SSLCIPHER).SSLCIPHERGetKxNid"
+	}, {
+		"mangle":	"SSL_CIPHER_get_name",
+		"c++":	"SSL_CIPHER_get_name(const SSL_CIPHER *)",
+		"go":	"(*SSLCIPHER).SSLCIPHERGetName"
+	}, {
+		"mangle":	"SSL_CIPHER_get_version",
+		"c++":	"SSL_CIPHER_get_version(const SSL_CIPHER *)",
+		"go":	"(*SSLCIPHER).SSLCIPHERGetVersion"
+	}, {
+		"mangle":	"SSL_CIPHER_is_aead",
+		"c++":	"SSL_CIPHER_is_aead(const SSL_CIPHER *)",
+		"go":	"(*SSLCIPHER).SSLCIPHERIsAead"
+	}, {
+		"mangle":	"SSL_CIPHER_standard_name",
+		"c++":	"SSL_CIPHER_standard_name(const SSL_CIPHER *)",
+		"go":	"(*SSLCIPHER).SSLCIPHERStandardName"
+	}, {
+		"mangle":	"SSL_COMP_add_compression_method",
+		"c++":	"SSL_COMP_add_compression_method(int, int *)",
+		"go":	"SSLCOMPAddCompressionMethod"
+	}, {
+		"mangle":	"SSL_COMP_get0_name",
+		"c++":	"SSL_COMP_get0_name(const SSL_COMP *)",
+		"go":	"(*SSLCOMP).SSLCOMPGet0Name"
+	}, {
+		"mangle":	"SSL_COMP_get_id",
+		"c++":	"SSL_COMP_get_id(const SSL_COMP *)",
+		"go":	"(*SSLCOMP).SSLCOMPGetId"
+	}, {
+		"mangle":	"SSL_COMP_get_name",
+		"c++":	"SSL_COMP_get_name(const int *)",
+		"go":	"SSLCOMPGetName"
+	}, {
+		"mangle":	"SSL_CONF_CTX_clear_flags",
+		"c++":	"SSL_CONF_CTX_clear_flags(SSL_CONF_CTX *, unsigned int)",
+		"go":	"(*SSLCONFCTX).SSLCONFCTXClearFlags"
+	}, {
+		"mangle":	"SSL_CONF_CTX_finish",
+		"c++":	"SSL_CONF_CTX_finish(SSL_CONF_CTX *)",
+		"go":	"(*SSLCONFCTX).SSLCONFCTXFinish"
+	}, {
+		"mangle":	"SSL_CONF_CTX_free",
+		"c++":	"SSL_CONF_CTX_free(SSL_CONF_CTX *)",
+		"go":	"(*SSLCONFCTX).SSLCONFCTXFree"
+	}, {
+		"mangle":	"SSL_CONF_CTX_new",
+		"c++":	"SSL_CONF_CTX_new()",
+		"go":	"SSLCONFCTXNew"
+	}, {
+		"mangle":	"SSL_CONF_CTX_set1_prefix",
+		"c++":	"SSL_CONF_CTX_set1_prefix(SSL_CONF_CTX *, const char *)",
+		"go":	"(*SSLCONFCTX).SSLCONFCTXSet1Prefix"
+	}, {
+		"mangle":	"SSL_CONF_CTX_set_flags",
+		"c++":	"SSL_CONF_CTX_set_flags(SSL_CONF_CTX *, unsigned int)",
+		"go":	"(*SSLCONFCTX).SSLCONFCTXSetFlags"
+	}, {
+		"mangle":	"SSL_CONF_CTX_set_ssl",
+		"c++":	"SSL_CONF_CTX_set_ssl(SSL_CONF_CTX *, int *)",
+		"go":	"(*SSLCONFCTX).SSLCONFCTXSetSsl"
+	}, {
+		"mangle":	"SSL_CONF_CTX_set_ssl_ctx",
+		"c++":	"SSL_CONF_CTX_set_ssl_ctx(SSL_CONF_CTX *, int *)",
+		"go":	"(*SSLCONFCTX).SSLCONFCTXSetSslCtx"
+	}, {
+		"mangle":	"SSL_CONF_cmd",
+		"c++":	"SSL_CONF_cmd(SSL_CONF_CTX *, const char *, const char *)",
+		"go":	"(*SSLCONFCTX).SSLCONFCmd"
+	}, {
+		"mangle":	"SSL_CONF_cmd_argv",
+		"c++":	"SSL_CONF_cmd_argv(SSL_CONF_CTX *, int *, char ***)",
+		"go":	"(*SSLCONFCTX).SSLCONFCmdArgv"
+	}, {
+		"mangle":	"SSL_CONF_cmd_value_type",
+		"c++":	"SSL_CONF_cmd_value_type(SSL_CONF_CTX *, const char *)",
+		"go":	"(*SSLCONFCTX).SSLCONFCmdValueType"
+	}, {
+		"mangle":	"SSL_CTX_SRP_CTX_free",
+		"c++":	"SSL_CTX_SRP_CTX_free(int *)",
+		"go":	"SSLCTXSRPCTXFree"
+	}, {
+		"mangle":	"SSL_CTX_SRP_CTX_init",
+		"c++":	"SSL_CTX_SRP_CTX_init(int *)",
+		"go":	"SSLCTXSRPCTXInit"
+	}, {
+		"mangle":	"SSL_CTX_add1_to_CA_list",
+		"c++":	"SSL_CTX_add1_to_CA_list(int *, const int *)",
+		"go":	"SSLCTXAdd1ToCAList"
+	}, {
+		"mangle":	"SSL_CTX_add_client_CA",
+		"c++":	"SSL_CTX_add_client_CA(int *, int *)",
+		"go":	"SSLCTXAddClientCA"
+	}, {
+		"mangle":	"SSL_CTX_add_client_custom_ext",
+		"c++":	"SSL_CTX_add_client_custom_ext(int *, unsigned int, custom_ext_add_cb, custom_ext_free_cb, void *, custom_ext_parse_cb, void *)",
+		"go":	"SSLCTXAddClientCustomExt"
+	}, {
+		"mangle":	"SSL_CTX_add_custom_ext",
+		"c++":	"SSL_CTX_add_custom_ext(int *, unsigned int, unsigned int, SSL_custom_ext_add_cb_ex, SSL_custom_ext_free_cb_ex, void *, SSL_custom_ext_parse_cb_ex, void *)",
+		"go":	"SSLCTXAddCustomExt"
+	}, {
+		"mangle":	"SSL_CTX_add_server_custom_ext",
+		"c++":	"SSL_CTX_add_server_custom_ext(int *, unsigned int, custom_ext_add_cb, custom_ext_free_cb, void *, custom_ext_parse_cb, void *)",
+		"go":	"SSLCTXAddServerCustomExt"
+	}, {
+		"mangle":	"SSL_CTX_add_session",
+		"c++":	"SSL_CTX_add_session(int *, SSL_SESSION *)",
+		"go":	"SSLCTXAddSession"
+	}, {
+		"mangle":	"SSL_CTX_callback_ctrl",
+		"c++":	"SSL_CTX_callback_ctrl(int *, int, void (*)(void))",
+		"go":	"SSLCTXCallbackCtrl"
+	}, {
+		"mangle":	"SSL_CTX_check_private_key",
+		"c++":	"SSL_CTX_check_private_key(const int *)",
+		"go":	"SSLCTXCheckPrivateKey"
+	}, {
+		"mangle":	"SSL_CTX_clear_options",
+		"c++":	"SSL_CTX_clear_options(int *, int)",
+		"go":	"SSLCTXClearOptions"
+	}, {
+		"mangle":	"SSL_CTX_compress_certs",
+		"c++":	"SSL_CTX_compress_certs(int *, int)",
+		"go":	"SSLCTXCompressCerts"
+	}, {
+		"mangle":	"SSL_CTX_config",
+		"c++":	"SSL_CTX_config(int *, const char *)",
+		"go":	"SSLCTXConfig"
+	}, {
+		"mangle":	"SSL_CTX_ct_is_enabled",
+		"c++":	"SSL_CTX_ct_is_enabled(const int *)",
+		"go":	"SSLCTXCtIsEnabled"
+	}, {
+		"mangle":	"SSL_CTX_ctrl",
+		"c++":	"SSL_CTX_ctrl(int *, int, long, void *)",
+		"go":	"SSLCTXCtrl"
+	}, {
+		"mangle":	"SSL_CTX_dane_clear_flags",
+		"c++":	"SSL_CTX_dane_clear_flags(int *, unsigned long)",
+		"go":	"SSLCTXDaneClearFlags"
+	}, {
+		"mangle":	"SSL_CTX_dane_enable",
+		"c++":	"SSL_CTX_dane_enable(int *)",
+		"go":	"SSLCTXDaneEnable"
+	}, {
+		"mangle":	"SSL_CTX_dane_mtype_set",
+		"c++":	"SSL_CTX_dane_mtype_set(int *, const int *, int, int)",
+		"go":	"SSLCTXDaneMtypeSet"
+	}, {
+		"mangle":	"SSL_CTX_dane_set_flags",
+		"c++":	"SSL_CTX_dane_set_flags(int *, unsigned long)",
+		"go":	"SSLCTXDaneSetFlags"
+	}, {
+		"mangle":	"SSL_CTX_enable_ct",
+		"c++":	"SSL_CTX_enable_ct(int *, int)",
+		"go":	"SSLCTXEnableCt"
+	}, {
+		"mangle":	"SSL_CTX_flush_sessions",
+		"c++":	"SSL_CTX_flush_sessions(int *, long)",
+		"go":	"SSLCTXFlushSessions"
+	}, {
+		"mangle":	"SSL_CTX_free",
+		"c++":	"SSL_CTX_free(int *)",
+		"go":	"SSLCTXFree"
+	}, {
+		"mangle":	"SSL_CTX_get0_client_cert_type",
+		"c++":	"SSL_CTX_get0_client_cert_type(const int *, unsigned char **, size_t *)",
+		"go":	"SSLCTXGet0ClientCertType"
+	}, {
+		"mangle":	"SSL_CTX_get0_ctlog_store",
+		"c++":	"SSL_CTX_get0_ctlog_store(const int *)",
+		"go":	"SSLCTXGet0CtlogStore"
+	}, {
+		"mangle":	"SSL_CTX_get0_security_ex_data",
+		"c++":	"SSL_CTX_get0_security_ex_data(const int *)",
+		"go":	"SSLCTXGet0SecurityExData"
+	}, {
+		"mangle":	"SSL_CTX_get0_server_cert_type",
+		"c++":	"SSL_CTX_get0_server_cert_type(const int *, unsigned char **, size_t *)",
+		"go":	"SSLCTXGet0ServerCertType"
+	}, {
+		"mangle":	"SSL_CTX_get1_compressed_cert",
+		"c++":	"SSL_CTX_get1_compressed_cert(int *, int, unsigned char **, size_t *)",
+		"go":	"SSLCTXGet1CompressedCert"
+	}, {
+		"mangle":	"SSL_CTX_get_client_cert_cb",
+		"c++":	"SSL_CTX_get_client_cert_cb(int *)",
+		"go":	"SSLCTXGetClientCertCb"
+	}, {
+		"mangle":	"SSL_CTX_get_default_passwd_cb",
+		"c++":	"SSL_CTX_get_default_passwd_cb(int *)",
+		"go":	"SSLCTXGetDefaultPasswdCb"
+	}, {
+		"mangle":	"SSL_CTX_get_default_passwd_cb_userdata",
+		"c++":	"SSL_CTX_get_default_passwd_cb_userdata(int *)",
+		"go":	"SSLCTXGetDefaultPasswdCbUserdata"
+	}, {
+		"mangle":	"SSL_CTX_get_ex_data",
+		"c++":	"SSL_CTX_get_ex_data(const int *, int)",
+		"go":	"SSLCTXGetExData"
+	}, {
+		"mangle":	"SSL_CTX_get_info_callback",
+		"c++":	"SSL_CTX_get_info_callback(int *)",
+		"go":	"SSLCTXGetInfoCallback"
+	}, {
+		"mangle":	"SSL_CTX_get_keylog_callback",
+		"c++":	"SSL_CTX_get_keylog_callback(const int *)",
+		"go":	"SSLCTXGetKeylogCallback"
+	}, {
+		"mangle":	"SSL_CTX_get_max_early_data",
+		"c++":	"SSL_CTX_get_max_early_data(const int *)",
+		"go":	"SSLCTXGetMaxEarlyData"
+	}, {
+		"mangle":	"SSL_CTX_get_num_tickets",
+		"c++":	"SSL_CTX_get_num_tickets(const int *)",
+		"go":	"SSLCTXGetNumTickets"
+	}, {
+		"mangle":	"SSL_CTX_get_options",
+		"c++":	"SSL_CTX_get_options(const int *)",
+		"go":	"SSLCTXGetOptions"
+	}, {
+		"mangle":	"SSL_CTX_get_quiet_shutdown",
+		"c++":	"SSL_CTX_get_quiet_shutdown(const int *)",
+		"go":	"SSLCTXGetQuietShutdown"
+	}, {
+		"mangle":	"SSL_CTX_get_record_padding_callback_arg",
+		"c++":	"SSL_CTX_get_record_padding_callback_arg(const int *)",
+		"go":	"SSLCTXGetRecordPaddingCallbackArg"
+	}, {
+		"mangle":	"SSL_CTX_get_recv_max_early_data",
+		"c++":	"SSL_CTX_get_recv_max_early_data(const int *)",
+		"go":	"SSLCTXGetRecvMaxEarlyData"
+	}, {
+		"mangle":	"SSL_CTX_get_security_callback",
+		"c++":	"SSL_CTX_get_security_callback(const int *)",
+		"go":	"SSLCTXGetSecurityCallback"
+	}, {
+		"mangle":	"SSL_CTX_get_security_level",
+		"c++":	"SSL_CTX_get_security_level(const int *)",
+		"go":	"SSLCTXGetSecurityLevel"
+	}, {
+		"mangle":	"SSL_CTX_get_timeout",
+		"c++":	"SSL_CTX_get_timeout(const int *)",
+		"go":	"SSLCTXGetTimeout"
+	}, {
+		"mangle":	"SSL_CTX_get_verify_depth",
+		"c++":	"SSL_CTX_get_verify_depth(const int *)",
+		"go":	"SSLCTXGetVerifyDepth"
+	}, {
+		"mangle":	"SSL_CTX_get_verify_mode",
+		"c++":	"SSL_CTX_get_verify_mode(const int *)",
+		"go":	"SSLCTXGetVerifyMode"
+	}, {
+		"mangle":	"SSL_CTX_has_client_custom_ext",
+		"c++":	"SSL_CTX_has_client_custom_ext(const int *, unsigned int)",
+		"go":	"SSLCTXHasClientCustomExt"
+	}, {
+		"mangle":	"SSL_CTX_load_verify_dir",
+		"c++":	"SSL_CTX_load_verify_dir(int *, const char *)",
+		"go":	"SSLCTXLoadVerifyDir"
+	}, {
+		"mangle":	"SSL_CTX_load_verify_file",
+		"c++":	"SSL_CTX_load_verify_file(int *, const char *)",
+		"go":	"SSLCTXLoadVerifyFile"
+	}, {
+		"mangle":	"SSL_CTX_load_verify_locations",
+		"c++":	"SSL_CTX_load_verify_locations(int *, const char *, const char *)",
+		"go":	"SSLCTXLoadVerifyLocations"
+	}, {
+		"mangle":	"SSL_CTX_load_verify_store",
+		"c++":	"SSL_CTX_load_verify_store(int *, const char *)",
+		"go":	"SSLCTXLoadVerifyStore"
+	}, {
+		"mangle":	"SSL_CTX_remove_session",
+		"c++":	"SSL_CTX_remove_session(int *, SSL_SESSION *)",
+		"go":	"SSLCTXRemoveSession"
+	}, {
+		"mangle":	"SSL_CTX_sess_get_get_cb",
+		"c++":	"SSL_CTX_sess_get_get_cb(int *)",
+		"go":	"SSLCTXSessGetGetCb"
+	}, {
+		"mangle":	"SSL_CTX_sess_get_new_cb",
+		"c++":	"SSL_CTX_sess_get_new_cb(int *)",
+		"go":	"SSLCTXSessGetNewCb"
+	}, {
+		"mangle":	"SSL_CTX_sess_get_remove_cb",
+		"c++":	"SSL_CTX_sess_get_remove_cb(int *)",
+		"go":	"SSLCTXSessGetRemoveCb"
+	}, {
+		"mangle":	"SSL_CTX_sess_set_get_cb",
+		"c++":	"SSL_CTX_sess_set_get_cb(int *, SSL_SESSION *(*)(struct ssl_st *, const unsigned char *, int, int *))",
+		"go":	"SSLCTXSessSetGetCb"
+	}, {
+		"mangle":	"SSL_CTX_sess_set_new_cb",
+		"c++":	"SSL_CTX_sess_set_new_cb(int *, int (*)(struct ssl_st *, SSL_SESSION *))",
+		"go":	"SSLCTXSessSetNewCb"
+	}, {
+		"mangle":	"SSL_CTX_sess_set_remove_cb",
+		"c++":	"SSL_CTX_sess_set_remove_cb(int *, void (*)(struct ssl_ctx_st *, SSL_SESSION *))",
+		"go":	"SSLCTXSessSetRemoveCb"
+	}, {
+		"mangle":	"SSL_CTX_set0_CA_list",
+		"c++":	"SSL_CTX_set0_CA_list(int *, int (*)())",
+		"go":	"SSLCTXSet0CAList"
+	}, {
+		"mangle":	"SSL_CTX_set0_ctlog_store",
+		"c++":	"SSL_CTX_set0_ctlog_store(int *, int *)",
+		"go":	"SSLCTXSet0CtlogStore"
+	}, {
+		"mangle":	"SSL_CTX_set0_security_ex_data",
+		"c++":	"SSL_CTX_set0_security_ex_data(int *, void *)",
+		"go":	"SSLCTXSet0SecurityExData"
+	}, {
+		"mangle":	"SSL_CTX_set0_tmp_dh_pkey",
+		"c++":	"SSL_CTX_set0_tmp_dh_pkey(int *, int *)",
+		"go":	"SSLCTXSet0TmpDhPkey"
+	}, {
+		"mangle":	"SSL_CTX_set1_cert_comp_preference",
+		"c++":	"SSL_CTX_set1_cert_comp_preference(int *, int *, size_t)",
+		"go":	"SSLCTXSet1CertCompPreference"
+	}, {
+		"mangle":	"SSL_CTX_set1_cert_store",
+		"c++":	"SSL_CTX_set1_cert_store(int *, int *)",
+		"go":	"SSLCTXSet1CertStore"
+	}, {
+		"mangle":	"SSL_CTX_set1_client_cert_type",
+		"c++":	"SSL_CTX_set1_client_cert_type(int *, const unsigned char *, size_t)",
+		"go":	"SSLCTXSet1ClientCertType"
+	}, {
+		"mangle":	"SSL_CTX_set1_compressed_cert",
+		"c++":	"SSL_CTX_set1_compressed_cert(int *, int, unsigned char *, size_t, size_t)",
+		"go":	"SSLCTXSet1CompressedCert"
+	}, {
+		"mangle":	"SSL_CTX_set1_param",
+		"c++":	"SSL_CTX_set1_param(int *, int *)",
+		"go":	"SSLCTXSet1Param"
+	}, {
+		"mangle":	"SSL_CTX_set1_server_cert_type",
+		"c++":	"SSL_CTX_set1_server_cert_type(int *, const unsigned char *, size_t)",
+		"go":	"SSLCTXSet1ServerCertType"
+	}, {
+		"mangle":	"SSL_CTX_set_allow_early_data_cb",
+		"c++":	"SSL_CTX_set_allow_early_data_cb(int *, SSL_allow_early_data_cb_fn, void *)",
+		"go":	"SSLCTXSetAllowEarlyDataCb"
+	}, {
+		"mangle":	"SSL_CTX_set_alpn_protos",
+		"c++":	"SSL_CTX_set_alpn_protos(int *, const unsigned char *, unsigned int)",
+		"go":	"SSLCTXSetAlpnProtos"
+	}, {
+		"mangle":	"SSL_CTX_set_alpn_select_cb",
+		"c++":	"SSL_CTX_set_alpn_select_cb(int *, SSL_CTX_alpn_select_cb_func, void *)",
+		"go":	"SSLCTXSetAlpnSelectCb"
+	}, {
+		"mangle":	"SSL_CTX_set_block_padding",
+		"c++":	"SSL_CTX_set_block_padding(int *, size_t)",
+		"go":	"SSLCTXSetBlockPadding"
+	}, {
+		"mangle":	"SSL_CTX_set_cert_cb",
+		"c++":	"SSL_CTX_set_cert_cb(int *, int (*)(int *, void *), void *)",
+		"go":	"SSLCTXSetCertCb"
+	}, {
+		"mangle":	"SSL_CTX_set_cert_store",
+		"c++":	"SSL_CTX_set_cert_store(int *, int *)",
+		"go":	"SSLCTXSetCertStore"
+	}, {
+		"mangle":	"SSL_CTX_set_cert_verify_callback",
+		"c++":	"SSL_CTX_set_cert_verify_callback(int *, int (*)(int *, void *), void *)",
+		"go":	"SSLCTXSetCertVerifyCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_cipher_list",
+		"c++":	"SSL_CTX_set_cipher_list(int *, const char *)",
+		"go":	"SSLCTXSetCipherList"
+	}, {
+		"mangle":	"SSL_CTX_set_ciphersuites",
+		"c++":	"SSL_CTX_set_ciphersuites(int *, const char *)",
+		"go":	"SSLCTXSetCiphersuites"
+	}, {
+		"mangle":	"SSL_CTX_set_client_CA_list",
+		"c++":	"SSL_CTX_set_client_CA_list(int *, int (*)())",
+		"go":	"SSLCTXSetClientCAList"
+	}, {
+		"mangle":	"SSL_CTX_set_client_cert_cb",
+		"c++":	"SSL_CTX_set_client_cert_cb(int *, int (*)(int *, int **, int **))",
+		"go":	"SSLCTXSetClientCertCb"
+	}, {
+		"mangle":	"SSL_CTX_set_client_cert_engine",
+		"c++":	"SSL_CTX_set_client_cert_engine(int *, int *)",
+		"go":	"SSLCTXSetClientCertEngine"
+	}, {
+		"mangle":	"SSL_CTX_set_client_hello_cb",
+		"c++":	"SSL_CTX_set_client_hello_cb(int *, SSL_client_hello_cb_fn, void *)",
+		"go":	"SSLCTXSetClientHelloCb"
+	}, {
+		"mangle":	"SSL_CTX_set_cookie_generate_cb",
+		"c++":	"SSL_CTX_set_cookie_generate_cb(int *, int (*)(int *, unsigned char *, unsigned int *))",
+		"go":	"SSLCTXSetCookieGenerateCb"
+	}, {
+		"mangle":	"SSL_CTX_set_cookie_verify_cb",
+		"c++":	"SSL_CTX_set_cookie_verify_cb(int *, int (*)(int *, const unsigned char *, unsigned int))",
+		"go":	"SSLCTXSetCookieVerifyCb"
+	}, {
+		"mangle":	"SSL_CTX_set_ct_validation_callback",
+		"c++":	"SSL_CTX_set_ct_validation_callback(int *, ssl_ct_validation_cb, void *)",
+		"go":	"SSLCTXSetCtValidationCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_ctlog_list_file",
+		"c++":	"SSL_CTX_set_ctlog_list_file(int *, const char *)",
+		"go":	"SSLCTXSetCtlogListFile"
+	}, {
+		"mangle":	"SSL_CTX_set_default_ctlog_list_file",
+		"c++":	"SSL_CTX_set_default_ctlog_list_file(int *)",
+		"go":	"SSLCTXSetDefaultCtlogListFile"
+	}, {
+		"mangle":	"SSL_CTX_set_default_passwd_cb",
+		"c++":	"SSL_CTX_set_default_passwd_cb(int *, int *)",
+		"go":	"SSLCTXSetDefaultPasswdCb"
+	}, {
+		"mangle":	"SSL_CTX_set_default_passwd_cb_userdata",
+		"c++":	"SSL_CTX_set_default_passwd_cb_userdata(int *, void *)",
+		"go":	"SSLCTXSetDefaultPasswdCbUserdata"
+	}, {
+		"mangle":	"SSL_CTX_set_default_read_buffer_len",
+		"c++":	"SSL_CTX_set_default_read_buffer_len(int *, size_t)",
+		"go":	"SSLCTXSetDefaultReadBufferLen"
+	}, {
+		"mangle":	"SSL_CTX_set_default_verify_dir",
+		"c++":	"SSL_CTX_set_default_verify_dir(int *)",
+		"go":	"SSLCTXSetDefaultVerifyDir"
+	}, {
+		"mangle":	"SSL_CTX_set_default_verify_file",
+		"c++":	"SSL_CTX_set_default_verify_file(int *)",
+		"go":	"SSLCTXSetDefaultVerifyFile"
+	}, {
+		"mangle":	"SSL_CTX_set_default_verify_paths",
+		"c++":	"SSL_CTX_set_default_verify_paths(int *)",
+		"go":	"SSLCTXSetDefaultVerifyPaths"
+	}, {
+		"mangle":	"SSL_CTX_set_default_verify_store",
+		"c++":	"SSL_CTX_set_default_verify_store(int *)",
+		"go":	"SSLCTXSetDefaultVerifyStore"
+	}, {
+		"mangle":	"SSL_CTX_set_ex_data",
+		"c++":	"SSL_CTX_set_ex_data(int *, int, void *)",
+		"go":	"SSLCTXSetExData"
+	}, {
+		"mangle":	"SSL_CTX_set_generate_session_id",
+		"c++":	"SSL_CTX_set_generate_session_id(int *, GEN_SESSION_CB)",
+		"go":	"SSLCTXSetGenerateSessionId"
+	}, {
+		"mangle":	"SSL_CTX_set_info_callback",
+		"c++":	"SSL_CTX_set_info_callback(int *, void (*)(const int *, int, int))",
+		"go":	"SSLCTXSetInfoCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_keylog_callback",
+		"c++":	"SSL_CTX_set_keylog_callback(int *, SSL_CTX_keylog_cb_func)",
+		"go":	"SSLCTXSetKeylogCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_max_early_data",
+		"c++":	"SSL_CTX_set_max_early_data(int *, int)",
+		"go":	"SSLCTXSetMaxEarlyData"
+	}, {
+		"mangle":	"SSL_CTX_set_msg_callback",
+		"c++":	"SSL_CTX_set_msg_callback(int *, void (*)(int, int, int, const void *, size_t, int *, void *))",
+		"go":	"SSLCTXSetMsgCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_next_proto_select_cb",
+		"c++":	"SSL_CTX_set_next_proto_select_cb(int *, SSL_CTX_npn_select_cb_func, void *)",
+		"go":	"SSLCTXSetNextProtoSelectCb"
+	}, {
+		"mangle":	"SSL_CTX_set_next_protos_advertised_cb",
+		"c++":	"SSL_CTX_set_next_protos_advertised_cb(int *, SSL_CTX_npn_advertised_cb_func, void *)",
+		"go":	"SSLCTXSetNextProtosAdvertisedCb"
+	}, {
+		"mangle":	"SSL_CTX_set_not_resumable_session_callback",
+		"c++":	"SSL_CTX_set_not_resumable_session_callback(int *, int (*)(int *, int))",
+		"go":	"SSLCTXSetNotResumableSessionCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_num_tickets",
+		"c++":	"SSL_CTX_set_num_tickets(int *, size_t)",
+		"go":	"SSLCTXSetNumTickets"
+	}, {
+		"mangle":	"SSL_CTX_set_options",
+		"c++":	"SSL_CTX_set_options(int *, int)",
+		"go":	"SSLCTXSetOptions"
+	}, {
+		"mangle":	"SSL_CTX_set_post_handshake_auth",
+		"c++":	"SSL_CTX_set_post_handshake_auth(int *, int)",
+		"go":	"SSLCTXSetPostHandshakeAuth"
+	}, {
+		"mangle":	"SSL_CTX_set_psk_client_callback",
+		"c++":	"SSL_CTX_set_psk_client_callback(int *, SSL_psk_client_cb_func)",
+		"go":	"SSLCTXSetPskClientCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_psk_find_session_callback",
+		"c++":	"SSL_CTX_set_psk_find_session_callback(int *, SSL_psk_find_session_cb_func)",
+		"go":	"SSLCTXSetPskFindSessionCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_psk_server_callback",
+		"c++":	"SSL_CTX_set_psk_server_callback(int *, SSL_psk_server_cb_func)",
+		"go":	"SSLCTXSetPskServerCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_psk_use_session_callback",
+		"c++":	"SSL_CTX_set_psk_use_session_callback(int *, SSL_psk_use_session_cb_func)",
+		"go":	"SSLCTXSetPskUseSessionCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_purpose",
+		"c++":	"SSL_CTX_set_purpose(int *, int)",
+		"go":	"SSLCTXSetPurpose"
+	}, {
+		"mangle":	"SSL_CTX_set_quiet_shutdown",
+		"c++":	"SSL_CTX_set_quiet_shutdown(int *, int)",
+		"go":	"SSLCTXSetQuietShutdown"
+	}, {
+		"mangle":	"SSL_CTX_set_record_padding_callback",
+		"c++":	"SSL_CTX_set_record_padding_callback(int *, size_t (*)(int *, int, size_t, void *))",
+		"go":	"SSLCTXSetRecordPaddingCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_record_padding_callback_arg",
+		"c++":	"SSL_CTX_set_record_padding_callback_arg(int *, void *)",
+		"go":	"SSLCTXSetRecordPaddingCallbackArg"
+	}, {
+		"mangle":	"SSL_CTX_set_recv_max_early_data",
+		"c++":	"SSL_CTX_set_recv_max_early_data(int *, int)",
+		"go":	"SSLCTXSetRecvMaxEarlyData"
+	}, {
+		"mangle":	"SSL_CTX_set_security_callback",
+		"c++":	"SSL_CTX_set_security_callback(int *, int (*)(const int *, const int *, int, int, int, void *, void *))",
+		"go":	"SSLCTXSetSecurityCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_security_level",
+		"c++":	"SSL_CTX_set_security_level(int *, int)",
+		"go":	"SSLCTXSetSecurityLevel"
+	}, {
+		"mangle":	"SSL_CTX_set_session_id_context",
+		"c++":	"SSL_CTX_set_session_id_context(int *, const unsigned char *, unsigned int)",
+		"go":	"SSLCTXSetSessionIdContext"
+	}, {
+		"mangle":	"SSL_CTX_set_session_ticket_cb",
+		"c++":	"SSL_CTX_set_session_ticket_cb(int *, SSL_CTX_generate_session_ticket_fn, SSL_CTX_decrypt_session_ticket_fn, void *)",
+		"go":	"SSLCTXSetSessionTicketCb"
+	}, {
+		"mangle":	"SSL_CTX_set_srp_cb_arg",
+		"c++":	"SSL_CTX_set_srp_cb_arg(int *, void *)",
+		"go":	"SSLCTXSetSrpCbArg"
+	}, {
+		"mangle":	"SSL_CTX_set_srp_client_pwd_callback",
+		"c++":	"SSL_CTX_set_srp_client_pwd_callback(int *, char *(*)(int *, void *))",
+		"go":	"SSLCTXSetSrpClientPwdCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_srp_password",
+		"c++":	"SSL_CTX_set_srp_password(int *, char *)",
+		"go":	"SSLCTXSetSrpPassword"
+	}, {
+		"mangle":	"SSL_CTX_set_srp_strength",
+		"c++":	"SSL_CTX_set_srp_strength(int *, int)",
+		"go":	"SSLCTXSetSrpStrength"
+	}, {
+		"mangle":	"SSL_CTX_set_srp_username",
+		"c++":	"SSL_CTX_set_srp_username(int *, char *)",
+		"go":	"SSLCTXSetSrpUsername"
+	}, {
+		"mangle":	"SSL_CTX_set_srp_username_callback",
+		"c++":	"SSL_CTX_set_srp_username_callback(int *, int (*)(int *, int *, void *))",
+		"go":	"SSLCTXSetSrpUsernameCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_srp_verify_param_callback",
+		"c++":	"SSL_CTX_set_srp_verify_param_callback(int *, int (*)(int *, void *))",
+		"go":	"SSLCTXSetSrpVerifyParamCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_ssl_version",
+		"c++":	"SSL_CTX_set_ssl_version(int *, const SSL_METHOD *)",
+		"go":	"SSLCTXSetSslVersion"
+	}, {
+		"mangle":	"SSL_CTX_set_stateless_cookie_generate_cb",
+		"c++":	"SSL_CTX_set_stateless_cookie_generate_cb(int *, int (*)(int *, unsigned char *, size_t *))",
+		"go":	"SSLCTXSetStatelessCookieGenerateCb"
+	}, {
+		"mangle":	"SSL_CTX_set_stateless_cookie_verify_cb",
+		"c++":	"SSL_CTX_set_stateless_cookie_verify_cb(int *, int (*)(int *, const unsigned char *, size_t))",
+		"go":	"SSLCTXSetStatelessCookieVerifyCb"
+	}, {
+		"mangle":	"SSL_CTX_set_timeout",
+		"c++":	"SSL_CTX_set_timeout(int *, long)",
+		"go":	"SSLCTXSetTimeout"
+	}, {
+		"mangle":	"SSL_CTX_set_tlsext_max_fragment_length",
+		"c++":	"SSL_CTX_set_tlsext_max_fragment_length(int *, int)",
+		"go":	"SSLCTXSetTlsextMaxFragmentLength"
+	}, {
+		"mangle":	"SSL_CTX_set_tlsext_ticket_key_evp_cb",
+		"c++":	"SSL_CTX_set_tlsext_ticket_key_evp_cb(int *, int (*)(int *, unsigned char *, unsigned char *, int *, int *, int))",
+		"go":	"SSLCTXSetTlsextTicketKeyEvpCb"
+	}, {
+		"mangle":	"SSL_CTX_set_tlsext_use_srtp",
+		"c++":	"SSL_CTX_set_tlsext_use_srtp(int *, const char *)",
+		"go":	"SSLCTXSetTlsextUseSrtp"
+	}, {
+		"mangle":	"SSL_CTX_set_tmp_dh_callback",
+		"c++":	"SSL_CTX_set_tmp_dh_callback(int *, int *(*)(int *, int, int))",
+		"go":	"SSLCTXSetTmpDhCallback"
+	}, {
+		"mangle":	"SSL_CTX_set_trust",
+		"c++":	"SSL_CTX_set_trust(int *, int)",
+		"go":	"SSLCTXSetTrust"
+	}, {
+		"mangle":	"SSL_CTX_set_verify",
+		"c++":	"SSL_CTX_set_verify(int *, int, SSL_verify_cb)",
+		"go":	"SSLCTXSetVerify"
+	}, {
+		"mangle":	"SSL_CTX_set_verify_depth",
+		"c++":	"SSL_CTX_set_verify_depth(int *, int)",
+		"go":	"SSLCTXSetVerifyDepth"
+	}, {
+		"mangle":	"SSL_CTX_up_ref",
+		"c++":	"SSL_CTX_up_ref(int *)",
+		"go":	"SSLCTXUpRef"
+	}, {
+		"mangle":	"SSL_CTX_use_PrivateKey",
+		"c++":	"SSL_CTX_use_PrivateKey(int *, int *)",
+		"go":	"SSLCTXUsePrivateKey"
+	}, {
+		"mangle":	"SSL_CTX_use_PrivateKey_ASN1",
+		"c++":	"SSL_CTX_use_PrivateKey_ASN1(int, int *, const unsigned char *, long)",
+		"go":	"SSLCTXUsePrivateKeyASN1"
+	}, {
+		"mangle":	"SSL_CTX_use_PrivateKey_file",
+		"c++":	"SSL_CTX_use_PrivateKey_file(int *, const char *, int)",
+		"go":	"SSLCTXUsePrivateKeyFile"
+	}, {
+		"mangle":	"SSL_CTX_use_RSAPrivateKey",
+		"c++":	"SSL_CTX_use_RSAPrivateKey(int *, int *)",
+		"go":	"SSLCTXUseRSAPrivateKey"
+	}, {
+		"mangle":	"SSL_CTX_use_RSAPrivateKey_ASN1",
+		"c++":	"SSL_CTX_use_RSAPrivateKey_ASN1(int *, const unsigned char *, long)",
+		"go":	"SSLCTXUseRSAPrivateKeyASN1"
+	}, {
+		"mangle":	"SSL_CTX_use_RSAPrivateKey_file",
+		"c++":	"SSL_CTX_use_RSAPrivateKey_file(int *, const char *, int)",
+		"go":	"SSLCTXUseRSAPrivateKeyFile"
+	}, {
+		"mangle":	"SSL_CTX_use_cert_and_key",
+		"c++":	"SSL_CTX_use_cert_and_key(int *, int *, int *, int (*)())",
+		"go":	"SSLCTXUseCertAndKey"
+	}, {
+		"mangle":	"SSL_CTX_use_certificate",
+		"c++":	"SSL_CTX_use_certificate(int *, int *)",
+		"go":	"SSLCTXUseCertificate"
+	}, {
+		"mangle":	"SSL_CTX_use_certificate_ASN1",
+		"c++":	"SSL_CTX_use_certificate_ASN1(int *, int, const unsigned char *)",
+		"go":	"SSLCTXUseCertificateASN1"
+	}, {
+		"mangle":	"SSL_CTX_use_certificate_chain_file",
+		"c++":	"SSL_CTX_use_certificate_chain_file(int *, const char *)",
+		"go":	"SSLCTXUseCertificateChainFile"
+	}, {
+		"mangle":	"SSL_CTX_use_certificate_file",
+		"c++":	"SSL_CTX_use_certificate_file(int *, const char *, int)",
+		"go":	"SSLCTXUseCertificateFile"
+	}, {
+		"mangle":	"SSL_CTX_use_psk_identity_hint",
+		"c++":	"SSL_CTX_use_psk_identity_hint(int *, const char *)",
+		"go":	"SSLCTXUsePskIdentityHint"
+	}, {
+		"mangle":	"SSL_CTX_use_serverinfo",
+		"c++":	"SSL_CTX_use_serverinfo(int *, const unsigned char *, size_t)",
+		"go":	"SSLCTXUseServerinfo"
+	}, {
+		"mangle":	"SSL_CTX_use_serverinfo_ex",
+		"c++":	"SSL_CTX_use_serverinfo_ex(int *, unsigned int, const unsigned char *, size_t)",
+		"go":	"SSLCTXUseServerinfoEx"
+	}, {
+		"mangle":	"SSL_CTX_use_serverinfo_file",
+		"c++":	"SSL_CTX_use_serverinfo_file(int *, const char *)",
+		"go":	"SSLCTXUseServerinfoFile"
+	}, {
+		"mangle":	"SSL_SESSION_free",
+		"c++":	"SSL_SESSION_free(SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONFree"
+	}, {
+		"mangle":	"SSL_SESSION_get0_alpn_selected",
+		"c++":	"SSL_SESSION_get0_alpn_selected(const SSL_SESSION *, const unsigned char **, size_t *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGet0AlpnSelected"
+	}, {
+		"mangle":	"SSL_SESSION_get0_hostname",
+		"c++":	"SSL_SESSION_get0_hostname(const SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGet0Hostname"
+	}, {
+		"mangle":	"SSL_SESSION_get0_id_context",
+		"c++":	"SSL_SESSION_get0_id_context(const SSL_SESSION *, unsigned int *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGet0IdContext"
+	}, {
+		"mangle":	"SSL_SESSION_get0_ticket",
+		"c++":	"SSL_SESSION_get0_ticket(const SSL_SESSION *, const unsigned char **, size_t *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGet0Ticket"
+	}, {
+		"mangle":	"SSL_SESSION_get0_ticket_appdata",
+		"c++":	"SSL_SESSION_get0_ticket_appdata(SSL_SESSION *, void **, size_t *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGet0TicketAppdata"
+	}, {
+		"mangle":	"SSL_SESSION_get_compress_id",
+		"c++":	"SSL_SESSION_get_compress_id(const SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGetCompressId"
+	}, {
+		"mangle":	"SSL_SESSION_get_ex_data",
+		"c++":	"SSL_SESSION_get_ex_data(const SSL_SESSION *, int)",
+		"go":	"(*SSLSESSION).SSLSESSIONGetExData"
+	}, {
+		"mangle":	"SSL_SESSION_get_id",
+		"c++":	"SSL_SESSION_get_id(const SSL_SESSION *, unsigned int *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGetId"
+	}, {
+		"mangle":	"SSL_SESSION_get_max_fragment_length",
+		"c++":	"SSL_SESSION_get_max_fragment_length(const SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGetMaxFragmentLength"
+	}, {
+		"mangle":	"SSL_SESSION_get_protocol_version",
+		"c++":	"SSL_SESSION_get_protocol_version(const SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGetProtocolVersion"
+	}, {
+		"mangle":	"SSL_SESSION_get_ticket_lifetime_hint",
+		"c++":	"SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGetTicketLifetimeHint"
+	}, {
+		"mangle":	"SSL_SESSION_get_time",
+		"c++":	"SSL_SESSION_get_time(const SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGetTime"
+	}, {
+		"mangle":	"SSL_SESSION_get_timeout",
+		"c++":	"SSL_SESSION_get_timeout(const SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONGetTimeout"
+	}, {
+		"mangle":	"SSL_SESSION_has_ticket",
+		"c++":	"SSL_SESSION_has_ticket(const SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONHasTicket"
+	}, {
+		"mangle":	"SSL_SESSION_is_resumable",
+		"c++":	"SSL_SESSION_is_resumable(const SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONIsResumable"
+	}, {
+		"mangle":	"SSL_SESSION_print",
+		"c++":	"SSL_SESSION_print(int *, const SSL_SESSION *)",
+		"go":	"SSLSESSIONPrint"
+	}, {
+		"mangle":	"SSL_SESSION_print_fp",
+		"c++":	"SSL_SESSION_print_fp(FILE *, const SSL_SESSION *)",
+		"go":	"SSLSESSIONPrintFp"
+	}, {
+		"mangle":	"SSL_SESSION_print_keylog",
+		"c++":	"SSL_SESSION_print_keylog(int *, const SSL_SESSION *)",
+		"go":	"SSLSESSIONPrintKeylog"
+	}, {
+		"mangle":	"SSL_SESSION_set1_alpn_selected",
+		"c++":	"SSL_SESSION_set1_alpn_selected(SSL_SESSION *, const unsigned char *, size_t)",
+		"go":	"(*SSLSESSION).SSLSESSIONSet1AlpnSelected"
+	}, {
+		"mangle":	"SSL_SESSION_set1_hostname",
+		"c++":	"SSL_SESSION_set1_hostname(SSL_SESSION *, const char *)",
+		"go":	"(*SSLSESSION).SSLSESSIONSet1Hostname"
+	}, {
+		"mangle":	"SSL_SESSION_set1_id",
+		"c++":	"SSL_SESSION_set1_id(SSL_SESSION *, const unsigned char *, unsigned int)",
+		"go":	"(*SSLSESSION).SSLSESSIONSet1Id"
+	}, {
+		"mangle":	"SSL_SESSION_set1_id_context",
+		"c++":	"SSL_SESSION_set1_id_context(SSL_SESSION *, const unsigned char *, unsigned int)",
+		"go":	"(*SSLSESSION).SSLSESSIONSet1IdContext"
+	}, {
+		"mangle":	"SSL_SESSION_set1_master_key",
+		"c++":	"SSL_SESSION_set1_master_key(SSL_SESSION *, const unsigned char *, size_t)",
+		"go":	"(*SSLSESSION).SSLSESSIONSet1MasterKey"
+	}, {
+		"mangle":	"SSL_SESSION_set1_ticket_appdata",
+		"c++":	"SSL_SESSION_set1_ticket_appdata(SSL_SESSION *, const void *, size_t)",
+		"go":	"(*SSLSESSION).SSLSESSIONSet1TicketAppdata"
+	}, {
+		"mangle":	"SSL_SESSION_set_cipher",
+		"c++":	"SSL_SESSION_set_cipher(SSL_SESSION *, const SSL_CIPHER *)",
+		"go":	"(*SSLSESSION).SSLSESSIONSetCipher"
+	}, {
+		"mangle":	"SSL_SESSION_set_ex_data",
+		"c++":	"SSL_SESSION_set_ex_data(SSL_SESSION *, int, void *)",
+		"go":	"(*SSLSESSION).SSLSESSIONSetExData"
+	}, {
+		"mangle":	"SSL_SESSION_set_max_early_data",
+		"c++":	"SSL_SESSION_set_max_early_data(SSL_SESSION *, int)",
+		"go":	"(*SSLSESSION).SSLSESSIONSetMaxEarlyData"
+	}, {
+		"mangle":	"SSL_SESSION_set_protocol_version",
+		"c++":	"SSL_SESSION_set_protocol_version(SSL_SESSION *, int)",
+		"go":	"(*SSLSESSION).SSLSESSIONSetProtocolVersion"
+	}, {
+		"mangle":	"SSL_SESSION_set_time",
+		"c++":	"SSL_SESSION_set_time(SSL_SESSION *, long)",
+		"go":	"(*SSLSESSION).SSLSESSIONSetTime"
+	}, {
+		"mangle":	"SSL_SESSION_set_timeout",
+		"c++":	"SSL_SESSION_set_timeout(SSL_SESSION *, long)",
+		"go":	"(*SSLSESSION).SSLSESSIONSetTimeout"
+	}, {
+		"mangle":	"SSL_SESSION_up_ref",
+		"c++":	"SSL_SESSION_up_ref(SSL_SESSION *)",
+		"go":	"(*SSLSESSION).SSLSESSIONUpRef"
+	}, {
+		"mangle":	"SSL_SRP_CTX_free",
+		"c++":	"SSL_SRP_CTX_free(int *)",
+		"go":	"SSLSRPCTXFree"
+	}, {
+		"mangle":	"SSL_SRP_CTX_init",
+		"c++":	"SSL_SRP_CTX_init(int *)",
+		"go":	"SSLSRPCTXInit"
+	}, {
+		"mangle":	"SSL_accept",
+		"c++":	"SSL_accept(int *)",
+		"go":	"SSLAccept"
+	}, {
+		"mangle":	"SSL_add1_host",
+		"c++":	"SSL_add1_host(int *, const char *)",
+		"go":	"SSLAdd1Host"
+	}, {
+		"mangle":	"SSL_add1_to_CA_list",
+		"c++":	"SSL_add1_to_CA_list(int *, const int *)",
+		"go":	"SSLAdd1ToCAList"
+	}, {
+		"mangle":	"SSL_add_client_CA",
+		"c++":	"SSL_add_client_CA(int *, int *)",
+		"go":	"SSLAddClientCA"
+	}, {
+		"mangle":	"SSL_add_dir_cert_subjects_to_stack",
+		"c++":	"SSL_add_dir_cert_subjects_to_stack(int (*)())",
+		"go":	"SSLAddDirCertSubjectsToStack"
+	}, {
+		"mangle":	"SSL_add_expected_rpk",
+		"c++":	"SSL_add_expected_rpk(int *, int *)",
+		"go":	"SSLAddExpectedRpk"
+	}, {
+		"mangle":	"SSL_add_file_cert_subjects_to_stack",
+		"c++":	"SSL_add_file_cert_subjects_to_stack(int (*)())",
+		"go":	"SSLAddFileCertSubjectsToStack"
+	}, {
+		"mangle":	"SSL_add_ssl_module",
+		"c++":	"SSL_add_ssl_module()",
+		"go":	"SSLAddSslModule"
+	}, {
+		"mangle":	"SSL_add_store_cert_subjects_to_stack",
+		"c++":	"SSL_add_store_cert_subjects_to_stack(int (*)())",
+		"go":	"SSLAddStoreCertSubjectsToStack"
+	}, {
+		"mangle":	"SSL_alert_desc_string",
+		"c++":	"SSL_alert_desc_string(int)",
+		"go":	"SSLAlertDescString"
+	}, {
+		"mangle":	"SSL_alert_desc_string_long",
+		"c++":	"SSL_alert_desc_string_long(int)",
+		"go":	"SSLAlertDescStringLong"
+	}, {
+		"mangle":	"SSL_alert_type_string",
+		"c++":	"SSL_alert_type_string(int)",
+		"go":	"SSLAlertTypeString"
+	}, {
+		"mangle":	"SSL_alert_type_string_long",
+		"c++":	"SSL_alert_type_string_long(int)",
+		"go":	"SSLAlertTypeStringLong"
+	}, {
+		"mangle":	"SSL_alloc_buffers",
+		"c++":	"SSL_alloc_buffers(int *)",
+		"go":	"SSLAllocBuffers"
+	}, {
+		"mangle":	"SSL_bytes_to_cipher_list",
+		"c++":	"SSL_bytes_to_cipher_list(int *, const unsigned char *, size_t, int, int (*)(SSL_CIPHER))",
+		"go":	"SSLBytesToCipherList"
+	}, {
+		"mangle":	"SSL_callback_ctrl",
+		"c++":	"SSL_callback_ctrl(int *, int, void (*)(void))",
+		"go":	"SSLCallbackCtrl"
+	}, {
+		"mangle":	"SSL_certs_clear",
+		"c++":	"SSL_certs_clear(int *)",
+		"go":	"SSLCertsClear"
+	}, {
+		"mangle":	"SSL_check_chain",
+		"c++":	"SSL_check_chain(int *, int *, int *, int (*)())",
+		"go":	"SSLCheckChain"
+	}, {
+		"mangle":	"SSL_check_private_key",
+		"c++":	"SSL_check_private_key(const int *)",
+		"go":	"SSLCheckPrivateKey"
+	}, {
+		"mangle":	"SSL_clear",
+		"c++":	"SSL_clear(int *)",
+		"go":	"SSLClear"
+	}, {
+		"mangle":	"SSL_clear_options",
+		"c++":	"SSL_clear_options(int *, int)",
+		"go":	"SSLClearOptions"
+	}, {
+		"mangle":	"SSL_client_hello_get0_ciphers",
+		"c++":	"SSL_client_hello_get0_ciphers(int *, const unsigned char **)",
+		"go":	"SSLClientHelloGet0Ciphers"
+	}, {
+		"mangle":	"SSL_client_hello_get0_compression_methods",
+		"c++":	"SSL_client_hello_get0_compression_methods(int *, const unsigned char **)",
+		"go":	"SSLClientHelloGet0CompressionMethods"
+	}, {
+		"mangle":	"SSL_client_hello_get0_ext",
+		"c++":	"SSL_client_hello_get0_ext(int *, unsigned int, const unsigned char **, size_t *)",
+		"go":	"SSLClientHelloGet0Ext"
+	}, {
+		"mangle":	"SSL_client_hello_get0_legacy_version",
+		"c++":	"SSL_client_hello_get0_legacy_version(int *)",
+		"go":	"SSLClientHelloGet0LegacyVersion"
+	}, {
+		"mangle":	"SSL_client_hello_get0_random",
+		"c++":	"SSL_client_hello_get0_random(int *, const unsigned char **)",
+		"go":	"SSLClientHelloGet0Random"
+	}, {
+		"mangle":	"SSL_client_hello_get0_session_id",
+		"c++":	"SSL_client_hello_get0_session_id(int *, const unsigned char **)",
+		"go":	"SSLClientHelloGet0SessionId"
+	}, {
+		"mangle":	"SSL_client_hello_get1_extensions_present",
+		"c++":	"SSL_client_hello_get1_extensions_present(int *, int **, size_t *)",
+		"go":	"SSLClientHelloGet1ExtensionsPresent"
+	}, {
+		"mangle":	"SSL_client_hello_get_extension_order",
+		"c++":	"SSL_client_hello_get_extension_order(int *, int *, size_t *)",
+		"go":	"SSLClientHelloGetExtensionOrder"
+	}, {
+		"mangle":	"SSL_client_hello_isv2",
+		"c++":	"SSL_client_hello_isv2(int *)",
+		"go":	"SSLClientHelloIsv2"
+	}, {
+		"mangle":	"SSL_client_version",
+		"c++":	"SSL_client_version(const int *)",
+		"go":	"SSLClientVersion"
+	}, {
+		"mangle":	"SSL_compress_certs",
+		"c++":	"SSL_compress_certs(int *, int)",
+		"go":	"SSLCompressCerts"
+	}, {
+		"mangle":	"SSL_config",
+		"c++":	"SSL_config(int *, const char *)",
+		"go":	"SSLConfig"
+	}, {
+		"mangle":	"SSL_connect",
+		"c++":	"SSL_connect(int *)",
+		"go":	"SSLConnect"
+	}, {
+		"mangle":	"SSL_copy_session_id",
+		"c++":	"SSL_copy_session_id(int *, const int *)",
+		"go":	"SSLCopySessionId"
+	}, {
+		"mangle":	"SSL_ct_is_enabled",
+		"c++":	"SSL_ct_is_enabled(const int *)",
+		"go":	"SSLCtIsEnabled"
+	}, {
+		"mangle":	"SSL_ctrl",
+		"c++":	"SSL_ctrl(int *, int, long, void *)",
+		"go":	"SSLCtrl"
+	}, {
+		"mangle":	"SSL_dane_clear_flags",
+		"c++":	"SSL_dane_clear_flags(int *, unsigned long)",
+		"go":	"SSLDaneClearFlags"
+	}, {
+		"mangle":	"SSL_dane_enable",
+		"c++":	"SSL_dane_enable(int *, const char *)",
+		"go":	"SSLDaneEnable"
+	}, {
+		"mangle":	"SSL_dane_set_flags",
+		"c++":	"SSL_dane_set_flags(int *, unsigned long)",
+		"go":	"SSLDaneSetFlags"
+	}, {
+		"mangle":	"SSL_dane_tlsa_add",
+		"c++":	"SSL_dane_tlsa_add(int *, int, int, int, const unsigned char *, size_t)",
+		"go":	"SSLDaneTlsaAdd"
+	}, {
+		"mangle":	"SSL_do_handshake",
+		"c++":	"SSL_do_handshake(int *)",
+		"go":	"SSLDoHandshake"
+	}, {
+		"mangle":	"SSL_enable_ct",
+		"c++":	"SSL_enable_ct(int *, int)",
+		"go":	"SSLEnableCt"
+	}, {
+		"mangle":	"SSL_export_keying_material",
+		"c++":	"SSL_export_keying_material(int *, unsigned char *, int, const char *, int, const unsigned char *, int, int)",
+		"go":	"SSLExportKeyingMaterial"
+	}, {
+		"mangle":	"SSL_export_keying_material_early",
+		"c++":	"SSL_export_keying_material_early(int *, unsigned char *, int, const char *, int, const unsigned char *, int)",
+		"go":	"SSLExportKeyingMaterialEarly"
+	}, {
+		"mangle":	"SSL_extension_supported",
+		"c++":	"SSL_extension_supported(unsigned int)",
+		"go":	"SSLExtensionSupported"
+	}, {
+		"mangle":	"SSL_free",
+		"c++":	"SSL_free(int *)",
+		"go":	"SSLFree"
+	}, {
+		"mangle":	"SSL_free_buffers",
+		"c++":	"SSL_free_buffers(int *)",
+		"go":	"SSLFreeBuffers"
+	}, {
+		"mangle":	"SSL_get0_alpn_selected",
+		"c++":	"SSL_get0_alpn_selected(const int *, const unsigned char **, unsigned int *)",
+		"go":	"SSLGet0AlpnSelected"
+	}, {
+		"mangle":	"SSL_get0_client_cert_type",
+		"c++":	"SSL_get0_client_cert_type(const int *, unsigned char **, size_t *)",
+		"go":	"SSLGet0ClientCertType"
+	}, {
+		"mangle":	"SSL_get0_dane",
+		"c++":	"SSL_get0_dane(int *)",
+		"go":	"SSLGet0Dane"
+	}, {
+		"mangle":	"SSL_get0_dane_authority",
+		"c++":	"SSL_get0_dane_authority(int *, int **, int **)",
+		"go":	"SSLGet0DaneAuthority"
+	}, {
+		"mangle":	"SSL_get0_dane_tlsa",
+		"c++":	"SSL_get0_dane_tlsa(int *, int *, int *, int *, const unsigned char **, size_t *)",
+		"go":	"SSLGet0DaneTlsa"
+	}, {
+		"mangle":	"SSL_get0_group_name",
+		"c++":	"SSL_get0_group_name(int *)",
+		"go":	"SSLGet0GroupName"
+	}, {
+		"mangle":	"SSL_get0_next_proto_negotiated",
+		"c++":	"SSL_get0_next_proto_negotiated(const int *, const unsigned char **, unsigned int *)",
+		"go":	"SSLGet0NextProtoNegotiated"
+	}, {
+		"mangle":	"SSL_get0_peername",
+		"c++":	"SSL_get0_peername(int *)",
+		"go":	"SSLGet0Peername"
+	}, {
+		"mangle":	"SSL_get0_security_ex_data",
+		"c++":	"SSL_get0_security_ex_data(const int *)",
+		"go":	"SSLGet0SecurityExData"
+	}, {
+		"mangle":	"SSL_get0_server_cert_type",
+		"c++":	"SSL_get0_server_cert_type(const int *, unsigned char **, size_t *)",
+		"go":	"SSLGet0ServerCertType"
+	}, {
+		"mangle":	"SSL_get1_compressed_cert",
+		"c++":	"SSL_get1_compressed_cert(int *, int, unsigned char **, size_t *)",
+		"go":	"SSLGet1CompressedCert"
+	}, {
+		"mangle":	"SSL_get_blocking_mode",
+		"c++":	"SSL_get_blocking_mode(int *)",
+		"go":	"SSLGetBlockingMode"
+	}, {
+		"mangle":	"SSL_get_cipher_list",
+		"c++":	"SSL_get_cipher_list(const int *, int)",
+		"go":	"SSLGetCipherList"
+	}, {
+		"mangle":	"SSL_get_conn_close_info",
+		"c++":	"SSL_get_conn_close_info(int *, SSL_CONN_CLOSE_INFO *, size_t)",
+		"go":	"SSLGetConnCloseInfo"
+	}, {
+		"mangle":	"SSL_get_default_passwd_cb",
+		"c++":	"SSL_get_default_passwd_cb(int *)",
+		"go":	"SSLGetDefaultPasswdCb"
+	}, {
+		"mangle":	"SSL_get_default_passwd_cb_userdata",
+		"c++":	"SSL_get_default_passwd_cb_userdata(int *)",
+		"go":	"SSLGetDefaultPasswdCbUserdata"
+	}, {
+		"mangle":	"SSL_get_default_timeout",
+		"c++":	"SSL_get_default_timeout(const int *)",
+		"go":	"SSLGetDefaultTimeout"
+	}, {
+		"mangle":	"SSL_get_early_data_status",
+		"c++":	"SSL_get_early_data_status(const int *)",
+		"go":	"SSLGetEarlyDataStatus"
+	}, {
+		"mangle":	"SSL_get_error",
+		"c++":	"SSL_get_error(const int *, int)",
+		"go":	"SSLGetError"
+	}, {
+		"mangle":	"SSL_get_event_timeout",
+		"c++":	"SSL_get_event_timeout(int *, struct timeval *, int *)",
+		"go":	"SSLGetEventTimeout"
+	}, {
+		"mangle":	"SSL_get_ex_data",
+		"c++":	"SSL_get_ex_data(const int *, int)",
+		"go":	"SSLGetExData"
+	}, {
+		"mangle":	"SSL_get_ex_data_X509_STORE_CTX_idx",
+		"c++":	"SSL_get_ex_data_X509_STORE_CTX_idx()",
+		"go":	"SSLGetExDataX509STORECTXIdx"
+	}, {
+		"mangle":	"SSL_get_fd",
+		"c++":	"SSL_get_fd(const int *)",
+		"go":	"SSLGetFd"
+	}, {
+		"mangle":	"SSL_get_finished",
+		"c++":	"SSL_get_finished(const int *, void *, size_t)",
+		"go":	"SSLGetFinished"
+	}, {
+		"mangle":	"SSL_get_handshake_rtt",
+		"c++":	"SSL_get_handshake_rtt(const int *, int *)",
+		"go":	"SSLGetHandshakeRtt"
+	}, {
+		"mangle":	"SSL_get_info_callback",
+		"c++":	"SSL_get_info_callback(const int *)",
+		"go":	"SSLGetInfoCallback"
+	}, {
+		"mangle":	"SSL_get_key_update_type",
+		"c++":	"SSL_get_key_update_type(const int *)",
+		"go":	"SSLGetKeyUpdateType"
+	}, {
+		"mangle":	"SSL_get_max_early_data",
+		"c++":	"SSL_get_max_early_data(const int *)",
+		"go":	"SSLGetMaxEarlyData"
+	}, {
+		"mangle":	"SSL_get_negotiated_client_cert_type",
+		"c++":	"SSL_get_negotiated_client_cert_type(const int *)",
+		"go":	"SSLGetNegotiatedClientCertType"
+	}, {
+		"mangle":	"SSL_get_negotiated_server_cert_type",
+		"c++":	"SSL_get_negotiated_server_cert_type(const int *)",
+		"go":	"SSLGetNegotiatedServerCertType"
+	}, {
+		"mangle":	"SSL_get_num_tickets",
+		"c++":	"SSL_get_num_tickets(const int *)",
+		"go":	"SSLGetNumTickets"
+	}, {
+		"mangle":	"SSL_get_options",
+		"c++":	"SSL_get_options(const int *)",
+		"go":	"SSLGetOptions"
+	}, {
+		"mangle":	"SSL_get_peer_finished",
+		"c++":	"SSL_get_peer_finished(const int *, void *, size_t)",
+		"go":	"SSLGetPeerFinished"
+	}, {
+		"mangle":	"SSL_get_peer_signature_type_nid",
+		"c++":	"SSL_get_peer_signature_type_nid(const int *, int *)",
+		"go":	"SSLGetPeerSignatureTypeNid"
+	}, {
+		"mangle":	"SSL_get_privatekey",
+		"c++":	"SSL_get_privatekey(const int *)",
+		"go":	"SSLGetPrivatekey"
+	}, {
+		"mangle":	"SSL_get_psk_identity",
+		"c++":	"SSL_get_psk_identity(const int *)",
+		"go":	"SSLGetPskIdentity"
+	}, {
+		"mangle":	"SSL_get_psk_identity_hint",
+		"c++":	"SSL_get_psk_identity_hint(const int *)",
+		"go":	"SSLGetPskIdentityHint"
+	}, {
+		"mangle":	"SSL_get_quiet_shutdown",
+		"c++":	"SSL_get_quiet_shutdown(const int *)",
+		"go":	"SSLGetQuietShutdown"
+	}, {
+		"mangle":	"SSL_get_read_ahead",
+		"c++":	"SSL_get_read_ahead(const int *)",
+		"go":	"SSLGetReadAhead"
+	}, {
+		"mangle":	"SSL_get_record_padding_callback_arg",
+		"c++":	"SSL_get_record_padding_callback_arg(const int *)",
+		"go":	"SSLGetRecordPaddingCallbackArg"
+	}, {
+		"mangle":	"SSL_get_recv_max_early_data",
+		"c++":	"SSL_get_recv_max_early_data(const int *)",
+		"go":	"SSLGetRecvMaxEarlyData"
+	}, {
+		"mangle":	"SSL_get_rfd",
+		"c++":	"SSL_get_rfd(const int *)",
+		"go":	"SSLGetRfd"
+	}, {
+		"mangle":	"SSL_get_rpoll_descriptor",
+		"c++":	"SSL_get_rpoll_descriptor(int *, int *)",
+		"go":	"SSLGetRpollDescriptor"
+	}, {
+		"mangle":	"SSL_get_security_callback",
+		"c++":	"SSL_get_security_callback(const int *)",
+		"go":	"SSLGetSecurityCallback"
+	}, {
+		"mangle":	"SSL_get_security_level",
+		"c++":	"SSL_get_security_level(const int *)",
+		"go":	"SSLGetSecurityLevel"
+	}, {
+		"mangle":	"SSL_get_servername",
+		"c++":	"SSL_get_servername(const int *, const int)",
+		"go":	"SSLGetServername"
+	}, {
+		"mangle":	"SSL_get_servername_type",
+		"c++":	"SSL_get_servername_type(const int *)",
+		"go":	"SSLGetServernameType"
+	}, {
+		"mangle":	"SSL_get_shared_ciphers",
+		"c++":	"SSL_get_shared_ciphers(const int *, char *, int)",
+		"go":	"SSLGetSharedCiphers"
+	}, {
+		"mangle":	"SSL_get_shared_sigalgs",
+		"c++":	"SSL_get_shared_sigalgs(int *, int, int *, int *, int *, unsigned char *, unsigned char *)",
+		"go":	"SSLGetSharedSigalgs"
+	}, {
+		"mangle":	"SSL_get_shutdown",
+		"c++":	"SSL_get_shutdown(const int *)",
+		"go":	"SSLGetShutdown"
+	}, {
+		"mangle":	"SSL_get_sigalgs",
+		"c++":	"SSL_get_sigalgs(int *, int, int *, int *, int *, unsigned char *, unsigned char *)",
+		"go":	"SSLGetSigalgs"
+	}, {
+		"mangle":	"SSL_get_signature_type_nid",
+		"c++":	"SSL_get_signature_type_nid(const int *, int *)",
+		"go":	"SSLGetSignatureTypeNid"
+	}, {
+		"mangle":	"SSL_get_srp_userinfo",
+		"c++":	"SSL_get_srp_userinfo(int *)",
+		"go":	"SSLGetSrpUserinfo"
+	}, {
+		"mangle":	"SSL_get_srp_username",
+		"c++":	"SSL_get_srp_username(int *)",
+		"go":	"SSLGetSrpUsername"
+	}, {
+		"mangle":	"SSL_get_stream_read_error_code",
+		"c++":	"SSL_get_stream_read_error_code(int *, int *)",
+		"go":	"SSLGetStreamReadErrorCode"
+	}, {
+		"mangle":	"SSL_get_stream_read_state",
+		"c++":	"SSL_get_stream_read_state(int *)",
+		"go":	"SSLGetStreamReadState"
+	}, {
+		"mangle":	"SSL_get_stream_type",
+		"c++":	"SSL_get_stream_type(int *)",
+		"go":	"SSLGetStreamType"
+	}, {
+		"mangle":	"SSL_get_stream_write_error_code",
+		"c++":	"SSL_get_stream_write_error_code(int *, int *)",
+		"go":	"SSLGetStreamWriteErrorCode"
+	}, {
+		"mangle":	"SSL_get_stream_write_state",
+		"c++":	"SSL_get_stream_write_state(int *)",
+		"go":	"SSLGetStreamWriteState"
+	}, {
+		"mangle":	"SSL_get_value_uint",
+		"c++":	"SSL_get_value_uint(int *, int, int, int *)",
+		"go":	"SSLGetValueUint"
+	}, {
+		"mangle":	"SSL_get_verify_depth",
+		"c++":	"SSL_get_verify_depth(const int *)",
+		"go":	"SSLGetVerifyDepth"
+	}, {
+		"mangle":	"SSL_get_verify_mode",
+		"c++":	"SSL_get_verify_mode(const int *)",
+		"go":	"SSLGetVerifyMode"
+	}, {
+		"mangle":	"SSL_get_verify_result",
+		"c++":	"SSL_get_verify_result(const int *)",
+		"go":	"SSLGetVerifyResult"
+	}, {
+		"mangle":	"SSL_get_version",
+		"c++":	"SSL_get_version(const int *)",
+		"go":	"SSLGetVersion"
+	}, {
+		"mangle":	"SSL_get_wfd",
+		"c++":	"SSL_get_wfd(const int *)",
+		"go":	"SSLGetWfd"
+	}, {
+		"mangle":	"SSL_get_wpoll_descriptor",
+		"c++":	"SSL_get_wpoll_descriptor(int *, int *)",
+		"go":	"SSLGetWpollDescriptor"
+	}, {
+		"mangle":	"SSL_group_to_name",
+		"c++":	"SSL_group_to_name(int *, int)",
+		"go":	"SSLGroupToName"
+	}, {
+		"mangle":	"SSL_handle_events",
+		"c++":	"SSL_handle_events(int *)",
+		"go":	"SSLHandleEvents"
+	}, {
+		"mangle":	"SSL_has_matching_session_id",
+		"c++":	"SSL_has_matching_session_id(const int *, const unsigned char *, unsigned int)",
+		"go":	"SSLHasMatchingSessionId"
+	}, {
+		"mangle":	"SSL_has_pending",
+		"c++":	"SSL_has_pending(const int *)",
+		"go":	"SSLHasPending"
+	}, {
+		"mangle":	"SSL_in_before",
+		"c++":	"SSL_in_before(const int *)",
+		"go":	"SSLInBefore"
+	}, {
+		"mangle":	"SSL_in_init",
+		"c++":	"SSL_in_init(const int *)",
+		"go":	"SSLInInit"
+	}, {
+		"mangle":	"SSL_inject_net_dgram",
+		"c++":	"SSL_inject_net_dgram(int *, const unsigned char *, size_t, const int *, const int *)",
+		"go":	"SSLInjectNetDgram"
+	}, {
+		"mangle":	"SSL_is_connection",
+		"c++":	"SSL_is_connection(int *)",
+		"go":	"SSLIsConnection"
+	}, {
+		"mangle":	"SSL_is_dtls",
+		"c++":	"SSL_is_dtls(const int *)",
+		"go":	"SSLIsDtls"
+	}, {
+		"mangle":	"SSL_is_init_finished",
+		"c++":	"SSL_is_init_finished(const int *)",
+		"go":	"SSLIsInitFinished"
+	}, {
+		"mangle":	"SSL_is_quic",
+		"c++":	"SSL_is_quic(const int *)",
+		"go":	"SSLIsQuic"
+	}, {
+		"mangle":	"SSL_is_server",
+		"c++":	"SSL_is_server(const int *)",
+		"go":	"SSLIsServer"
+	}, {
+		"mangle":	"SSL_is_stream_local",
+		"c++":	"SSL_is_stream_local(int *)",
+		"go":	"SSLIsStreamLocal"
+	}, {
+		"mangle":	"SSL_is_tls",
+		"c++":	"SSL_is_tls(const int *)",
+		"go":	"SSLIsTls"
+	}, {
+		"mangle":	"SSL_key_update",
+		"c++":	"SSL_key_update(int *, int)",
+		"go":	"SSLKeyUpdate"
+	}, {
+		"mangle":	"SSL_net_read_desired",
+		"c++":	"SSL_net_read_desired(int *)",
+		"go":	"SSLNetReadDesired"
+	}, {
+		"mangle":	"SSL_net_write_desired",
+		"c++":	"SSL_net_write_desired(int *)",
+		"go":	"SSLNetWriteDesired"
+	}, {
+		"mangle":	"SSL_new",
+		"c++":	"SSL_new(int *)",
+		"go":	"SSLNew"
+	}, {
+		"mangle":	"SSL_new_session_ticket",
+		"c++":	"SSL_new_session_ticket(int *)",
+		"go":	"SSLNewSessionTicket"
+	}, {
+		"mangle":	"SSL_peek",
+		"c++":	"SSL_peek(int *, void *, int)",
+		"go":	"SSLPeek"
+	}, {
+		"mangle":	"SSL_peek_ex",
+		"c++":	"SSL_peek_ex(int *, void *, size_t, size_t *)",
+		"go":	"SSLPeekEx"
+	}, {
+		"mangle":	"SSL_pending",
+		"c++":	"SSL_pending(const int *)",
+		"go":	"SSLPending"
+	}, {
+		"mangle":	"SSL_poll",
+		"c++":	"SSL_poll(SSL_POLL_ITEM *, size_t, size_t, const struct timeval *, int, size_t *)",
+		"go":	"(*SSLPOLLITEM).SSLPoll"
+	}, {
+		"mangle":	"SSL_read",
+		"c++":	"SSL_read(int *, void *, int)",
+		"go":	"SSLRead"
+	}, {
+		"mangle":	"SSL_read_early_data",
+		"c++":	"SSL_read_early_data(int *, void *, size_t, size_t *)",
+		"go":	"SSLReadEarlyData"
+	}, {
+		"mangle":	"SSL_read_ex",
+		"c++":	"SSL_read_ex(int *, void *, size_t, size_t *)",
+		"go":	"SSLReadEx"
+	}, {
+		"mangle":	"SSL_renegotiate",
+		"c++":	"SSL_renegotiate(int *)",
+		"go":	"SSLRenegotiate"
+	}, {
+		"mangle":	"SSL_renegotiate_abbreviated",
+		"c++":	"SSL_renegotiate_abbreviated(int *)",
+		"go":	"SSLRenegotiateAbbreviated"
+	}, {
+		"mangle":	"SSL_renegotiate_pending",
+		"c++":	"SSL_renegotiate_pending(const int *)",
+		"go":	"SSLRenegotiatePending"
+	}, {
+		"mangle":	"SSL_rstate_string",
+		"c++":	"SSL_rstate_string(const int *)",
+		"go":	"SSLRstateString"
+	}, {
+		"mangle":	"SSL_rstate_string_long",
+		"c++":	"SSL_rstate_string_long(const int *)",
+		"go":	"SSLRstateStringLong"
+	}, {
+		"mangle":	"SSL_select_next_proto",
+		"c++":	"SSL_select_next_proto(unsigned char **, unsigned char *, const unsigned char *, unsigned int, const unsigned char *, unsigned int)",
+		"go":	"SSLSelectNextProto"
+	}, {
+		"mangle":	"SSL_session_reused",
+		"c++":	"SSL_session_reused(const int *)",
+		"go":	"SSLSessionReused"
+	}, {
+		"mangle":	"SSL_set0_CA_list",
+		"c++":	"SSL_set0_CA_list(int *, int (*)())",
+		"go":	"SSLSet0CAList"
+	}, {
+		"mangle":	"SSL_set0_rbio",
+		"c++":	"SSL_set0_rbio(int *, int *)",
+		"go":	"SSLSet0Rbio"
+	}, {
+		"mangle":	"SSL_set0_security_ex_data",
+		"c++":	"SSL_set0_security_ex_data(int *, void *)",
+		"go":	"SSLSet0SecurityExData"
+	}, {
+		"mangle":	"SSL_set0_tmp_dh_pkey",
+		"c++":	"SSL_set0_tmp_dh_pkey(int *, int *)",
+		"go":	"SSLSet0TmpDhPkey"
+	}, {
+		"mangle":	"SSL_set0_wbio",
+		"c++":	"SSL_set0_wbio(int *, int *)",
+		"go":	"SSLSet0Wbio"
+	}, {
+		"mangle":	"SSL_set1_cert_comp_preference",
+		"c++":	"SSL_set1_cert_comp_preference(int *, int *, size_t)",
+		"go":	"SSLSet1CertCompPreference"
+	}, {
+		"mangle":	"SSL_set1_client_cert_type",
+		"c++":	"SSL_set1_client_cert_type(int *, const unsigned char *, size_t)",
+		"go":	"SSLSet1ClientCertType"
+	}, {
+		"mangle":	"SSL_set1_compressed_cert",
+		"c++":	"SSL_set1_compressed_cert(int *, int, unsigned char *, size_t, size_t)",
+		"go":	"SSLSet1CompressedCert"
+	}, {
+		"mangle":	"SSL_set1_host",
+		"c++":	"SSL_set1_host(int *, const char *)",
+		"go":	"SSLSet1Host"
+	}, {
+		"mangle":	"SSL_set1_initial_peer_addr",
+		"c++":	"SSL_set1_initial_peer_addr(int *, const int *)",
+		"go":	"SSLSet1InitialPeerAddr"
+	}, {
+		"mangle":	"SSL_set1_param",
+		"c++":	"SSL_set1_param(int *, int *)",
+		"go":	"SSLSet1Param"
+	}, {
+		"mangle":	"SSL_set1_server_cert_type",
+		"c++":	"SSL_set1_server_cert_type(int *, const unsigned char *, size_t)",
+		"go":	"SSLSet1ServerCertType"
+	}, {
+		"mangle":	"SSL_set_SSL_CTX",
+		"c++":	"SSL_set_SSL_CTX(int *, int *)",
+		"go":	"SSLSetSSLCTX"
+	}, {
+		"mangle":	"SSL_set_accept_state",
+		"c++":	"SSL_set_accept_state(int *)",
+		"go":	"SSLSetAcceptState"
+	}, {
+		"mangle":	"SSL_set_allow_early_data_cb",
+		"c++":	"SSL_set_allow_early_data_cb(int *, SSL_allow_early_data_cb_fn, void *)",
+		"go":	"SSLSetAllowEarlyDataCb"
+	}, {
+		"mangle":	"SSL_set_alpn_protos",
+		"c++":	"SSL_set_alpn_protos(int *, const unsigned char *, unsigned int)",
+		"go":	"SSLSetAlpnProtos"
+	}, {
+		"mangle":	"SSL_set_bio",
+		"c++":	"SSL_set_bio(int *, int *, int *)",
+		"go":	"SSLSetBio"
+	}, {
+		"mangle":	"SSL_set_block_padding",
+		"c++":	"SSL_set_block_padding(int *, size_t)",
+		"go":	"SSLSetBlockPadding"
+	}, {
+		"mangle":	"SSL_set_blocking_mode",
+		"c++":	"SSL_set_blocking_mode(int *, int)",
+		"go":	"SSLSetBlockingMode"
+	}, {
+		"mangle":	"SSL_set_cert_cb",
+		"c++":	"SSL_set_cert_cb(int *, int (*)(int *, void *), void *)",
+		"go":	"SSLSetCertCb"
+	}, {
+		"mangle":	"SSL_set_cipher_list",
+		"c++":	"SSL_set_cipher_list(int *, const char *)",
+		"go":	"SSLSetCipherList"
+	}, {
+		"mangle":	"SSL_set_ciphersuites",
+		"c++":	"SSL_set_ciphersuites(int *, const char *)",
+		"go":	"SSLSetCiphersuites"
+	}, {
+		"mangle":	"SSL_set_client_CA_list",
+		"c++":	"SSL_set_client_CA_list(int *, int (*)())",
+		"go":	"SSLSetClientCAList"
+	}, {
+		"mangle":	"SSL_set_connect_state",
+		"c++":	"SSL_set_connect_state(int *)",
+		"go":	"SSLSetConnectState"
+	}, {
+		"mangle":	"SSL_set_ct_validation_callback",
+		"c++":	"SSL_set_ct_validation_callback(int *, ssl_ct_validation_cb, void *)",
+		"go":	"SSLSetCtValidationCallback"
+	}, {
+		"mangle":	"SSL_set_default_passwd_cb",
+		"c++":	"SSL_set_default_passwd_cb(int *, int *)",
+		"go":	"SSLSetDefaultPasswdCb"
+	}, {
+		"mangle":	"SSL_set_default_passwd_cb_userdata",
+		"c++":	"SSL_set_default_passwd_cb_userdata(int *, void *)",
+		"go":	"SSLSetDefaultPasswdCbUserdata"
+	}, {
+		"mangle":	"SSL_set_default_read_buffer_len",
+		"c++":	"SSL_set_default_read_buffer_len(int *, size_t)",
+		"go":	"SSLSetDefaultReadBufferLen"
+	}, {
+		"mangle":	"SSL_set_default_stream_mode",
+		"c++":	"SSL_set_default_stream_mode(int *, int)",
+		"go":	"SSLSetDefaultStreamMode"
+	}, {
+		"mangle":	"SSL_set_ex_data",
+		"c++":	"SSL_set_ex_data(int *, int, void *)",
+		"go":	"SSLSetExData"
+	}, {
+		"mangle":	"SSL_set_fd",
+		"c++":	"SSL_set_fd(int *, int)",
+		"go":	"SSLSetFd"
+	}, {
+		"mangle":	"SSL_set_generate_session_id",
+		"c++":	"SSL_set_generate_session_id(int *, GEN_SESSION_CB)",
+		"go":	"SSLSetGenerateSessionId"
+	}, {
+		"mangle":	"SSL_set_hostflags",
+		"c++":	"SSL_set_hostflags(int *, unsigned int)",
+		"go":	"SSLSetHostflags"
+	}, {
+		"mangle":	"SSL_set_incoming_stream_policy",
+		"c++":	"SSL_set_incoming_stream_policy(int *, int, int)",
+		"go":	"SSLSetIncomingStreamPolicy"
+	}, {
+		"mangle":	"SSL_set_info_callback",
+		"c++":	"SSL_set_info_callback(int *, void (*)(const int *, int, int))",
+		"go":	"SSLSetInfoCallback"
+	}, {
+		"mangle":	"SSL_set_max_early_data",
+		"c++":	"SSL_set_max_early_data(int *, int)",
+		"go":	"SSLSetMaxEarlyData"
+	}, {
+		"mangle":	"SSL_set_msg_callback",
+		"c++":	"SSL_set_msg_callback(int *, void (*)(int, int, int, const void *, size_t, int *, void *))",
+		"go":	"SSLSetMsgCallback"
+	}, {
+		"mangle":	"SSL_set_not_resumable_session_callback",
+		"c++":	"SSL_set_not_resumable_session_callback(int *, int (*)(int *, int))",
+		"go":	"SSLSetNotResumableSessionCallback"
+	}, {
+		"mangle":	"SSL_set_num_tickets",
+		"c++":	"SSL_set_num_tickets(int *, size_t)",
+		"go":	"SSLSetNumTickets"
+	}, {
+		"mangle":	"SSL_set_options",
+		"c++":	"SSL_set_options(int *, int)",
+		"go":	"SSLSetOptions"
+	}, {
+		"mangle":	"SSL_set_post_handshake_auth",
+		"c++":	"SSL_set_post_handshake_auth(int *, int)",
+		"go":	"SSLSetPostHandshakeAuth"
+	}, {
+		"mangle":	"SSL_set_psk_client_callback",
+		"c++":	"SSL_set_psk_client_callback(int *, SSL_psk_client_cb_func)",
+		"go":	"SSLSetPskClientCallback"
+	}, {
+		"mangle":	"SSL_set_psk_find_session_callback",
+		"c++":	"SSL_set_psk_find_session_callback(int *, SSL_psk_find_session_cb_func)",
+		"go":	"SSLSetPskFindSessionCallback"
+	}, {
+		"mangle":	"SSL_set_psk_server_callback",
+		"c++":	"SSL_set_psk_server_callback(int *, SSL_psk_server_cb_func)",
+		"go":	"SSLSetPskServerCallback"
+	}, {
+		"mangle":	"SSL_set_psk_use_session_callback",
+		"c++":	"SSL_set_psk_use_session_callback(int *, SSL_psk_use_session_cb_func)",
+		"go":	"SSLSetPskUseSessionCallback"
+	}, {
+		"mangle":	"SSL_set_purpose",
+		"c++":	"SSL_set_purpose(int *, int)",
+		"go":	"SSLSetPurpose"
+	}, {
+		"mangle":	"SSL_set_quiet_shutdown",
+		"c++":	"SSL_set_quiet_shutdown(int *, int)",
+		"go":	"SSLSetQuietShutdown"
+	}, {
+		"mangle":	"SSL_set_read_ahead",
+		"c++":	"SSL_set_read_ahead(int *, int)",
+		"go":	"SSLSetReadAhead"
+	}, {
+		"mangle":	"SSL_set_record_padding_callback",
+		"c++":	"SSL_set_record_padding_callback(int *, size_t (*)(int *, int, size_t, void *))",
+		"go":	"SSLSetRecordPaddingCallback"
+	}, {
+		"mangle":	"SSL_set_record_padding_callback_arg",
+		"c++":	"SSL_set_record_padding_callback_arg(int *, void *)",
+		"go":	"SSLSetRecordPaddingCallbackArg"
+	}, {
+		"mangle":	"SSL_set_recv_max_early_data",
+		"c++":	"SSL_set_recv_max_early_data(int *, int)",
+		"go":	"SSLSetRecvMaxEarlyData"
+	}, {
+		"mangle":	"SSL_set_rfd",
+		"c++":	"SSL_set_rfd(int *, int)",
+		"go":	"SSLSetRfd"
+	}, {
+		"mangle":	"SSL_set_security_callback",
+		"c++":	"SSL_set_security_callback(int *, int (*)(const int *, const int *, int, int, int, void *, void *))",
+		"go":	"SSLSetSecurityCallback"
+	}, {
+		"mangle":	"SSL_set_security_level",
+		"c++":	"SSL_set_security_level(int *, int)",
+		"go":	"SSLSetSecurityLevel"
+	}, {
+		"mangle":	"SSL_set_session",
+		"c++":	"SSL_set_session(int *, SSL_SESSION *)",
+		"go":	"SSLSetSession"
+	}, {
+		"mangle":	"SSL_set_session_id_context",
+		"c++":	"SSL_set_session_id_context(int *, const unsigned char *, unsigned int)",
+		"go":	"SSLSetSessionIdContext"
+	}, {
+		"mangle":	"SSL_set_session_secret_cb",
+		"c++":	"SSL_set_session_secret_cb(int *, tls_session_secret_cb_fn, void *)",
+		"go":	"SSLSetSessionSecretCb"
+	}, {
+		"mangle":	"SSL_set_session_ticket_ext",
+		"c++":	"SSL_set_session_ticket_ext(int *, void *, int)",
+		"go":	"SSLSetSessionTicketExt"
+	}, {
+		"mangle":	"SSL_set_session_ticket_ext_cb",
+		"c++":	"SSL_set_session_ticket_ext_cb(int *, tls_session_ticket_ext_cb_fn, void *)",
+		"go":	"SSLSetSessionTicketExtCb"
+	}, {
+		"mangle":	"SSL_set_shutdown",
+		"c++":	"SSL_set_shutdown(int *, int)",
+		"go":	"SSLSetShutdown"
+	}, {
+		"mangle":	"SSL_set_srp_server_param",
+		"c++":	"SSL_set_srp_server_param(int *, const int *, const int *, int *, int *, char *)",
+		"go":	"SSLSetSrpServerParam"
+	}, {
+		"mangle":	"SSL_set_srp_server_param_pw",
+		"c++":	"SSL_set_srp_server_param_pw(int *, const char *, const char *, const char *)",
+		"go":	"SSLSetSrpServerParamPw"
+	}, {
+		"mangle":	"SSL_set_ssl_method",
+		"c++":	"SSL_set_ssl_method(int *, const SSL_METHOD *)",
+		"go":	"SSLSetSslMethod"
+	}, {
+		"mangle":	"SSL_set_tlsext_max_fragment_length",
+		"c++":	"SSL_set_tlsext_max_fragment_length(int *, int)",
+		"go":	"SSLSetTlsextMaxFragmentLength"
+	}, {
+		"mangle":	"SSL_set_tlsext_use_srtp",
+		"c++":	"SSL_set_tlsext_use_srtp(int *, const char *)",
+		"go":	"SSLSetTlsextUseSrtp"
+	}, {
+		"mangle":	"SSL_set_tmp_dh_callback",
+		"c++":	"SSL_set_tmp_dh_callback(int *, int *(*)(int *, int, int))",
+		"go":	"SSLSetTmpDhCallback"
+	}, {
+		"mangle":	"SSL_set_trust",
+		"c++":	"SSL_set_trust(int *, int)",
+		"go":	"SSLSetTrust"
+	}, {
+		"mangle":	"SSL_set_value_uint",
+		"c++":	"SSL_set_value_uint(int *, int, int, int)",
+		"go":	"SSLSetValueUint"
+	}, {
+		"mangle":	"SSL_set_verify",
+		"c++":	"SSL_set_verify(int *, int, SSL_verify_cb)",
+		"go":	"SSLSetVerify"
+	}, {
+		"mangle":	"SSL_set_verify_depth",
+		"c++":	"SSL_set_verify_depth(int *, int)",
+		"go":	"SSLSetVerifyDepth"
+	}, {
+		"mangle":	"SSL_set_verify_result",
+		"c++":	"SSL_set_verify_result(int *, long)",
+		"go":	"SSLSetVerifyResult"
+	}, {
+		"mangle":	"SSL_set_wfd",
+		"c++":	"SSL_set_wfd(int *, int)",
+		"go":	"SSLSetWfd"
+	}, {
+		"mangle":	"SSL_shutdown",
+		"c++":	"SSL_shutdown(int *)",
+		"go":	"SSLShutdown"
+	}, {
+		"mangle":	"SSL_shutdown_ex",
+		"c++":	"SSL_shutdown_ex(int *, int, const SSL_SHUTDOWN_EX_ARGS *, size_t)",
+		"go":	"SSLShutdownEx"
+	}, {
+		"mangle":	"SSL_srp_server_param_with_username",
+		"c++":	"SSL_srp_server_param_with_username(int *, int *)",
+		"go":	"SSLSrpServerParamWithUsername"
+	}, {
+		"mangle":	"SSL_state_string",
+		"c++":	"SSL_state_string(const int *)",
+		"go":	"SSLStateString"
+	}, {
+		"mangle":	"SSL_state_string_long",
+		"c++":	"SSL_state_string_long(const int *)",
+		"go":	"SSLStateStringLong"
+	}, {
+		"mangle":	"SSL_stateless",
+		"c++":	"SSL_stateless(int *)",
+		"go":	"SSLStateless"
+	}, {
+		"mangle":	"SSL_stream_conclude",
+		"c++":	"SSL_stream_conclude(int *, int)",
+		"go":	"SSLStreamConclude"
+	}, {
+		"mangle":	"SSL_stream_reset",
+		"c++":	"SSL_stream_reset(int *, const SSL_STREAM_RESET_ARGS *, size_t)",
+		"go":	"SSLStreamReset"
+	}, {
+		"mangle":	"SSL_trace",
+		"c++":	"SSL_trace(int, int, int, const void *, size_t, int *, void *)",
+		"go":	"SSLTrace"
+	}, {
+		"mangle":	"SSL_up_ref",
+		"c++":	"SSL_up_ref(int *)",
+		"go":	"SSLUpRef"
+	}, {
+		"mangle":	"SSL_use_PrivateKey",
+		"c++":	"SSL_use_PrivateKey(int *, int *)",
+		"go":	"SSLUsePrivateKey"
+	}, {
+		"mangle":	"SSL_use_PrivateKey_ASN1",
+		"c++":	"SSL_use_PrivateKey_ASN1(int, int *, const unsigned char *, long)",
+		"go":	"SSLUsePrivateKeyASN1"
+	}, {
+		"mangle":	"SSL_use_PrivateKey_file",
+		"c++":	"SSL_use_PrivateKey_file(int *, const char *, int)",
+		"go":	"SSLUsePrivateKeyFile"
+	}, {
+		"mangle":	"SSL_use_RSAPrivateKey",
+		"c++":	"SSL_use_RSAPrivateKey(int *, int *)",
+		"go":	"SSLUseRSAPrivateKey"
+	}, {
+		"mangle":	"SSL_use_RSAPrivateKey_ASN1",
+		"c++":	"SSL_use_RSAPrivateKey_ASN1(int *, const unsigned char *, long)",
+		"go":	"SSLUseRSAPrivateKeyASN1"
+	}, {
+		"mangle":	"SSL_use_RSAPrivateKey_file",
+		"c++":	"SSL_use_RSAPrivateKey_file(int *, const char *, int)",
+		"go":	"SSLUseRSAPrivateKeyFile"
+	}, {
+		"mangle":	"SSL_use_cert_and_key",
+		"c++":	"SSL_use_cert_and_key(int *, int *, int *, int (*)())",
+		"go":	"SSLUseCertAndKey"
+	}, {
+		"mangle":	"SSL_use_certificate",
+		"c++":	"SSL_use_certificate(int *, int *)",
+		"go":	"SSLUseCertificate"
+	}, {
+		"mangle":	"SSL_use_certificate_ASN1",
+		"c++":	"SSL_use_certificate_ASN1(int *, const unsigned char *, int)",
+		"go":	"SSLUseCertificateASN1"
+	}, {
+		"mangle":	"SSL_use_certificate_chain_file",
+		"c++":	"SSL_use_certificate_chain_file(int *, const char *)",
+		"go":	"SSLUseCertificateChainFile"
+	}, {
+		"mangle":	"SSL_use_certificate_file",
+		"c++":	"SSL_use_certificate_file(int *, const char *, int)",
+		"go":	"SSLUseCertificateFile"
+	}, {
+		"mangle":	"SSL_use_psk_identity_hint",
+		"c++":	"SSL_use_psk_identity_hint(int *, const char *)",
+		"go":	"SSLUsePskIdentityHint"
+	}, {
+		"mangle":	"SSL_verify_client_post_handshake",
+		"c++":	"SSL_verify_client_post_handshake(int *)",
+		"go":	"SSLVerifyClientPostHandshake"
+	}, {
+		"mangle":	"SSL_version",
+		"c++":	"SSL_version(const int *)",
+		"go":	"SSLVersion"
+	}, {
+		"mangle":	"SSL_want",
+		"c++":	"SSL_want(const int *)",
+		"go":	"SSLWant"
+	}, {
+		"mangle":	"SSL_write",
+		"c++":	"SSL_write(int *, const void *, int)",
+		"go":	"SSLWrite"
+	}, {
+		"mangle":	"SSL_write_early_data",
+		"c++":	"SSL_write_early_data(int *, const void *, size_t, size_t *)",
+		"go":	"SSLWriteEarlyData"
+	}, {
+		"mangle":	"SSL_write_ex",
+		"c++":	"SSL_write_ex(int *, const void *, size_t, size_t *)",
+		"go":	"SSLWriteEx"
+	}, {
+		"mangle":	"SSL_write_ex2",
+		"c++":	"SSL_write_ex2(int *, const void *, size_t, int, size_t *)",
+		"go":	"SSLWriteEx2"
+	}, {
+		"mangle":	"TLSv1_1_client_method",
+		"c++":	"TLSv1_1_client_method()",
+		"go":	"TLSv11ClientMethod"
+	}, {
+		"mangle":	"TLSv1_1_method",
+		"c++":	"TLSv1_1_method()",
+		"go":	"TLSv11Method"
+	}, {
+		"mangle":	"TLSv1_1_server_method",
+		"c++":	"TLSv1_1_server_method()",
+		"go":	"TLSv11ServerMethod"
+	}, {
+		"mangle":	"TLSv1_2_client_method",
+		"c++":	"TLSv1_2_client_method()",
+		"go":	"TLSv12ClientMethod"
+	}, {
+		"mangle":	"TLSv1_2_method",
+		"c++":	"TLSv1_2_method()",
+		"go":	"TLSv12Method"
+	}, {
+		"mangle":	"TLSv1_2_server_method",
+		"c++":	"TLSv1_2_server_method()",
+		"go":	"TLSv12ServerMethod"
+	}, {
+		"mangle":	"TLSv1_client_method",
+		"c++":	"TLSv1_client_method()",
+		"go":	"TLSv1ClientMethod"
+	}, {
+		"mangle":	"TLSv1_method",
+		"c++":	"TLSv1_method()",
+		"go":	"TLSv1Method"
+	}, {
+		"mangle":	"TLSv1_server_method",
+		"c++":	"TLSv1_server_method()",
+		"go":	"TLSv1ServerMethod"
+	}, {
+		"mangle":	"X509_LOOKUP_ctrl",
+		"c++":	"X509_LOOKUP_ctrl(int *, int, const char *, long, char **)",
+		"go":	"X509LOOKUPCtrl"
+	}, {
+		"mangle":	"X509_LOOKUP_ctrl_ex",
+		"c++":	"X509_LOOKUP_ctrl_ex(int *, int, const char *, long, char **, int *, const char *)",
+		"go":	"X509LOOKUPCtrlEx"
+	}, {
+		"mangle":	"X509_LOOKUP_file",
+		"c++":	"X509_LOOKUP_file()",
+		"go":	"X509LOOKUPFile"
+	}, {
+		"mangle":	"X509_LOOKUP_hash_dir",
+		"c++":	"X509_LOOKUP_hash_dir()",
+		"go":	"X509LOOKUPHashDir"
+	}, {
+		"mangle":	"X509_LOOKUP_store",
+		"c++":	"X509_LOOKUP_store()",
+		"go":	"X509LOOKUPStore"
+	}, {
+		"mangle":	"X509_NAME_cmp",
+		"c++":	"X509_NAME_cmp(const int *, const int *)",
+		"go":	"X509NAMECmp"
+	}, {
+		"mangle":	"X509_NAME_hash_ex",
+		"c++":	"X509_NAME_hash_ex(const int *, int *, const char *, int *)",
+		"go":	"X509NAMEHashEx"
+	}, {
+		"mangle":	"X509_NAME_print_ex",
+		"c++":	"X509_NAME_print_ex(int *, const int *, int, unsigned long)",
+		"go":	"X509NAMEPrintEx"
+	}, {
+		"mangle":	"X509_STORE_CTX_free",
+		"c++":	"X509_STORE_CTX_free(int *)",
+		"go":	"X509STORECTXFree"
+	}, {
+		"mangle":	"X509_STORE_CTX_get0_param",
+		"c++":	"X509_STORE_CTX_get0_param(const int *)",
+		"go":	"X509STORECTXGet0Param"
+	}, {
+		"mangle":	"X509_STORE_CTX_get_error",
+		"c++":	"X509_STORE_CTX_get_error(const int *)",
+		"go":	"X509STORECTXGetError"
+	}, {
+		"mangle":	"X509_STORE_CTX_init",
+		"c++":	"X509_STORE_CTX_init(int *, int *, int *, int (*)())",
+		"go":	"X509STORECTXInit"
+	}, {
+		"mangle":	"X509_STORE_CTX_init_rpk",
+		"c++":	"X509_STORE_CTX_init_rpk(int *, int *, int *)",
+		"go":	"X509STORECTXInitRpk"
+	}, {
+		"mangle":	"X509_STORE_CTX_new_ex",
+		"c++":	"X509_STORE_CTX_new_ex(int *, const char *)",
+		"go":	"X509STORECTXNewEx"
+	}, {
+		"mangle":	"X509_STORE_CTX_set0_dane",
+		"c++":	"X509_STORE_CTX_set0_dane(int *, int *)",
+		"go":	"X509STORECTXSet0Dane"
+	}, {
+		"mangle":	"X509_STORE_CTX_set_default",
+		"c++":	"X509_STORE_CTX_set_default(int *, const char *)",
+		"go":	"X509STORECTXSetDefault"
+	}, {
+		"mangle":	"X509_STORE_CTX_set_ex_data",
+		"c++":	"X509_STORE_CTX_set_ex_data(int *, int, void *)",
+		"go":	"X509STORECTXSetExData"
+	}, {
+		"mangle":	"X509_STORE_CTX_set_flags",
+		"c++":	"X509_STORE_CTX_set_flags(int *, unsigned long)",
+		"go":	"X509STORECTXSetFlags"
+	}, {
+		"mangle":	"X509_STORE_CTX_set_verify_cb",
+		"c++":	"X509_STORE_CTX_set_verify_cb(int *, X509_STORE_CTX_verify_cb)",
+		"go":	"X509STORECTXSetVerifyCb"
+	}, {
+		"mangle":	"X509_STORE_add_cert",
+		"c++":	"X509_STORE_add_cert(int *, int *)",
+		"go":	"X509STOREAddCert"
+	}, {
+		"mangle":	"X509_STORE_add_lookup",
+		"c++":	"X509_STORE_add_lookup(int *, int *)",
+		"go":	"X509STOREAddLookup"
+	}, {
+		"mangle":	"X509_STORE_free",
+		"c++":	"X509_STORE_free(int *)",
+		"go":	"X509STOREFree"
+	}, {
+		"mangle":	"X509_STORE_load_file_ex",
+		"c++":	"X509_STORE_load_file_ex(int *, const char *, int *, const char *)",
+		"go":	"X509STORELoadFileEx"
+	}, {
+		"mangle":	"X509_STORE_load_path",
+		"c++":	"X509_STORE_load_path(int *, const char *)",
+		"go":	"X509STORELoadPath"
+	}, {
+		"mangle":	"X509_STORE_load_store_ex",
+		"c++":	"X509_STORE_load_store_ex(int *, const char *, int *, const char *)",
+		"go":	"X509STORELoadStoreEx"
+	}, {
+		"mangle":	"X509_STORE_new",
+		"c++":	"X509_STORE_new()",
+		"go":	"X509STORENew"
+	}, {
+		"mangle":	"X509_STORE_set_default_paths_ex",
+		"c++":	"X509_STORE_set_default_paths_ex(int *, int *, const char *)",
+		"go":	"X509STORESetDefaultPathsEx"
+	}, {
+		"mangle":	"X509_STORE_up_ref",
+		"c++":	"X509_STORE_up_ref(int *)",
+		"go":	"X509STOREUpRef"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_add1_host",
+		"c++":	"X509_VERIFY_PARAM_add1_host(int *, const char *, int)",
+		"go":	"X509VERIFYPARAMAdd1Host"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_free",
+		"c++":	"X509_VERIFY_PARAM_free(int *)",
+		"go":	"X509VERIFYPARAMFree"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_get0_peername",
+		"c++":	"X509_VERIFY_PARAM_get0_peername(const int *)",
+		"go":	"X509VERIFYPARAMGet0Peername"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_get1_ip_asc",
+		"c++":	"X509_VERIFY_PARAM_get1_ip_asc(int *)",
+		"go":	"X509VERIFYPARAMGet1IpAsc"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_get_depth",
+		"c++":	"X509_VERIFY_PARAM_get_depth(const int *)",
+		"go":	"X509VERIFYPARAMGetDepth"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_inherit",
+		"c++":	"X509_VERIFY_PARAM_inherit(int *, const int *)",
+		"go":	"X509VERIFYPARAMInherit"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_move_peername",
+		"c++":	"X509_VERIFY_PARAM_move_peername(int *, int *)",
+		"go":	"X509VERIFYPARAMMovePeername"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_new",
+		"c++":	"X509_VERIFY_PARAM_new()",
+		"go":	"X509VERIFYPARAMNew"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_set1",
+		"c++":	"X509_VERIFY_PARAM_set1(int *, const int *)",
+		"go":	"X509VERIFYPARAMSet1"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_set1_host",
+		"c++":	"X509_VERIFY_PARAM_set1_host(int *, const char *, int)",
+		"go":	"X509VERIFYPARAMSet1Host"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_set1_ip_asc",
+		"c++":	"X509_VERIFY_PARAM_set1_ip_asc(int *, const char *)",
+		"go":	"X509VERIFYPARAMSet1IpAsc"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_set_auth_level",
+		"c++":	"X509_VERIFY_PARAM_set_auth_level(int *, int)",
+		"go":	"X509VERIFYPARAMSetAuthLevel"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_set_depth",
+		"c++":	"X509_VERIFY_PARAM_set_depth(int *, int)",
+		"go":	"X509VERIFYPARAMSetDepth"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_set_hostflags",
+		"c++":	"X509_VERIFY_PARAM_set_hostflags(int *, unsigned int)",
+		"go":	"X509VERIFYPARAMSetHostflags"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_set_purpose",
+		"c++":	"X509_VERIFY_PARAM_set_purpose(int *, int)",
+		"go":	"X509VERIFYPARAMSetPurpose"
+	}, {
+		"mangle":	"X509_VERIFY_PARAM_set_trust",
+		"c++":	"X509_VERIFY_PARAM_set_trust(int *, int)",
+		"go":	"X509VERIFYPARAMSetTrust"
+	}, {
+		"mangle":	"X509_chain_check_suiteb",
+		"c++":	"X509_chain_check_suiteb(int *, int *, int (*)())",
+		"go":	"X509ChainCheckSuiteb"
+	}, {
+		"mangle":	"X509_check_private_key",
+		"c++":	"X509_check_private_key(const int *, const int *)",
+		"go":	"X509CheckPrivateKey"
+	}, {
+		"mangle":	"X509_cmp",
+		"c++":	"X509_cmp(const int *, const int *)",
+		"go":	"X509Cmp"
+	}, {
+		"mangle":	"X509_get0_pubkey",
+		"c++":	"X509_get0_pubkey(const int *)",
+		"go":	"X509Get0Pubkey"
+	}, {
+		"mangle":	"X509_get_X509_PUBKEY",
+		"c++":	"X509_get_X509_PUBKEY(const int *)",
+		"go":	"X509GetX509PUBKEY"
+	}, {
+		"mangle":	"X509_get_ext_d2i",
+		"c++":	"X509_get_ext_d2i(const int *, int, int *, int *)",
+		"go":	"X509GetExtD2i"
+	}, {
+		"mangle":	"X509_get_extension_flags",
+		"c++":	"X509_get_extension_flags(int *)",
+		"go":	"X509GetExtensionFlags"
+	}, {
+		"mangle":	"X509_get_issuer_name",
+		"c++":	"X509_get_issuer_name(const int *)",
+		"go":	"X509GetIssuerName"
+	}, {
+		"mangle":	"X509_get_key_usage",
+		"c++":	"X509_get_key_usage(int *)",
+		"go":	"X509GetKeyUsage"
+	}, {
+		"mangle":	"X509_get_pubkey",
+		"c++":	"X509_get_pubkey(int *)",
+		"go":	"X509GetPubkey"
+	}, {
+		"mangle":	"X509_get_subject_name",
+		"c++":	"X509_get_subject_name(const int *)",
+		"go":	"X509GetSubjectName"
+	}, {
+		"mangle":	"X509_print_ex",
+		"c++":	"X509_print_ex(int *, int *, unsigned long, unsigned long)",
+		"go":	"X509PrintEx"
+	}, {
+		"mangle":	"X509_up_ref",
+		"c++":	"X509_up_ref(int *)",
+		"go":	"X509UpRef"
+	}, {
+		"mangle":	"X509_verify_cert",
+		"c++":	"X509_verify_cert(int *)",
+		"go":	"X509VerifyCert"
+	}, {
+		"mangle":	"X509_verify_cert_error_string",
+		"c++":	"X509_verify_cert_error_string(long)",
+		"go":	"X509VerifyCertErrorString"
+	}, {
+		"mangle":	"a2i_IPADDRESS",
+		"c++":	"a2i_IPADDRESS(const char *)",
+		"go":	"A2iIPADDRESS"
+	}, {
+		"mangle":	"d2i_PrivateKey_ex",
+		"c++":	"d2i_PrivateKey_ex(int, int **, const unsigned char **, long, int *, const char *)",
+		"go":	"D2iPrivateKeyEx"
+	}, {
+		"mangle":	"d2i_PrivateKey_ex_bio",
+		"c++":	"d2i_PrivateKey_ex_bio(int *, int **, int *, const char *)",
+		"go":	"D2iPrivateKeyExBio"
+	}, {
+		"mangle":	"d2i_SSL_SESSION",
+		"c++":	"d2i_SSL_SESSION(SSL_SESSION **, const unsigned char **, long)",
+		"go":	"D2iSSLSESSION"
+	}, {
+		"mangle":	"d2i_SSL_SESSION_ex",
+		"c++":	"d2i_SSL_SESSION_ex(SSL_SESSION **, const unsigned char **, long, int *, const char *)",
+		"go":	"D2iSSLSESSIONEx"
+	}, {
+		"mangle":	"d2i_X509_bio",
+		"c++":	"d2i_X509_bio(int *, int **)",
+		"go":	"D2iX509Bio"
+	}, {
+		"mangle":	"i2d_SSL_SESSION",
+		"c++":	"i2d_SSL_SESSION(const SSL_SESSION *, unsigned char **)",
+		"go":	"(*SSLSESSION).I2dSSLSESSION"
+	}]
