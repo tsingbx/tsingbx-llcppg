@@ -158,8 +158,7 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 			obj = gogen.Lookup(p.Types.Scope(), name)
 			if obj == nil {
 				// implicit forward decl
-				decl := p.conf.Package.emptyTypeDecl(name, nil)
-				p.conf.Package.incomplete[name] = decl
+				decl := p.conf.Package.handleImplicitForwardDecl(name)
 				typ = decl.Type()
 			} else {
 				typ = obj.Type()

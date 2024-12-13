@@ -1,0 +1,82 @@
+===== sqlite3.go =====
+package sqlite
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+//go:linkname Libversion C.sqlite3_libversion
+func Libversion() *int8
+//go:linkname Sourceid C.sqlite3_sourceid
+func Sourceid() *int8
+//go:linkname LibversionNumber C.sqlite3_libversion_number
+func LibversionNumber() c.Int
+//go:linkname CompileoptionUsed C.sqlite3_compileoption_used
+func CompileoptionUsed(zOptName *int8) c.Int
+//go:linkname CompileoptionGet C.sqlite3_compileoption_get
+func CompileoptionGet(N c.Int) *int8
+//go:linkname Threadsafe C.sqlite3_threadsafe
+func Threadsafe() c.Int
+
+type Sqlite3 struct {
+	Unused [8]uint8
+}
+type SqliteInt64 c.LongLong
+type SqliteUint64 c.UlongLong
+type Int64 SqliteInt64
+type Uint64 SqliteUint64
+// llgo:link (*Sqlite3).Close C.sqlite3_close
+func (p *Sqlite3) Close() c.Int {
+	return 0
+}
+// llgo:link (*Sqlite3).CloseV2 C.sqlite3_close_v2
+func (p *Sqlite3) CloseV2() c.Int {
+	return 0
+}
+// llgo:type C
+type Callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int
+// llgo:link (*Sqlite3).Exec C.sqlite3_exec
+func (p *Sqlite3) Exec(sql *int8, callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int, unsafe.Pointer, errmsg **int8) c.Int {
+	return 0
+}
+
+type File struct {
+	PMethods *IoMethods
+}
+
+type IoMethods struct {
+	IVersion               c.Int
+	XClose                 unsafe.Pointer
+	XRead                  unsafe.Pointer
+	XWrite                 unsafe.Pointer
+	XTruncate              unsafe.Pointer
+	XSync                  unsafe.Pointer
+	XFileSize              unsafe.Pointer
+	XLock                  unsafe.Pointer
+	XUnlock                unsafe.Pointer
+	XCheckReservedLock     unsafe.Pointer
+	XFileControl           unsafe.Pointer
+	XSectorSize            unsafe.Pointer
+	XDeviceCharacteristics unsafe.Pointer
+	XShmMap                unsafe.Pointer
+	XShmLock               unsafe.Pointer
+	XShmBarrier            unsafe.Pointer
+	XShmUnmap              unsafe.Pointer
+	XFetch                 unsafe.Pointer
+	XUnfetch               unsafe.Pointer
+}
+
+===== sqlite_autogen_link.go =====
+package sqlite
+
+const LLGoPackage string = "link: $(pkg-config --libs sqlite3);"
+
+===== llcppg.pub =====
+sqlite3 Sqlite3
+sqlite3_callback Callback
+sqlite3_file File
+sqlite3_int64 Int64
+sqlite3_io_methods IoMethods
+sqlite3_uint64 Uint64
+sqlite_int64 SqliteInt64
+sqlite_uint64 SqliteUint64

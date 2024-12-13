@@ -6,6 +6,14 @@ import (
 	"unsafe"
 )
 
+type File struct {
+	PMethods *IoMethods
+}
+
+type IoMethods struct {
+	XUnfetch unsafe.Pointer
+}
+
 type PcachePage struct {
 	PBuf   unsafe.Pointer
 	PExtra unsafe.Pointer
@@ -63,6 +71,8 @@ type CallInfo struct {
 ===== llcppg.pub =====
 lua_Debug Debug
 lua_State State
+sqlite3_file File
+sqlite3_io_methods IoMethods
 sqlite3_pcache Pcache
 sqlite3_pcache_methods2 PcacheMethods2
 sqlite3_pcache_page PcachePage
