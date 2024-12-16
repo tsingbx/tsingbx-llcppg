@@ -1,3 +1,15 @@
+===== impl.go =====
+package forwarddecl
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+type Foo struct {
+	A c.Long
+}
+
 ===== temp.go =====
 package forwarddecl
 
@@ -5,6 +17,10 @@ import (
 	"github.com/goplus/llgo/c"
 	"unsafe"
 )
+
+type Bar struct {
+	A *Foo
+}
 
 type File struct {
 	PMethods *IoMethods
@@ -69,6 +85,7 @@ type CallInfo struct {
 }
 
 ===== llcppg.pub =====
+bar Bar
 lua_Debug Debug
 lua_State State
 sqlite3_file File

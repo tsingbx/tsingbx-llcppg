@@ -1,3 +1,11 @@
+#include "impl.h"
+typedef struct foo foo;
+struct bar
+{
+    foo *a;
+};
+
+
 typedef struct sqlite3_file sqlite3_file;
 struct sqlite3_file
 {

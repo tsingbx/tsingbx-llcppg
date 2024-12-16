@@ -6,12 +6,21 @@ import (
 )
 
 func main() {
-	TestClassDecl()
+	TestForwardDecl()
+	TestForwardDeclCrossFile()
 }
 
-func TestClassDecl() {
+func TestForwardDecl() {
 	test.RunTestWithConfig(&clangutils.Config{
 		File:  "./hfile/forwarddecl.h",
+		Temp:  false,
+		IsCpp: false,
+	})
+}
+
+func TestForwardDeclCrossFile() {
+	test.RunTestWithConfig(&clangutils.Config{
+		File:  "./hfile/def.h",
 		Temp:  false,
 		IsCpp: false,
 	})
