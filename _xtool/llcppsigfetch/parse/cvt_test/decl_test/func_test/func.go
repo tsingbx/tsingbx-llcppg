@@ -1,6 +1,8 @@
 package main
 
-import test "github.com/goplus/llcppg/_xtool/llcppsigfetch/parse/cvt_test"
+import (
+	test "github.com/goplus/llcppg/_xtool/llcppsigfetch/parse/cvt_test"
+)
 
 func main() {
 	TestFuncDecl()
@@ -13,6 +15,13 @@ func TestFuncDecl() {
 		`void foo(int a,...);`,
 		`float* foo(int a,double b);`,
 		`static inline int add(int a, int b);`,
+		`typedef void (fntype)();
+		 fntype foo;
+		`,
+		`typedef long (fntype)(long a);
+		 typedef fntype fntype2;
+		 fntype2 foo;
+	   `,
 	}
 	test.RunTest("TestFuncDecl", testCases)
 }

@@ -473,14 +473,30 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 
 	// function type will only collect return type
 	// ProcessType can't get the field names,will collect in follows
-	funcType, ok := ct.ProcessType(cursor.Type()).(*ast.FuncType)
+	fnType := cursor.Type()
+	typName, typKind := getTypeDesc(fnType)
+	ct.logln("ProcessFuncDecl: TypeName:", typName, "TypeKind:", typKind)
+
+	typeToProcess := fnType
+	if fnType.Kind == clang.TypeElaborated {
+		canonType := fnType.CanonicalType()
+		canonTypeName, canonTypeKind := getTypeDesc(canonType)
+		typeToProcess = canonType
+		ct.logln("ProcessFuncDecl: CanonicalType TypeName:", canonTypeName, "TypeKind:", canonTypeKind)
+	}
+	funcType, ok := ct.ProcessType(typeToProcess).(*ast.FuncType)
+
 	if !ok {
 		ct.logln("ProcessFuncDecl: failed to process function type")
 		return nil
 	}
 	ct.logln("ProcessFuncDecl: ProcessFieldList")
-	params := ct.ProcessFieldList(cursor)
-	funcType.Params = params
+
+	// For function type references (e.g. `typedef void (fntype)(); fntype foo;`),
+	// params are already processed in ProcessType via CanonicalType
+	if fnType.Kind != clang.TypeElaborated {
+		funcType.Params = ct.ProcessFieldList(cursor)
+	}
 
 	// Linux has one less leading underscore than macOS, so remove one leading underscore on macOS
 	if runtime.GOOS == "darwin" {
