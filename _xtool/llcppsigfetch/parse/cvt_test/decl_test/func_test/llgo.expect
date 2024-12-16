@@ -317,6 +317,180 @@ TestFuncDecl Case 5:
 	}
 }
 
+TestFuncDecl Case 6:
+{
+	"temp.h":	{
+		"_Type":	"File",
+		"decls":	[{
+				"_Type":	"TypedefDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"fntype"
+				},
+				"Type":	{
+					"_Type":	"FuncType",
+					"Params":	{
+						"_Type":	"FieldList",
+						"List":	null
+					},
+					"Ret":	{
+						"_Type":	"BuiltinType",
+						"Kind":	0,
+						"Flags":	0
+					}
+				}
+			}, {
+				"_Type":	"FuncDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"foo"
+				},
+				"MangledName":	"_Z3foov",
+				"Type":	{
+					"_Type":	"FuncType",
+					"Params":	{
+						"_Type":	"FieldList",
+						"List":	null
+					},
+					"Ret":	{
+						"_Type":	"BuiltinType",
+						"Kind":	0,
+						"Flags":	0
+					}
+				},
+				"IsInline":	false,
+				"IsStatic":	false,
+				"IsConst":	false,
+				"IsExplicit":	false,
+				"IsConstructor":	false,
+				"IsDestructor":	false,
+				"IsVirtual":	false,
+				"IsOverride":	false
+			}],
+		"includes":	[],
+		"macros":	[]
+	}
+}
+
+TestFuncDecl Case 7:
+{
+	"temp.h":	{
+		"_Type":	"File",
+		"decls":	[{
+				"_Type":	"TypedefDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"fntype"
+				},
+				"Type":	{
+					"_Type":	"FuncType",
+					"Params":	{
+						"_Type":	"FieldList",
+						"List":	[{
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"BuiltinType",
+									"Kind":	6,
+									"Flags":	4
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}]
+					},
+					"Ret":	{
+						"_Type":	"BuiltinType",
+						"Kind":	6,
+						"Flags":	4
+					}
+				}
+			}, {
+				"_Type":	"TypedefDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"fntype2"
+				},
+				"Type":	{
+					"_Type":	"Ident",
+					"Name":	"fntype"
+				}
+			}, {
+				"_Type":	"FuncDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"foo"
+				},
+				"MangledName":	"_Z3fool",
+				"Type":	{
+					"_Type":	"FuncType",
+					"Params":	{
+						"_Type":	"FieldList",
+						"List":	[{
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"BuiltinType",
+									"Kind":	6,
+									"Flags":	4
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}]
+					},
+					"Ret":	{
+						"_Type":	"BuiltinType",
+						"Kind":	6,
+						"Flags":	4
+					}
+				},
+				"IsInline":	false,
+				"IsStatic":	false,
+				"IsConst":	false,
+				"IsExplicit":	false,
+				"IsConstructor":	false,
+				"IsDestructor":	false,
+				"IsVirtual":	false,
+				"IsOverride":	false
+			}],
+		"includes":	[],
+		"macros":	[]
+	}
+}
+
 
 #stderr
 

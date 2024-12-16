@@ -1,8 +1,12 @@
 [
-    {
-      "mangle": "exec",
-      "c++": "exec",
-      "go": "Exec"
-    }
-  ]
-  
+  {
+    "mangle": "exec",
+    "c++": "exec",
+    "go": "Exec"
+  },
+  {
+    "mangle": "OSSL_provider_init2",
+    "c++": "OSSL_provider_init2",
+    "go": "ProviderInit2"
+  }
+]

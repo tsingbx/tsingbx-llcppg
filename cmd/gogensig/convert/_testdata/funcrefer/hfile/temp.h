@@ -13,3 +13,6 @@ typedef struct Stream {
   FILE *f; 
   CallBack cb; 
 } Stream;
+
+typedef void (OSSL_provider_init_fn)();
+extern OSSL_provider_init_fn OSSL_provider_init2;

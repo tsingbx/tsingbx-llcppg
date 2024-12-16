@@ -19,8 +19,13 @@ type Stream struct {
 	F  *c.FILE
 	Cb unsafe.Pointer
 }
+// llgo:type C
+type OSSLProviderInitFn func(__llgo_va_list ...interface{})
+//go:linkname ProviderInit2 C.OSSL_provider_init2
+func ProviderInit2(__llgo_va_list ...interface{})
 
 ===== llcppg.pub =====
 CallBack
 Hooks
+OSSL_provider_init_fn OSSLProviderInitFn
 Stream
