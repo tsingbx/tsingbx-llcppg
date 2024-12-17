@@ -463,6 +463,38 @@ func (ct *Converter) ProcessUnderlyingType(cursor clang.Cursor) ast.Expr {
 	return ct.ProcessElaboratedType(underlyingTyp)
 }
 
+// getActualType gets the actual type by handling only the outer Elaborated and Typedef types.
+// Note: We don't use CanonicalType() because it recursively resolves all types, including parameter types
+// in function signatures, which would cause typedef types within function signatures to be desugared.
+// For example:
+//
+//	typedef struct OSSL_CORE_HANDLE OSSL_CORE_HANDLE;
+//	typedef struct OSSL_DISPATCH OSSL_DISPATCH;
+//	typedef int (OSSL_provider_init_fn)(const OSSL_CORE_HANDLE *handle,
+//	                            const OSSL_DISPATCH *in,
+//	                            const OSSL_DISPATCH **out,
+//	                            void **provctx);
+//	OSSL_provider_init_fn OSSL_provider_init;
+//
+// Using CanonicalType() would desugar OSSL_CORE_HANDLE and OSSL_DISPATCH in the function signature
+// to their underlying struct types, which is not what we want.
+func (ct *Converter) getActualType(t clang.Type) clang.Type {
+	ct.incIndent()
+	defer ct.decIndent()
+	typName, typKind := getTypeDesc(t)
+	ct.logln("getActualType: TypeName:", typName, "TypeKind:", typKind)
+	switch t.Kind {
+	case clang.TypeElaborated:
+		ct.logln("getActualType: TypeElaborated")
+		return ct.getActualType(t.NamedType())
+	case clang.TypeTypedef:
+		ct.logln("getActualType: TypeTypedef")
+		return ct.getActualType(t.TypeDeclaration().TypedefDeclUnderlyingType())
+	default:
+		return t
+	}
+}
+
 // converts functions, methods, constructors, destructors (including out-of-class decl) to ast.FuncDecl nodes.
 func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	ct.incIndent()
@@ -479,13 +511,11 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 
 	typeToProcess := fnType
 	if fnType.Kind == clang.TypeElaborated {
-		canonType := fnType.CanonicalType()
-		canonTypeName, canonTypeKind := getTypeDesc(canonType)
-		typeToProcess = canonType
-		ct.logln("ProcessFuncDecl: CanonicalType TypeName:", canonTypeName, "TypeKind:", canonTypeKind)
+		typeToProcess = ct.getActualType(fnType)
+		actualTypeName, actualTypeKind := getTypeDesc(typeToProcess)
+		ct.logln("ProcessFuncDecl: ActualType TypeName:", actualTypeName, "TypeKind:", actualTypeKind)
 	}
 	funcType, ok := ct.ProcessType(typeToProcess).(*ast.FuncType)
-
 	if !ok {
 		ct.logln("ProcessFuncDecl: failed to process function type")
 		return nil

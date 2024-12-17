@@ -491,6 +491,241 @@ TestFuncDecl Case 7:
 	}
 }
 
+TestFuncDecl Case 8:
+{
+	"temp.h":	{
+		"_Type":	"File",
+		"decls":	[{
+				"_Type":	"TypeDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"OSSL_CORE_HANDLE"
+				},
+				"Type":	{
+					"_Type":	"RecordType",
+					"Tag":	0,
+					"Fields":	{
+						"_Type":	"FieldList",
+						"List":	null
+					},
+					"Methods":	[]
+				}
+			}, {
+				"_Type":	"TypeDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"OSSL_DISPATCH"
+				},
+				"Type":	{
+					"_Type":	"RecordType",
+					"Tag":	0,
+					"Fields":	{
+						"_Type":	"FieldList",
+						"List":	null
+					},
+					"Methods":	[]
+				}
+			}, {
+				"_Type":	"TypedefDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"OSSL_provider_init_fn"
+				},
+				"Type":	{
+					"_Type":	"FuncType",
+					"Params":	{
+						"_Type":	"FieldList",
+						"List":	[{
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"PointerType",
+									"X":	{
+										"_Type":	"Ident",
+										"Name":	"OSSL_CORE_HANDLE"
+									}
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}, {
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"PointerType",
+									"X":	{
+										"_Type":	"Ident",
+										"Name":	"OSSL_DISPATCH"
+									}
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}, {
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"PointerType",
+									"X":	{
+										"_Type":	"PointerType",
+										"X":	{
+											"_Type":	"Ident",
+											"Name":	"OSSL_DISPATCH"
+										}
+									}
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}, {
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"PointerType",
+									"X":	{
+										"_Type":	"PointerType",
+										"X":	{
+											"_Type":	"BuiltinType",
+											"Kind":	0,
+											"Flags":	0
+										}
+									}
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}]
+					},
+					"Ret":	{
+						"_Type":	"BuiltinType",
+						"Kind":	6,
+						"Flags":	0
+					}
+				}
+			}, {
+				"_Type":	"FuncDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"OSSL_provider_init"
+				},
+				"MangledName":	"_Z18OSSL_provider_initPK16OSSL_CORE_HANDLEPK13OSSL_DISPATCHPS4_PPv",
+				"Type":	{
+					"_Type":	"FuncType",
+					"Params":	{
+						"_Type":	"FieldList",
+						"List":	[{
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"PointerType",
+									"X":	{
+										"_Type":	"Ident",
+										"Name":	"OSSL_CORE_HANDLE"
+									}
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}, {
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"PointerType",
+									"X":	{
+										"_Type":	"Ident",
+										"Name":	"OSSL_DISPATCH"
+									}
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}, {
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"PointerType",
+									"X":	{
+										"_Type":	"PointerType",
+										"X":	{
+											"_Type":	"Ident",
+											"Name":	"OSSL_DISPATCH"
+										}
+									}
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}, {
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"PointerType",
+									"X":	{
+										"_Type":	"PointerType",
+										"X":	{
+											"_Type":	"BuiltinType",
+											"Kind":	0,
+											"Flags":	0
+										}
+									}
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	0,
+								"Names":	null
+							}]
+					},
+					"Ret":	{
+						"_Type":	"BuiltinType",
+						"Kind":	6,
+						"Flags":	0
+					}
+				},
+				"IsInline":	false,
+				"IsStatic":	false,
+				"IsConst":	false,
+				"IsExplicit":	false,
+				"IsConstructor":	false,
+				"IsDestructor":	false,
+				"IsVirtual":	false,
+				"IsOverride":	false
+			}],
+		"includes":	[],
+		"macros":	[]
+	}
+}
+
 
 #stderr
 
