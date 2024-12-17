@@ -8,5 +8,10 @@
     "mangle": "OSSL_provider_init2",
     "c++": "OSSL_provider_init2",
     "go": "ProviderInit2"
+  },
+  {
+    "mangle": "OSSL_provider_init",
+    "c++": "OSSL_provider_init",
+    "go": "ProviderInit"
   }
 ]

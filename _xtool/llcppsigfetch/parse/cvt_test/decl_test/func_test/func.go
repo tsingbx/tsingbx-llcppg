@@ -22,6 +22,15 @@ func TestFuncDecl() {
 		 typedef fntype fntype2;
 		 fntype2 foo;
 	   `,
+		`
+		typedef struct OSSL_CORE_HANDLE OSSL_CORE_HANDLE;
+		typedef struct OSSL_DISPATCH OSSL_DISPATCH;
+		typedef int (OSSL_provider_init_fn)(const OSSL_CORE_HANDLE *handle,
+		                                const OSSL_DISPATCH *in,
+		                                const OSSL_DISPATCH **out,
+		                                void **provctx);
+		OSSL_provider_init_fn OSSL_provider_init;
+		   `,
 	}
 	test.RunTest("TestFuncDecl", testCases)
 }
