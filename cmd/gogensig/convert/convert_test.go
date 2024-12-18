@@ -386,7 +386,6 @@ import (
 )
 
 type NormalType c.Int
-
 type Foo struct {
 	Unused [8]uint8
 }

@@ -26,3 +26,9 @@ typedef int(OSSL_provider_init_fn2)(const OSSL_CORE_HANDLE *handle,
                                    void **provctx);
 
 OSSL_provider_init_fn2 OSSL_provider_init;
+
+typedef struct ossl_lib_ctx_st OSSL_LIB_CTX;
+
+int OSSL_PROVIDER_add_builtin(OSSL_LIB_CTX *, const char *name,
+                              OSSL_provider_init_fn2 *init_fn);
+

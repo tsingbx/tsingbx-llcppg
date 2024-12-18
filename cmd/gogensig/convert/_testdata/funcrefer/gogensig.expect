@@ -36,11 +36,20 @@ type OSSLProviderInitFn2 func(*OSSLCOREHANDLE, *OSSLDISPATCH, **OSSLDISPATCH, *u
 //go:linkname ProviderInit C.OSSL_provider_init
 func ProviderInit(*OSSLCOREHANDLE, *OSSLDISPATCH, **OSSLDISPATCH, *unsafe.Pointer) c.Int
 
+type OsslLibCtxSt struct {
+	Unused [8]uint8
+}
+type OSSLLIBCTX OsslLibCtxSt
+//go:linkname ProviderAddBuiltin C.OSSL_PROVIDER_add_builtin
+func ProviderAddBuiltin(*OSSLLIBCTX, name *int8, init_fn *OSSLProviderInitFn2) c.Int
+
 ===== llcppg.pub =====
 CallBack
 Hooks
 OSSL_CORE_HANDLE OSSLCOREHANDLE
 OSSL_DISPATCH OSSLDISPATCH
+OSSL_LIB_CTX OSSLLIBCTX
 OSSL_provider_init_fn OSSLProviderInitFn
 OSSL_provider_init_fn2 OSSLProviderInitFn2
 Stream
+ossl_lib_ctx_st OsslLibCtxSt

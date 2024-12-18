@@ -13,5 +13,10 @@
     "mangle": "OSSL_provider_init",
     "c++": "OSSL_provider_init",
     "go": "ProviderInit"
+  },
+  {
+    "mangle": "OSSL_PROVIDER_add_builtin",
+    "c++": "OSSL_PROVIDER_add_builtin",
+    "go": "ProviderAddBuiltin"
   }
 ]
