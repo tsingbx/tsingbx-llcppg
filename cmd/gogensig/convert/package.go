@@ -39,6 +39,7 @@ type Package struct {
 	cvt        *TypeConv                  // package type convert
 	curFile    *HeaderFile                // current processing c header file.
 	incomplete map[string]*gogen.TypeDecl // originname -> TypeDecl
+	deferTypes map[*gogen.TypeDecl]func() (types.Type, error)
 }
 
 type PackageConfig struct {
@@ -56,6 +57,7 @@ func NewPackage(config *PackageConfig) *Package {
 		p:          gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
 		conf:       config,
 		incomplete: make(map[string]*gogen.TypeDecl),
+		deferTypes: make(map[*gogen.TypeDecl]func() (types.Type, error)),
 	}
 
 	mod, err := gopmod.Load(config.OutputDir)
@@ -312,19 +314,55 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 	p.CollectNameMapping(typedefDecl.Name.Name, name)
 
 	genDecl := p.p.NewTypeDefs()
+	typeSpecdecl := genDecl.NewType(name)
+
+	if changed {
+		substObj(p.p.Types, p.p.Types.Scope(), typedefDecl.Name.Name, typeSpecdecl.Type().Obj())
+	}
+
+	if tagRef, ok := typedefDecl.Type.(*ast.TagExpr); ok {
+		inc := p.handleTyperefIncomplete(tagRef, typeSpecdecl)
+		if inc {
+			return nil
+		}
+	}
+
 	typ, err := p.ToType(typedefDecl.Type)
 	if err != nil {
+		typeSpecdecl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
 		return err
 	}
-	typeSpecdecl := genDecl.NewType(name)
+
 	typeSpecdecl.InitType(p.p, typ)
 	if _, ok := typ.(*types.Signature); ok {
 		genDecl.SetComments(NewTypecDocComments())
 	}
-	if changed {
-		substObj(p.p.Types, p.p.Types.Scope(), typedefDecl.Name.Name, typeSpecdecl.Type().Obj())
-	}
+
 	return nil
+}
+
+func (p *Package) handleTyperefIncomplete(tagRef *ast.TagExpr, typeSpecdecl *gogen.TypeDecl) bool {
+	var name string
+	switch n := tagRef.Name.(type) {
+	case *ast.Ident:
+		name = n.Name
+	case *ast.ScopingExpr:
+		// todo(zzy):scoping
+		panic("todo:scoping expr not supported")
+	}
+	_, inc := p.incomplete[name]
+	if !inc {
+		return false
+	}
+	p.deferTypes[typeSpecdecl] = func() (types.Type, error) {
+		typ, err := p.ToType(tagRef)
+		if err != nil {
+			return nil, err
+		}
+		// a function type will not be a incomplete type,so we not need to check signature and add comments
+		return typ, nil
+	}
+	return true
 }
 
 // Convert ast.Expr to types.Type
@@ -480,7 +518,17 @@ func (p *Package) WriteToBuffer(genFName string) (*bytes.Buffer, error) {
 	for _, decl := range p.incomplete {
 		decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
 	}
+	for decl, getTyp := range p.deferTypes {
+		typ, err := getTyp()
+		if typ != nil {
+			decl.InitType(p.p, typ)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
 	p.incomplete = make(map[string]*gogen.TypeDecl, 0)
+	p.deferTypes = make(map[*gogen.TypeDecl]func() (types.Type, error), 0)
 	buf := new(bytes.Buffer)
 	err := p.p.WriteTo(buf, genFName)
 	if err != nil {
