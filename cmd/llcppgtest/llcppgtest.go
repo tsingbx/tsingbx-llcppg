@@ -84,6 +84,14 @@ const (
 	withSymgVerbose
 )
 
+type runAppMode int
+
+const (
+	runSelected runAppMode = iota
+	runRand
+	runAll
+)
+
 func runPkgs(pkgs []string, runMode runPkgMode) {
 	wd, _ := os.Getwd()
 	wg := sync.WaitGroup{}
@@ -105,9 +113,9 @@ func runPkgs(pkgs []string, runMode runPkgMode) {
 		RunCommand("mkdir", "-p", dir)
 		RunCommand("cd", dir)
 		curDir := wd + "/out/" + pkg
-		RunCommandInDir(curDir, func(err error) {
+		RunCommandInDir(curDir, func(error) {
 			runs = append(runs, pkg)
-			go RunCommandInDir(curDir, func(err error) {
+			go RunCommandInDir(curDir, func(error) {
 				wg.Done()
 			}, "llcppg", llcppgArg...)
 		}, "llcppcfg", append(llcppcfgArg, pkg)...)
@@ -131,31 +139,36 @@ func runPkg(runMode runPkgMode) {
 
 func printHelp() {
 	helpString := `llcppgtest is used to test llcppg
-usage: llcppgtest [-h|-r|-cpp|-a|-vfetch|-vsym|-v] pkgname`
+usage: llcppgtest [-r|-rand|-a|-all] [-v|-vfetch|-vsym] [-cpp] [-h|-help] pkgname`
 	fmt.Println(helpString)
 	flag.PrintDefaults()
 }
 
 func main() {
-	help := false
-	flag.BoolVar(&help, "h", false, "print help message")
 	rand := false
-	flag.BoolVar(&rand, "r", false, "select one pkg of pkg-config --list-all to test")
-	cpp := false
-	flag.BoolVar(&cpp, "cpp", false, "if it is a cpp library")
+	flag.BoolVar(&rand, "r", false, "same as -rand")
+	flag.BoolVar(&rand, "rand", false, "select one pkg of pkg-config --list-all to test")
 	all := false
-	flag.BoolVar(&all, "a", false, "test all pkgs of pkg-config --list-all")
+	flag.BoolVar(&all, "a", false, "same as -all")
+	flag.BoolVar(&all, "all", false, "test all pkgs of pkg-config --list-all")
+	v := false
+	flag.BoolVar(&v, "v", false, "enable verbose of llcppsigfetch and llcppsymg")
 	vSig := false
 	flag.BoolVar(&vSig, "vfetch", false, "enable verbose of llcppsigfetch")
 	vSym := false
 	flag.BoolVar(&vSym, "vsym", false, "enable verbose of llcppsymg")
-	v := false
-	flag.BoolVar(&v, "v", false, "enable verbose of llcppsigfetch and llcppsymg")
+	cpp := false
+	flag.BoolVar(&cpp, "cpp", false, "if it is a cpp library")
+	help := false
+	flag.BoolVar(&help, "h", false, "print help message")
+	flag.BoolVar(&help, "help", false, "print help message")
 	flag.Parse()
+
 	if help || len(os.Args) == 1 {
 		printHelp()
 		return
 	}
+
 	runMode := 0
 	if cpp {
 		runMode |= int(withCpp)
@@ -170,12 +183,21 @@ func main() {
 		runMode |= int(withSigfetchVerbose)
 		runMode |= int(withSymgVerbose)
 	}
+
+	appMode := runSelected
 	if rand {
+		appMode = runRand
+	}
+	if all {
+		appMode = runAll
+	}
+	switch {
+	case appMode == runRand:
 		runPkg(runPkgMode(runMode))
-	} else if all {
+	case appMode == runAll:
 		pkgs := getPkgs()
 		runPkgs(pkgs, runPkgMode(runMode))
-	} else {
+	default:
 		if len(flag.Args()) > 0 {
 			arg := flag.Arg(0)
 			fmt.Printf("***start test %s\n", arg)
