@@ -26,7 +26,7 @@ func RunCommandWithOut(out *io.PipeWriter, dir, cmdName string, args ...string) 
 	}
 }
 
-func RunCommandInDir(dir string, done func(error), name string, args ...string) error {
+func RunCommandInDir(dir string, done func(error), name string, args ...string) {
 	cmd := exec.Command(name, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
@@ -36,18 +36,20 @@ func RunCommandInDir(dir string, done func(error), name string, args ...string) 
 	if done != nil {
 		done(err)
 	}
-	return err
 }
 
-func RunCommand(name string, args ...string) error {
+func RunCommand(name string, args ...string) {
 	cmd := exec.Command(name, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
-	return cmd.Run()
+	err := cmd.Run()
+	if err != nil {
+		panic(err)
+	}
 }
 
-func PkgList(r io.Reader) ([]string, error) {
+func PkgList(r io.Reader) []string {
 	pkgs := make([]string, 0)
 	scan := bufio.NewScanner(r)
 	for scan.Scan() {
@@ -57,34 +59,45 @@ func PkgList(r io.Reader) ([]string, error) {
 		firstWord := ""
 		for lineScan.Scan() {
 			text := lineScan.Text()
-			if len(firstWord) <= 0 {
+			if len(firstWord) == 0 {
 				firstWord = text
 				pkgs = append(pkgs, firstWord)
 			}
 		}
 	}
-	return pkgs, nil
+	return pkgs
 }
 
 func getPkgs() []string {
 	wd, _ := os.Getwd()
 	r, w := io.Pipe()
 	go RunCommandWithOut(w, wd, "pkg-config", "--list-all")
-	pkgs, _ := PkgList(r)
+	pkgs := PkgList(r)
 	return pkgs
 }
 
-func runPkgs(pkgs []string, cpp bool, verbose bool) {
+type runPkgMode int
+
+const (
+	withCpp runPkgMode = 1 << iota
+	withSigfetchVerbose
+	withSymgVerbose
+)
+
+func runPkgs(pkgs []string, runMode runPkgMode) {
 	wd, _ := os.Getwd()
 	wg := sync.WaitGroup{}
 	wg.Add(len(pkgs))
 	llcppcfgArg := []string{}
-	if cpp {
+	if runMode&withCpp != 0 {
 		llcppcfgArg = append(llcppcfgArg, "-cpp")
 	}
 	llcppgArg := []string{}
-	if verbose {
-		llcppgArg = append(llcppgArg, "-v")
+	if runMode&withSigfetchVerbose != 0 {
+		llcppgArg = append(llcppgArg, "-vfetch")
+	}
+	if runMode&withSymgVerbose != 0 {
+		llcppgArg = append(llcppgArg, "-vsym")
 	}
 	runs := make([]string, 0)
 	for _, pkg := range pkgs {
@@ -103,22 +116,22 @@ func runPkgs(pkgs []string, cpp bool, verbose bool) {
 	fmt.Printf("llcppgtest run %v finished!\n", runs)
 }
 
-func randIndex(len int) int {
+func randIndex(maxInt int) int {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return r.Intn(len)
+	return r.Intn(maxInt)
 }
 
-func runPkg(cpp bool, verbose bool) {
+func runPkg(runMode runPkgMode) {
 	pkgs := getPkgs()
 	idx := randIndex(len(pkgs))
 	pkg := pkgs[idx]
 	fmt.Printf("***start test %s\n", pkg)
-	runPkgs([]string{pkg}, cpp, verbose)
+	runPkgs([]string{pkg}, runMode)
 }
 
 func printHelp() {
 	helpString := `llcppgtest is used to test llcppg
-usage: llcppgtest [-h|-r|-cpp|-a|-v] pkgname`
+usage: llcppgtest [-h|-r|-cpp|-a|-vfetch|-vsym|-v] pkgname`
 	fmt.Println(helpString)
 	flag.PrintDefaults()
 }
@@ -132,23 +145,41 @@ func main() {
 	flag.BoolVar(&cpp, "cpp", false, "if it is a cpp library")
 	all := false
 	flag.BoolVar(&all, "a", false, "test all pkgs of pkg-config --list-all")
+	vSig := false
+	flag.BoolVar(&vSig, "vfetch", false, "enable verbose of llcppsigfetch")
+	vSym := false
+	flag.BoolVar(&vSym, "vsym", false, "enable verbose of llcppsymg")
 	v := false
-	flag.BoolVar(&v, "v", false, "enable verbose")
+	flag.BoolVar(&v, "v", false, "enable verbose of llcppsigfetch and llcppsymg")
 	flag.Parse()
-	if help || len(os.Args) <= 1 {
+	if help || len(os.Args) == 1 {
 		printHelp()
 		return
 	}
+	runMode := 0
+	if cpp {
+		runMode |= int(withCpp)
+	}
+	if vSig {
+		runMode |= int(withSigfetchVerbose)
+	}
+	if vSym {
+		runMode |= int(withSymgVerbose)
+	}
+	if v {
+		runMode |= int(withSigfetchVerbose)
+		runMode |= int(withSymgVerbose)
+	}
 	if rand {
-		runPkg(cpp, v)
+		runPkg(runPkgMode(runMode))
 	} else if all {
 		pkgs := getPkgs()
-		runPkgs(pkgs, cpp, v)
+		runPkgs(pkgs, runPkgMode(runMode))
 	} else {
 		if len(flag.Args()) > 0 {
 			arg := flag.Arg(0)
 			fmt.Printf("***start test %s\n", arg)
-			runPkgs([]string{arg}, cpp, v)
+			runPkgs([]string{arg}, runPkgMode(runMode))
 		} else {
 			printHelp()
 		}
