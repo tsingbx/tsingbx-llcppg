@@ -9,8 +9,11 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/qiniu/x/log"
 )
 
 func RunCommandWithOut(out *io.PipeWriter, dir, cmdName string, args ...string) {
@@ -46,6 +49,17 @@ func RunCommand(name string, args ...string) {
 	err := cmd.Run()
 	if err != nil {
 		panic(err)
+	}
+}
+
+func RemoveFile(fileName string) {
+	cmd := exec.Command("rm", fileName)
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		log.Println("")
 	}
 }
 
@@ -110,6 +124,8 @@ func runPkgs(pkgs []string, runMode runPkgMode) {
 	runs := make([]string, 0)
 	for _, pkg := range pkgs {
 		dir := "./out/" + pkg
+		llcppsymgFile := filepath.Join(dir, "llcppg.symb.json")
+		RemoveFile(llcppsymgFile)
 		RunCommand("mkdir", "-p", dir)
 		RunCommand("cd", dir)
 		curDir := wd + "/out/" + pkg
