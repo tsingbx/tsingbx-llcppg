@@ -13,6 +13,8 @@ import (
 	"github.com/goplus/llgo/c/clang"
 )
 
+var logIsMethod bool = false
+
 type SymbolInfo struct {
 	GoName    string
 	ProtoName string
@@ -98,19 +100,60 @@ func (p *SymbolProcessor) GenMethodName(class, name string, isDestructor bool, i
 	return prefix + name
 }
 
+func (p *SymbolProcessor) printTypeInfo(typ clang.Type, isArg bool, prefix string) {
+	if logIsMethod {
+		definitionType := clang.GoString(typ.TypeDeclaration().Definition().Type().String())
+		canonicalType := clang.GoString(typ.CanonicalType().String())
+		fmt.Println("**********", prefix, "**********")
+		fmt.Println(
+			"typ.String():", clang.GoString(typ.String()),
+			"typ.NamedType().String():", clang.GoString(typ.NamedType().String()),
+			"isTypePointer:", typ.Kind == clang.TypePointer,
+			"isTypeElaborated:", typ.Kind == clang.TypeElaborated,
+			"isTypeTypedef:", typ.Kind == clang.TypeTypedef,
+			"isInCurPkg:", p.inCurPkg(typ.TypeDeclaration(), isArg),
+			"definitionType:", definitionType,
+			"canonicalType:", canonicalType,
+			"pointLevel:", p.pointerLevel(typ),
+		)
+	}
+}
+
+func printResult(isInCurPkg, isPointer bool, goName, prefix string) {
+	if logIsMethod {
+		fmt.Println("===========", prefix, "===========")
+		fmt.Println("isInCurPkg:", isInCurPkg, "isPointer:", isPointer, "goName", goName)
+	}
+}
+
+func (p *SymbolProcessor) pointerLevel(typ clang.Type) int {
+	canonicalTypeGoString := clang.GoString(typ.CanonicalType().String())
+	return strings.Count(canonicalTypeGoString, "*")
+}
+
 func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, string) {
-	isInCurPkg := p.inCurPkg(cur, isArg)
 	typ := cur.Type()
+	if p.pointerLevel(typ) > 1 {
+		return false, false, names.GoName(clang.GoString(typ.String()), p.Prefixes, false)
+	}
+	isInCurPkg := p.inCurPkg(cur, isArg)
+	p.printTypeInfo(typ, isArg, "typ")
 	if typ.Kind == clang.TypePointer {
 		pointeeType := typ.PointeeType()
-		namedTypeGoString := clang.GoString(pointeeType.NamedType().String())
+		p.printTypeInfo(pointeeType, isArg, "typ.PointeeType()")
+		pointeeTypeNamedType := pointeeType.NamedType()
+		namedTypeGoString := clang.GoString(pointeeTypeNamedType.String())
+		p.printTypeInfo(pointeeTypeNamedType, isArg, "typ.PointeeType().NamedType()")
 		if len(namedTypeGoString) > 0 {
-			return isInCurPkg, true, names.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
+			goName := names.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
+			printResult(isInCurPkg, true, goName, "typ.pointeeType().NamedType()")
+			return isInCurPkg, true, goName
 		}
 		return p.isMethod(pointeeType.TypeDeclaration(), isArg)
 	} else if typ.Kind == clang.TypeElaborated ||
 		typ.Kind == clang.TypeTypedef {
 		canonicalType := typ.CanonicalType()
+		p.printTypeInfo(canonicalType, isArg, "typ.CanonicalType()")
 		if canonicalType.Kind == clang.TypePointer {
 			return p.isMethod(canonicalType.TypeDeclaration(), isArg)
 		}
@@ -118,10 +161,14 @@ func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, st
 	namedType := typ.NamedType()
 	namedTypeGoString := clang.GoString(namedType.String())
 	if len(namedTypeGoString) > 0 {
-		return isInCurPkg, false, names.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
+		goName := names.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
+		printResult(isInCurPkg, false, goName, "typ.NamedType()")
+		return isInCurPkg, false, goName
 	}
 	typeGoString := clang.GoString(typ.String())
-	return isInCurPkg, false, names.GoName(typeGoString, p.Prefixes, isInCurPkg)
+	goName := names.GoName(typeGoString, p.Prefixes, isInCurPkg)
+	printResult(isInCurPkg, false, goName, "typ")
+	return isInCurPkg, false, goName
 }
 
 func (p *SymbolProcessor) genGoName(cursor clang.Cursor) string {
