@@ -26,6 +26,11 @@ Symbol Map GoName: (*State).Compare, ProtoName In HeaderFile: lua_compare(lua_St
 Symbol Map GoName: (*State).Rawequal, ProtoName In HeaderFile: lua_rawequal(lua_State *, int, int), MangledName: lua_rawequal
 Symbol Map GoName: Sizecomp, ProtoName In HeaderFile: lua_sizecomp(int, int, int, int), MangledName: lua_sizecomp
 
+=== Test Case: InvalidReceiver ===
+Parsed Symbols:
+Symbol Map GoName: (*Sqlite3).Errcode, ProtoName In HeaderFile: sqlite3_errcode(sqlite3 *), MangledName: sqlite3_errcode
+Symbol Map GoName: UriParameter, ProtoName In HeaderFile: sqlite3_uri_parameter(sqlite3_filename, const char *), MangledName: sqlite3_uri_parameter
+
 
 #stderr
 

@@ -97,6 +97,17 @@ int(lua_sizecomp)(size_t s, int idx1, int idx2, int op);
 			isCpp:    false,
 			prefixes: []string{"lua_"},
 		},
+		{
+			name: "InvalidReceiver",
+			content: `
+typedef struct sqlite3 sqlite3;
+typedef const char *sqlite3_filename;
+SQLITE_API const char *sqlite3_uri_parameter(sqlite3_filename z, const char *zParam);
+SQLITE_API int sqlite3_errcode(sqlite3 *db);
+            `,
+			isCpp:    false,
+			prefixes: []string{"sqlite3_"},
+		},
 	}
 
 	for _, tc := range testCases {
