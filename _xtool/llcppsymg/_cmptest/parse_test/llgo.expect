@@ -31,6 +31,10 @@ Parsed Symbols:
 Symbol Map GoName: (*Sqlite3).Errcode, ProtoName In HeaderFile: sqlite3_errcode(sqlite3 *), MangledName: sqlite3_errcode
 Symbol Map GoName: UriParameter, ProtoName In HeaderFile: sqlite3_uri_parameter(sqlite3_filename, const char *), MangledName: sqlite3_uri_parameter
 
+=== Test Case: InvalidReceiver PointerLevel > 1 ===
+Parsed Symbols:
+Symbol Map GoName: DerDecoding, ProtoName In HeaderFile: asn1_der_decoding(asn1_node *, const void *, int, char *), MangledName: asn1_der_decoding
+
 
 #stderr
 
