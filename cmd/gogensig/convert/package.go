@@ -34,11 +34,25 @@ func SetDebug(flags int) {
 // In Processing Package
 type Package struct {
 	*PkgInfo
-	p          *gogen.Package             // package writer
-	conf       *PackageConfig             // package config
-	cvt        *TypeConv                  // package type convert
-	curFile    *HeaderFile                // current processing c header file.
-	incomplete map[string]*gogen.TypeDecl // originname -> TypeDecl
+	p       *gogen.Package // package writer
+	conf    *PackageConfig // package config
+	cvt     *TypeConv      // package type convert
+	curFile *HeaderFile    // current processing c header file.
+
+	// incomplete stores type declarations that are not fully defined yet.
+	// This is used to handle forward declarations and self-referential types in C/C++.
+	incomplete map[string]*gogen.TypeDecl // origin name(in c) -> TypeDecl
+
+	// deferTypes stores type declarations that need to be resolved later.
+	// The key is the Go type declaration, and the value is a function that will return
+	// the actual type when called.
+	// These functions will be executed after all incomplete types are initialized.
+	//
+	// This is particularly important when handling typedef of incomplete types in Go.
+	// In Go, when creating a new type via "type xxx xxx", the underlying type must exist.
+	// However, when typedef-ing an incomplete type, its underlying type doesn't exist yet.
+	// For such cases, we defer the type initialization until after all incomplete types
+	// are properly initialized, at which point we can correctly reference the underlying type.
 	deferTypes map[*gogen.TypeDecl]func() (types.Type, error)
 
 	nameMapper *names.NameMapper // handles name mapping and uniqueness
