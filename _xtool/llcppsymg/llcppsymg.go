@@ -24,6 +24,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symbol"
 )
@@ -46,8 +47,12 @@ func main() {
 	check(err)
 	defer conf.Delete()
 
+	if ags.VerboseParseIsMethod {
+		dbg.SetDebugParseIsMethod()
+	}
+
 	if ags.Verbose {
-		symbol.SetDebug(symbol.DbgFlagAll)
+		dbg.SetDebugSymbol()
 		if ags.UseStdin {
 			fmt.Println("Config From Stdin")
 		} else {

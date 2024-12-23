@@ -97,6 +97,61 @@ int(lua_sizecomp)(size_t s, int idx1, int idx2, int op);
 			isCpp:    false,
 			prefixes: []string{"lua_"},
 		},
+		{
+			name: "InvalidReceiver",
+			content: `
+			typedef struct sqlite3 sqlite3;
+			typedef const char *sqlite3_filename;
+			SQLITE_API const char *sqlite3_uri_parameter(sqlite3_filename z, const char *zParam);
+			SQLITE_API int sqlite3_errcode(sqlite3 *db);
+			            `,
+			isCpp:    false,
+			prefixes: []string{"sqlite3_"},
+		},
+		{
+			name: "InvalidReceiver PointerLevel > 1",
+			content: `
+			typedef struct asn1_node_st asn1_node_st;
+			typedef asn1_node_st *asn1_node;
+			extern ASN1_API int asn1_der_decoding (asn1_node * element, const void *ider, int ider_len, char *errorDescription);
+						`,
+			isCpp:    false,
+			prefixes: []string{"asn1_"},
+		},
+		{
+			name: "InvalidReceiver typ.NamedType.String is empty",
+			content: `
+			RLAPI void InitWindow(int width, int height, const char *title);
+			`,
+			isCpp:    false,
+			prefixes: []string{""},
+		},
+		{
+			name: "InvalidReceiver typ.canonicalType.Kind == clang.TypePointer",
+			content: `
+			typedef struct
+			{
+			int _mp_alloc;		/* Number of *limbs* allocated and pointed
+							to by the _mp_d field.  */
+			int _mp_size;			/* abs(_mp_size) is the number of limbs the
+							last field points to.  If _mp_size is
+							negative this is a negative number.  */
+			} __mpz_struct;
+			typedef __mpz_struct *mpz_ptr;
+			inline void __mpz_set_ui_safe(mpz_ptr p, unsigned long l)
+{
+  p->_mp_size = (l != 0);
+  p->_mp_d[0] = l & GMP_NUMB_MASK;
+#if __GMPZ_ULI_LIMBS > 1
+  l >>= GMP_NUMB_BITS;
+  p->_mp_d[1] = l;
+  p->_mp_size += (l != 0);
+#endif
+}
+			`,
+			isCpp:    false,
+			prefixes: []string{""},
+		},
 	}
 
 	for _, tc := range testCases {
