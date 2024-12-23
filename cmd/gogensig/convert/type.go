@@ -230,7 +230,23 @@ func (p *TypeConv) fieldListToParams(params *ast.FieldList) (*types.Tuple, bool,
 	if params == nil {
 		return types.NewTuple(), false, nil
 	}
-	vars, err := p.fieldListToVars(params)
+
+	hasNamedParam := false
+	for _, field := range params.List {
+		if field == nil {
+			continue
+		}
+		if len(field.Names) > 0 {
+			hasNamedParam = true
+			break
+		}
+		if _, ok := field.Type.(*ast.Variadic); ok {
+			hasNamedParam = true
+			break
+		}
+	}
+
+	vars, err := p.fieldListToVars(params, hasNamedParam)
 	if err != nil {
 		return nil, false, err
 	}
@@ -258,13 +274,14 @@ func (p *TypeConv) retToResult(ret ast.Expr) (*types.Tuple, error) {
 }
 
 // Convert ast.FieldList to []types.Var
-func (p *TypeConv) fieldListToVars(params *ast.FieldList) ([]*types.Var, error) {
+func (p *TypeConv) fieldListToVars(params *ast.FieldList, hasNamedParam bool) ([]*types.Var, error) {
 	var vars []*types.Var
 	if params == nil || params.List == nil {
 		return vars, nil
 	}
-	for _, field := range params.List {
-		fieldVar, err := p.fieldToVar(field)
+
+	for index, field := range params.List {
+		fieldVar, err := p.fieldToVar(field, hasNamedParam, index)
 		if err != nil {
 			return nil, err
 		}
@@ -282,7 +299,7 @@ func (p *TypeConv) defaultRecordField() []*types.Var {
 	}
 }
 
-func (p *TypeConv) fieldToVar(field *ast.Field) (*types.Var, error) {
+func (p *TypeConv) fieldToVar(field *ast.Field, hasNamedParam bool, argIndex int) (*types.Var, error) {
 	if field == nil {
 		return nil, fmt.Errorf("%w: unexpected nil field", ErrTypeConv)
 	}
@@ -291,6 +308,8 @@ func (p *TypeConv) fieldToVar(field *ast.Field) (*types.Var, error) {
 	var name string
 	if len(field.Names) > 0 {
 		name = field.Names[0].Name
+	} else if hasNamedParam {
+		name = fmt.Sprintf("__llgo_arg_%d", argIndex)
 	}
 
 	typ, err := p.ToType(field.Type)
@@ -302,7 +321,11 @@ func (p *TypeConv) fieldToVar(field *ast.Field) (*types.Var, error) {
 		name = getFieldName(name)
 	} else {
 		_, isVariadic := field.Type.(*ast.Variadic)
-		name = getParamName(name, isVariadic)
+		if isVariadic && hasNamedParam {
+			name = "__llgo_va_list"
+		} else {
+			name = avoidKeyword(name)
+		}
 	}
 	return types.NewVar(token.NoPos, p.Types, name, typ), nil
 }
@@ -312,7 +335,7 @@ func (p *TypeConv) RecordTypeToStruct(recordType *ast.RecordType) (types.Type, e
 	p.ctx = Record
 	defer func() { p.ctx = ctx }()
 	var fields []*types.Var
-	flds, err := p.fieldListToVars(recordType.Fields)
+	flds, err := p.fieldListToVars(recordType.Fields, false)
 	if err != nil {
 		return nil, err
 	}
@@ -396,14 +419,6 @@ func (p *TypeConv) LookupSymbol(mangleName config.MangleNameType) (config.GoName
 		return "", err
 	}
 	return e.GoName, nil
-}
-
-// isVariadic determines if the field is a variadic parameter
-func getParamName(name string, isVaradic bool) string {
-	if isVaradic {
-		return "__llgo_va_list"
-	}
-	return avoidKeyword(name)
 }
 
 // The field name should be public if it's a record field

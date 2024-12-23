@@ -2,6 +2,7 @@
 #include <stdio.h>
 typedef int (*CallBack)(void *L);
 void exec(void *L, CallBack cb);
+char *mprintf(const char*,...);
 
 typedef struct Hooks
 {
