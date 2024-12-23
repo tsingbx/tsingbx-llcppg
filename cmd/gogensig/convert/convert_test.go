@@ -395,6 +395,39 @@ type Foo struct {
 	}
 }
 
+func TestWritePkgFilesFail(t *testing.T) {
+	tempDir, err := os.MkdirTemp(dir, "test_package_write_unwritable")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	converter, err := convert.NewAstConvert(&convert.AstConvertConfig{
+		PkgName:   "test",
+		SymbFile:  "",
+		CfgFile:   "",
+		OutputDir: tempDir,
+	})
+	if err != nil {
+		t.Fatal("NewAstConvert Fail")
+	}
+	err = os.Chmod(tempDir, 0555)
+	defer func() {
+		if err := os.Chmod(tempDir, 0755); err != nil {
+			t.Fatalf("Failed to change directory permissions: %v", err)
+		}
+	}()
+	if err != nil {
+		t.Fatalf("Failed to change directory permissions: %v", err)
+	}
+	converter.VisitStart("test.h", "/path/to/test.h", false)
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected panic, but got: %v", r)
+		}
+	}()
+	converter.WritePkgFiles()
+}
+
 func TestGetIncPathFail(t *testing.T) {
 	cfg, err := config.CreateTmpJSONFile("llcppg.cfg", &cppgtypes.Config{
 		Include: []string{"unexist.h"},

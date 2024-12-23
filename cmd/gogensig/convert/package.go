@@ -508,9 +508,6 @@ func (p *Package) WritePkgFiles() error {
 //
 // Files that are already processed in dependent packages will not be output.
 func (p *Package) Write(headerFile string) error {
-	if p.curFile.isSys {
-		return nil
-	}
 	fileName := names.HeaderFileToGo(headerFile)
 	filePath := filepath.Join(p.GetOutputDir(), fileName)
 	if debug {

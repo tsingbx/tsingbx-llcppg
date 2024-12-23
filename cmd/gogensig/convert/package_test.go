@@ -307,30 +307,9 @@ func TestPackageWrite(t *testing.T) {
 		}
 	})
 
-	t.Run("UnwritableOutputDir", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_write_unwritable")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-
-		pkg := createTestPkg(t, &convert.PackageConfig{
-			OutputDir: tempDir,
-		})
-
-		// read-only
-		err = os.Chmod(tempDir, 0555)
-		defer func() {
-			if err := os.Chmod(tempDir, 0755); err != nil {
-				t.Fatalf("Failed to change directory permissions: %v", err)
-			}
-		}()
-		if err != nil {
-			t.Fatalf("Failed to change directory permissions: %v", err)
-		}
-
-		pkg.SetCurFile(incPath, incPath, true, true, false)
-		err = pkg.WritePkgFiles()
+	t.Run("WriteUnexistFile", func(t *testing.T) {
+		pkg := createTestPkg(t, &convert.PackageConfig{})
+		err := pkg.Write("test1.h")
 		if err == nil {
 			t.Fatal("Expected an error for invalid output directory, but got nil")
 		}
