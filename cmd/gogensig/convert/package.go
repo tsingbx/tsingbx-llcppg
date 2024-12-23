@@ -113,6 +113,7 @@ func (p *Package) SetCurFile(file string, incPath string, isHeaderFile bool, inC
 	if err != nil {
 		return err
 	}
+	p.files = append(p.files, curHeaderFile)
 	p.curFile = curHeaderFile
 	fileName := p.curFile.ToGoFileName()
 	if debug {
@@ -481,6 +482,25 @@ func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type, en
 	return nil
 }
 
+// WritePkgFiles writes all converted header files to Go files.
+// Calls deferTypeBuild() first to complete all incomplete type definitions,
+// because some types may be implemented across multiple files.
+func (p *Package) WritePkgFiles() error {
+	err := p.deferTypeBuild()
+	if err != nil {
+		return err
+	}
+	for _, file := range p.files {
+		if file.isHeaderFile && !file.isSys {
+			err := p.Write(file.file)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // Write generates a Go file based on the package content.
 // The output file will be generated in a subdirectory named after the package within the outputDir.
 // If outputDir is not provided, the current directory will be used.
@@ -540,6 +560,15 @@ func (p *Package) writeToFile(genFName string, filePath string) error {
 
 // Write the corresponding files in gogen package to the buffer
 func (p *Package) WriteToBuffer(genFName string) (*bytes.Buffer, error) {
+	buf := new(bytes.Buffer)
+	err := p.p.WriteTo(buf, genFName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write to buffer: %w", err)
+	}
+	return buf, nil
+}
+
+func (p *Package) deferTypeBuild() error {
 	for _, decl := range p.incomplete {
 		decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
 	}
@@ -549,17 +578,12 @@ func (p *Package) WriteToBuffer(genFName string) (*bytes.Buffer, error) {
 			decl.InitType(p.p, typ)
 		}
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 	p.incomplete = make(map[string]*gogen.TypeDecl, 0)
 	p.deferTypes = make(map[*gogen.TypeDecl]func() (types.Type, error), 0)
-	buf := new(bytes.Buffer)
-	err := p.p.WriteTo(buf, genFName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to write to buffer: %w", err)
-	}
-	return buf, nil
+	return nil
 }
 
 func (p *Package) WritePubFile() error {

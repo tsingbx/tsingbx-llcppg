@@ -329,7 +329,8 @@ func TestPackageWrite(t *testing.T) {
 			t.Fatalf("Failed to change directory permissions: %v", err)
 		}
 
-		err = pkg.Write(incPath)
+		pkg.SetCurFile(incPath, incPath, true, true, false)
+		err = pkg.WritePkgFiles()
 		if err == nil {
 			t.Fatal("Expected an error for invalid output directory, but got nil")
 		}

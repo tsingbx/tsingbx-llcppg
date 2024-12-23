@@ -11,7 +11,7 @@ type Foo struct {
 }
 
 type File struct {
-	Unused [8]uint8
+	PMethods *IoMethods
 }
 
 ===== temp.go =====

@@ -42,7 +42,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 	}
 	delete(pkg.incomplete, "Bar")
 
-	_, err = pkg.WriteToBuffer("testpkg")
+	err = pkg.WritePkgFiles()
 	if err == nil {
 		t.Fatal("Expected error, got nil")
 	}
