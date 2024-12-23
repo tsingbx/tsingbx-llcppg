@@ -256,8 +256,12 @@ func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 	}
 
 	cname := typeDecl.Name.Name
+	isForward := p.cvt.inComplete(typeDecl.Type)
 	name, changed, err := p.DeclName(cname)
 	if err != nil {
+		if isForward {
+			return nil
+		}
 		return err
 	}
 	p.CollectNameMapping(cname, name)
@@ -268,7 +272,7 @@ func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 		substObj(p.p.Types, p.p.Types.Scope(), cname, decl.Type().Obj())
 	}
 
-	if !p.cvt.inComplete(typeDecl.Type) {
+	if !isForward {
 		if err := p.handleCompleteType(decl, typeDecl.Type, cname); err != nil {
 			return err
 		}

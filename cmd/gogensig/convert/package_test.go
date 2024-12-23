@@ -1588,17 +1588,17 @@ func TestForwardDecl(t *testing.T) {
 		),
 	})
 
-	// forward decl
-	err := pkg.NewTypeDecl(&ast.TypeDecl{
+	forwardDecl := &ast.TypeDecl{
 		Name: &ast.Ident{Name: "Foo"},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
 		},
-	})
-
+	}
+	// forward decl
+	err := pkg.NewTypeDecl(forwardDecl)
 	if err != nil {
-		t.Fatalf("NewTypeDecl failed: %v", err)
+		t.Fatalf("Forward decl failed: %v", err)
 	}
 
 	// complete decl
@@ -1616,6 +1616,12 @@ func TestForwardDecl(t *testing.T) {
 			},
 		},
 	})
+
+	if err != nil {
+		t.Fatalf("NewTypeDecl failed: %v", err)
+	}
+
+	err = pkg.NewTypeDecl(forwardDecl)
 
 	if err != nil {
 		t.Fatalf("NewTypeDecl failed: %v", err)

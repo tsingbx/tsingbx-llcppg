@@ -10,6 +10,10 @@ type Foo struct {
 	A c.Long
 }
 
+type File struct {
+	Unused [8]uint8
+}
+
 ===== temp.go =====
 package forwarddecl
 
@@ -20,10 +24,6 @@ import (
 
 type Bar struct {
 	A *Foo
-}
-
-type File struct {
-	PMethods *IoMethods
 }
 
 type IoMethods struct {
@@ -112,6 +112,7 @@ Fts5Context
 Fts5ExtensionApi
 Fts5PhraseIter
 bar Bar
+foo Foo
 fts5_extension_function Fts5ExtensionFunction
 lua_Debug Debug
 lua_State State
