@@ -8,12 +8,11 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/clang"
 )
-
-var logIsMethod bool = false
 
 type SymbolInfo struct {
 	GoName    string
@@ -101,7 +100,7 @@ func (p *SymbolProcessor) GenMethodName(class, name string, isDestructor bool, i
 }
 
 func (p *SymbolProcessor) printTypeInfo(typ clang.Type, isArg bool, prefix string) {
-	if logIsMethod {
+	if dbg.GetDebugParseIsMethod() {
 		definitionType := clang.GoString(typ.TypeDeclaration().Definition().Type().String())
 		canonicalType := clang.GoString(typ.CanonicalType().String())
 		fmt.Println("**********", prefix, "**********")
@@ -120,7 +119,7 @@ func (p *SymbolProcessor) printTypeInfo(typ clang.Type, isArg bool, prefix strin
 }
 
 func printResult(isInCurPkg, isPointer bool, goName, prefix string) {
-	if logIsMethod {
+	if dbg.GetDebugParseIsMethod() {
 		fmt.Println("===========", prefix, "===========")
 		fmt.Println("isInCurPkg:", isInCurPkg, "isPointer:", isPointer, "goName", goName)
 	}

@@ -10,27 +10,13 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/xtool/nm"
 )
-
-type dbgFlags = int
-
-const (
-	DbgSymbol  dbgFlags = 1 << iota
-	DbgFlagAll          = DbgSymbol
-)
-
-var (
-	debugSymbol bool
-)
-
-func SetDebug(dbgFlags dbgFlags) {
-	debugSymbol = (dbgFlags & DbgSymbol) != 0
-}
 
 // ParseDylibSymbols parses symbols from dynamic libraries specified in the lib string.
 // It handles multiple libraries (e.g., -L/opt/homebrew/lib -llua -lm) and returns
@@ -39,12 +25,12 @@ func SetDebug(dbgFlags dbgFlags) {
 //
 // Returns symbols and nil error if any symbols are found, or nil and error if none found.
 func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
-	if debugSymbol {
+	if dbg.GetDebugSymbol() {
 		fmt.Println("ParseDylibSymbols:from", lib)
 	}
 	sysPaths := getSysLibPaths()
 	lbs := cfgparse.ParseLibs(lib)
-	if debugSymbol {
+	if dbg.GetDebugSymbol() {
 		fmt.Println("ParseDylibSymbols:LibConfig Parse To")
 		fmt.Println("libs.Names: ", lbs.Names)
 		fmt.Println("libs.Paths: ", lbs.Paths)
@@ -54,7 +40,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 		return nil, fmt.Errorf("failed to generate some dylib paths: %v", err)
 	}
 
-	if debugSymbol {
+	if dbg.GetDebugSymbol() {
 		fmt.Println("ParseDylibSymbols:dylibPaths", dylibPaths)
 		if len(notFounds) > 0 {
 			fmt.Println("ParseDylibSymbols:not found libname", notFounds)
@@ -68,7 +54,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 
 	for _, dylibPath := range dylibPaths {
 		if _, err := os.Stat(dylibPath); err != nil {
-			if debugSymbol {
+			if dbg.GetDebugSymbol() {
 				fmt.Printf("ParseDylibSymbols:Failed to access dylib %s: %v\n", dylibPath, err)
 			}
 			continue
@@ -86,7 +72,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 	}
 
 	if len(symbols) > 0 {
-		if debugSymbol {
+		if dbg.GetDebugSymbol() {
 			if len(parseErrors) > 0 {
 				fmt.Printf("ParseDylibSymbols:Some libraries could not be parsed: %v\n", parseErrors)
 			}
@@ -101,7 +87,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 func getSysLibPaths() []string {
 	var paths []string
 	if runtime.GOOS == "linux" {
-		if debugSymbol {
+		if dbg.GetDebugSymbol() {
 			fmt.Println("getSysLibPaths:find sys lib path from linux")
 		}
 		paths = []string{
@@ -109,13 +95,13 @@ func getSysLibPaths() []string {
 			"/usr/local/lib",
 		}
 		paths = append(paths, getPath("/etc/ld.so.conf")...)
-		if debugSymbol && len(paths) == 0 {
+		if dbg.GetDebugSymbol() && len(paths) == 0 {
 			fmt.Println("getSysLibPaths:/etc/ld.so.conf havent find any path")
 		}
 		confd := "/etc/ld.so.conf.d"
 		dir, err := os.Stat(confd)
 		if err != nil || !dir.IsDir() {
-			if debugSymbol {
+			if dbg.GetDebugSymbol() {
 				fmt.Println("getSysLibPaths:/etc/ld.so.conf.d not found or not dir")
 			}
 			return paths
@@ -133,7 +119,7 @@ func getSysLibPaths() []string {
 }
 
 func getPath(file string) []string {
-	if debugSymbol {
+	if dbg.GetDebugSymbol() {
 		fmt.Println("getPath:from", file)
 	}
 	var paths []string
@@ -207,23 +193,23 @@ func ReadExistingSymbolTable(fileName string) (map[string]types.SymbolInfo, bool
 
 func GenSymbolTableData(commonSymbols []*types.SymbolInfo, existingSymbols map[string]types.SymbolInfo) ([]byte, error) {
 	if len(existingSymbols) > 0 {
-		if debugSymbol {
+		if dbg.GetDebugSymbol() {
 			fmt.Println("GenSymbolTableData:generate symbol table with exist symbol table")
 		}
 		for i := range commonSymbols {
 			if existingSymbol, exists := existingSymbols[commonSymbols[i].Mangle]; exists && commonSymbols[i].Go != existingSymbol.Go {
-				if debugSymbol {
+				if dbg.GetDebugSymbol() {
 					fmt.Println("symbol", commonSymbols[i].Mangle, "already exist, use exist symbol", existingSymbol.Go)
 				}
 				commonSymbols[i].Go = existingSymbol.Go
 			} else {
-				if debugSymbol {
+				if dbg.GetDebugSymbol() {
 					fmt.Println("new symbol", commonSymbols[i].Mangle, "-", commonSymbols[i].CPP, "-", commonSymbols[i].Go)
 				}
 			}
 		}
 	} else {
-		if debugSymbol {
+		if dbg.GetDebugSymbol() {
 			fmt.Println("GenSymbolTableData:generate symbol table without symbol table")
 			for _, symbol := range commonSymbols {
 				fmt.Println("new symbol", symbol.Mangle, "-", symbol.CPP, "-", symbol.Go)
@@ -253,12 +239,12 @@ func GenSymbolTableData(commonSymbols []*types.SymbolInfo, existingSymbols map[s
 
 func GenerateAndUpdateSymbolTable(symbols []*nm.Symbol, headerInfos map[string]*parse.SymbolInfo, symbFile string) ([]byte, error) {
 	commonSymbols := GetCommonSymbols(symbols, headerInfos)
-	if debugSymbol {
+	if dbg.GetDebugSymbol() {
 		fmt.Println("GenerateAndUpdateSymbolTable:", len(commonSymbols), "common symbols")
 	}
 
 	existSymbols, exist := ReadExistingSymbolTable(symbFile)
-	if exist && debugSymbol {
+	if exist && dbg.GetDebugSymbol() {
 		fmt.Println("GenerateAndUpdateSymbolTable:current path have exist symbol table", symbFile)
 	}
 
