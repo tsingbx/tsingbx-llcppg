@@ -34,14 +34,14 @@ func SetDebug(flags int) {
 // In Processing Package
 type Package struct {
 	*PkgInfo
-	p            *gogen.Package             // package writer
-	conf         *PackageConfig             // package config
-	cvt          *TypeConv                  // package type convert
-	curFile      *HeaderFile                // current processing c header file.
-	incomplete   map[string]*gogen.TypeDecl // originname -> TypeDecl
-	deferTypes   map[*gogen.TypeDecl]func() (types.Type, error)
-	pubNameCount map[string]int
-	nameMapping  map[string]string // originName -> goName
+	p          *gogen.Package             // package writer
+	conf       *PackageConfig             // package config
+	cvt        *TypeConv                  // package type convert
+	curFile    *HeaderFile                // current processing c header file.
+	incomplete map[string]*gogen.TypeDecl // originname -> TypeDecl
+	deferTypes map[*gogen.TypeDecl]func() (types.Type, error)
+
+	nameMapper *names.NameMapper // handles name mapping and uniqueness
 }
 
 type PackageConfig struct {
@@ -56,12 +56,11 @@ type PackageConfig struct {
 // If SetCurFile is not called, all type conversions will be written to this default Go file.
 func NewPackage(config *PackageConfig) *Package {
 	p := &Package{
-		p:            gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
-		conf:         config,
-		incomplete:   make(map[string]*gogen.TypeDecl),
-		deferTypes:   make(map[*gogen.TypeDecl]func() (types.Type, error)),
-		pubNameCount: make(map[string]int),
-		nameMapping:  make(map[string]string),
+		p:          gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
+		conf:       config,
+		incomplete: make(map[string]*gogen.TypeDecl),
+		deferTypes: make(map[*gogen.TypeDecl]func() (types.Type, error)),
+		nameMapper: names.NewNameMapper(),
 	}
 
 	mod, err := gopmod.Load(config.OutputDir)
@@ -71,7 +70,7 @@ func NewPackage(config *PackageConfig) *Package {
 
 	p.PkgInfo = NewPkgInfo(config.PkgPath, config.OutputDir, config.CppgConf, config.Pubs)
 	for name, goName := range config.Pubs {
-		p.nameMapping[name] = goName
+		p.nameMapper.SetMapping(name, goName)
 	}
 
 	pkgManager := NewPkgDepLoader(mod, p.p)
@@ -291,10 +290,10 @@ func (p *Package) handleCompleteType(decl *gogen.TypeDecl, typ *ast.RecordType, 
 // For such declarations, create a empty type decl and store it in the
 // incomplete map, but not in the public symbol table.
 func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
-	pubName := p.GetGoName(name)
+	pubName := p.nameMapper.GetGoName(name, p.trimPrefixes())
 	decl := p.emptyTypeDecl(pubName, nil)
 	p.incomplete[name] = decl
-	p.nameMapping[name] = pubName
+	p.nameMapper.SetMapping(name, pubName)
 	return decl
 }
 
@@ -551,44 +550,19 @@ func (p *Package) WritePubFile() error {
 
 // For a decl name, it should be unique
 func (p *Package) DeclName(name string) (pubName string, changed bool, err error) {
-	pubName = p.GetUniGoName(name)
+	pubName, changed = p.nameMapper.GetUniqueGoName(name, p.trimPrefixes())
 	// if the type is incomplete,it's ok to have the same name
 	if obj := p.p.Types.Scope().Lookup(name); obj != nil && p.incomplete[name] == nil {
 		return "", false, errs.NewTypeDefinedError(pubName, name)
 	}
-	return pubName, pubName != name, nil
+	return pubName, changed, nil
 }
 
-func (p *Package) GetUniGoName(name string) (pubName string) {
-	pubName = p.GetGoName(name)
-
-	if _, exists := p.nameMapping[name]; exists {
-		return pubName
-	}
-
-	count := p.pubNameCount[pubName]
-	p.pubNameCount[pubName]++
-	if count > 0 {
-		pubName = fmt.Sprintf("%s__%d", pubName, count)
-	}
-
-	return pubName
-}
-
-// For a decl name, if it's a current package, remove the prefixed name
-func (p *Package) GetGoName(name string) (pubName string) {
-	if goName, exists := p.nameMapping[name]; exists {
-		if goName == "" {
-			return name
-		}
-		return goName
-	}
-
-	var prefixes []string
+func (p *Package) trimPrefixes() []string {
 	if p.curFile.inCurPkg {
-		prefixes = p.CppgConf.TrimPrefixes
+		return p.CppgConf.TrimPrefixes
 	}
-	return names.GoName(name, prefixes)
+	return []string{}
 }
 
 // Collect the name mapping between origin name and pubname
@@ -598,8 +572,7 @@ func (p *Package) CollectNameMapping(originName, newName string) {
 	if originName != newName {
 		value = newName
 	}
-
-	p.nameMapping[originName] = value
+	p.nameMapper.SetMapping(originName, value)
 	if p.curFile.inCurPkg {
 		p.Pubs[originName] = value
 	}
