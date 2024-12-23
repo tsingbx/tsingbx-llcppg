@@ -27,6 +27,14 @@ type SymbolProcessor struct {
 	NameCounts  map[string]int
 }
 
+func panicSourceLocation(loc clang.SourceLocation, prefix string) {
+	fileName := clang.GoString(loc.File().FileName())
+	var line int = int(loc.Line())
+	var column int = int(loc.Column())
+	logString := fmt.Sprintf("########%s#######\nfileName:%s, line:%d, column:%d\n", prefix, fileName, line, column)
+	panic(logString)
+}
+
 func NewSymbolProcessor(Files []string, Prefixes []string) *SymbolProcessor {
 	return &SymbolProcessor{
 		Files:      Files,

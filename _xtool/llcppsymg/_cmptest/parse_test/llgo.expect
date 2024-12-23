@@ -35,6 +35,14 @@ Symbol Map GoName: UriParameter, ProtoName In HeaderFile: sqlite3_uri_parameter(
 Parsed Symbols:
 Symbol Map GoName: DerDecoding, ProtoName In HeaderFile: asn1_der_decoding(asn1_node *, const void *, int, char *), MangledName: asn1_der_decoding
 
+=== Test Case: InvalidReceiver typ.NamedType.String is empty ===
+Parsed Symbols:
+Symbol Map GoName: InitWindow, ProtoName In HeaderFile: InitWindow(int, int, const char *), MangledName: InitWindow
+
+=== Test Case: InvalidReceiver typ.canonicalType.Kind == clang.TypePointer ===
+Parsed Symbols:
+Symbol Map GoName: X__MpzSetUiSafe, ProtoName In HeaderFile: __mpz_set_ui_safe(mpz_ptr, unsigned long), MangledName: __mpz_set_ui_safe
+
 
 #stderr
 
