@@ -30,7 +30,7 @@ type AresAddr struct {
 //go:linkname AresDnsPton C.ares_dns_pton
 func AresDnsPton(ipaddr *int8, addr *AresAddr) unsafe.Pointer
 // llgo:link (*aresAddr).AresDnsAddrToPtr C.ares_dns_addr_to_ptr
-func (p *AresAddr) AresDnsAddrToPtr() *int8 {
+func (recv_ *AresAddr) AresDnsAddrToPtr() *int8 {
 	return nil
 }
 
