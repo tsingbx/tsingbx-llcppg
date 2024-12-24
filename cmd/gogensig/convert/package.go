@@ -38,6 +38,7 @@ type Package struct {
 	conf    *PackageConfig // package config
 	cvt     *TypeConv      // package type convert
 	curFile *HeaderFile    // current processing c header file.
+	files   []*HeaderFile  // header files.
 
 	// incomplete stores type declarations that are not fully defined yet.
 	// This is used to handle forward declarations and self-referential types in C/C++.
