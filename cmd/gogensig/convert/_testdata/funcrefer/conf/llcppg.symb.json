@@ -5,6 +5,11 @@
     "go": "Exec"
   },
   {
+    "mangle": "mprintf",
+    "c++": "mprintf",
+    "go": "Mprintf"
+  },
+  {
     "mangle": "OSSL_provider_init2",
     "c++": "OSSL_provider_init2",
     "go": "ProviderInit2"

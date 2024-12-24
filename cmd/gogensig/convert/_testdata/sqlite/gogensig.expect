@@ -36,7 +36,7 @@ func (p *Sqlite3) CloseV2() c.Int {
 // llgo:type C
 type Callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int
 // llgo:link (*Sqlite3).Exec C.sqlite3_exec
-func (p *Sqlite3) Exec(sql *int8, callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int, unsafe.Pointer, errmsg **int8) c.Int {
+func (p *Sqlite3) Exec(sql *int8, callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int, __llgo_arg_2 unsafe.Pointer, errmsg **int8) c.Int {
 	return 0
 }
 
