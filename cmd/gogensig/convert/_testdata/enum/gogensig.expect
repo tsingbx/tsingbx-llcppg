@@ -49,7 +49,25 @@ const (
 	FelineTiger Feline = 12
 )
 
+type Algorithm c.Int
+
+const (
+	AlgorithmUNKNOWN Algorithm = 0
+	AlgorithmNULL    Algorithm = 1
+)
+
+type AlgorithmT Algorithm
+type AlgorithmT2 c.Int
+
+const (
+	AlgorithmT2UNKNOWN2 AlgorithmT2 = 0
+	AlgorithmT2NULL2    AlgorithmT2 = 1
+)
+
 ===== llcppg.pub =====
+algorithm Algorithm
+algorithm_t AlgorithmT
+algorithm_t2 AlgorithmT2
 feline Feline
 kids Kids
 levels Levels
