@@ -10,13 +10,13 @@ import (
 	_ "unsafe"
 )
 //go:linkname CreateResponse C.create_response
-func CreateResponse(status_code c.Int, message *int8) *cjson.CJSON
+func CreateResponse(c.Int, *int8) *cjson.CJSON
 //go:linkname ParseClientRequest C.parse_client_request
-func ParseClientRequest(json_string *int8, error_buffer *int8, buffer_size uintptr) cjson.CJSONBool
+func ParseClientRequest(*int8, *int8, uintptr) cjson.CJSONBool
 //go:linkname SerializeResponse C.serialize_response
-func SerializeResponse(response *cjson.CJSON, buffer *int8, length c.Int, pretty_print cjson.CJSONBool) cjson.CJSONBool
+func SerializeResponse(*cjson.CJSON, *int8, c.Int, cjson.CJSONBool) cjson.CJSONBool
 //go:linkname ThirdDepfn C.third_depfn
-func ThirdDepfn(a *thirddep.ThirdDep, b *thirddep2.ThirdDep2, c X_DepcjsonType, d basicdep.BasicDep) thirddep.ThirdDep
+func ThirdDepfn(*thirddep.ThirdDep, *thirddep2.ThirdDep2, X_DepcjsonType, basicdep.BasicDep) thirddep.ThirdDep
 
 ===== type.go =====
 package _depcjson
