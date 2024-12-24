@@ -150,7 +150,12 @@ func (p *AstConvert) VisitStart(path string, incPath string, isSys bool) {
 func (p *AstConvert) VisitDone(incPath string) {
 	if p.visitDone != nil {
 		p.visitDone(p.Pkg, incPath)
-	} else {
-		p.Pkg.Write(incPath)
+	}
+}
+
+func (p *AstConvert) WritePkgFiles() {
+	err := p.Pkg.WritePkgFiles()
+	if err != nil {
+		log.Panicf("WritePkgFiles: %v", err)
 	}
 }

@@ -307,29 +307,9 @@ func TestPackageWrite(t *testing.T) {
 		}
 	})
 
-	t.Run("UnwritableOutputDir", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_write_unwritable")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-
-		pkg := createTestPkg(t, &convert.PackageConfig{
-			OutputDir: tempDir,
-		})
-
-		// read-only
-		err = os.Chmod(tempDir, 0555)
-		defer func() {
-			if err := os.Chmod(tempDir, 0755); err != nil {
-				t.Fatalf("Failed to change directory permissions: %v", err)
-			}
-		}()
-		if err != nil {
-			t.Fatalf("Failed to change directory permissions: %v", err)
-		}
-
-		err = pkg.Write(incPath)
+	t.Run("WriteUnexistFile", func(t *testing.T) {
+		pkg := createTestPkg(t, &convert.PackageConfig{})
+		err := pkg.Write("test1.h")
 		if err == nil {
 			t.Fatal("Expected an error for invalid output directory, but got nil")
 		}
@@ -1588,17 +1568,17 @@ func TestForwardDecl(t *testing.T) {
 		),
 	})
 
-	// forward decl
-	err := pkg.NewTypeDecl(&ast.TypeDecl{
+	forwardDecl := &ast.TypeDecl{
 		Name: &ast.Ident{Name: "Foo"},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
 		},
-	})
-
+	}
+	// forward decl
+	err := pkg.NewTypeDecl(forwardDecl)
 	if err != nil {
-		t.Fatalf("NewTypeDecl failed: %v", err)
+		t.Fatalf("Forward decl failed: %v", err)
 	}
 
 	// complete decl
@@ -1616,6 +1596,12 @@ func TestForwardDecl(t *testing.T) {
 			},
 		},
 	})
+
+	if err != nil {
+		t.Fatalf("NewTypeDecl failed: %v", err)
+	}
+
+	err = pkg.NewTypeDecl(forwardDecl)
 
 	if err != nil {
 		t.Fatalf("NewTypeDecl failed: %v", err)

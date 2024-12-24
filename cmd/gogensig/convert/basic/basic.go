@@ -40,6 +40,7 @@ func ConvertProcesser(cfg *Config) (*processor.DocFileSetProcessor, *convert.Pac
 		},
 		DepIncs: incs,
 		Done: func() {
+			astConvert.WritePkgFiles()
 			astConvert.WriteLinkFile()
 			astConvert.WritePubFile()
 		},

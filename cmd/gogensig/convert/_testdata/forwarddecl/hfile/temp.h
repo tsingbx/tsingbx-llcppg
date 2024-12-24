@@ -1,25 +1,21 @@
 #include "impl.h"
 typedef struct foo foo;
-struct bar
-{
+struct bar {
     foo *a;
 };
 
 typedef struct sqlite3_file sqlite3_file;
-struct sqlite3_file
-{
+struct sqlite3_file {
     const struct sqlite3_io_methods *pMethods; /* Methods for an open file */
 };
 
 typedef struct sqlite3_io_methods sqlite3_io_methods;
-struct sqlite3_io_methods
-{
+struct sqlite3_io_methods {
     int (*xUnfetch)(sqlite3_file *, int iOfst, void *p);
 };
 
 typedef struct sqlite3_pcache_page sqlite3_pcache_page;
-struct sqlite3_pcache_page
-{
+struct sqlite3_pcache_page {
     void *pBuf;
     void *pExtra;
 };
@@ -27,8 +23,7 @@ struct sqlite3_pcache_page
 typedef struct sqlite3_pcache sqlite3_pcache;
 
 typedef struct sqlite3_pcache_methods2 sqlite3_pcache_methods2;
-struct sqlite3_pcache_methods2
-{
+struct sqlite3_pcache_methods2 {
     int iVersion;
     void *pArg;
     int (*xInit)(void *);
@@ -52,8 +47,7 @@ typedef struct lua_Debug lua_Debug;
 
 int(lua_getstack)(lua_State *L, int level, lua_Debug *ar);
 
-struct lua_Debug
-{
+struct lua_Debug {
     int event;
     const char *name;
     const char *namewhat;
@@ -86,8 +80,7 @@ typedef void (*fts5_extension_function)(const Fts5ExtensionApi *pApi, /* API off
                                         sqlite3_value **apVal         /* Array of trailing arguments */
 );
 
-struct Fts5PhraseIter
-{
+struct Fts5PhraseIter {
     const unsigned char *a;
     const unsigned char *b;
 };
