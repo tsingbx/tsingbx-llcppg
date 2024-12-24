@@ -1,9 +1,60 @@
 package names
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 )
+
+// NameMapper handles name mapping and uniqueness for Go symbols
+type NameMapper struct {
+	count   map[string]int    // tracks count of each public name for uniqueness
+	mapping map[string]string // maps original c names to Go names,like: foo(in c) -> Foo(in go)
+}
+
+func NewNameMapper() *NameMapper {
+	return &NameMapper{
+		count:   make(map[string]int),
+		mapping: make(map[string]string),
+	}
+}
+
+// returns a unique Go name for an original name
+// For every go name, it will be unique.
+func (m *NameMapper) GetUniqueGoName(name string, trimPrefixes []string) (string, bool) {
+	pubName := m.GetGoName(name, trimPrefixes)
+
+	if _, exists := m.mapping[name]; exists {
+		return pubName, pubName != name
+	}
+
+	count := m.count[pubName]
+	m.count[pubName]++
+	if count > 0 {
+		pubName = fmt.Sprintf("%s__%d", pubName, count)
+	}
+
+	return pubName, pubName != name
+}
+
+// returns the Go name for an original name,if the name is already mapped,return the mapped name
+func (m *NameMapper) GetGoName(name string, trimPrefixes []string) string {
+	if goName, exists := m.mapping[name]; exists {
+		if goName == "" {
+			return name
+		}
+		return goName
+	}
+	return GoName(name, trimPrefixes)
+}
+
+func (m *NameMapper) SetMapping(originName, newName string) {
+	value := ""
+	if originName != newName {
+		value = newName
+	}
+	m.mapping[originName] = value
+}
 
 func GoName(name string, trimPrefixes []string) string {
 	name = removePrefixedName(name, trimPrefixes)

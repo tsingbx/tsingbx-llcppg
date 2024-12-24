@@ -34,12 +34,28 @@ func SetDebug(flags int) {
 // In Processing Package
 type Package struct {
 	*PkgInfo
-	p          *gogen.Package             // package writer
-	conf       *PackageConfig             // package config
-	cvt        *TypeConv                  // package type convert
-	curFile    *HeaderFile                // current processing c header file.
-	incomplete map[string]*gogen.TypeDecl // originname -> TypeDecl
+	p       *gogen.Package // package writer
+	conf    *PackageConfig // package config
+	cvt     *TypeConv      // package type convert
+	curFile *HeaderFile    // current processing c header file.
+
+	// incomplete stores type declarations that are not fully defined yet.
+	// This is used to handle forward declarations and self-referential types in C/C++.
+	incomplete map[string]*gogen.TypeDecl // origin name(in c) -> TypeDecl
+
+	// deferTypes stores type declarations that need to be resolved later.
+	// The key is the Go type declaration, and the value is a function that will return
+	// the actual type when called.
+	// These functions will be executed after all incomplete types are initialized.
+	//
+	// This is particularly important when handling typedef of incomplete types in Go.
+	// In Go, when creating a new type via "type xxx xxx", the underlying type must exist.
+	// However, when typedef-ing an incomplete type, its underlying type doesn't exist yet.
+	// For such cases, we defer the type initialization until after all incomplete types
+	// are properly initialized, at which point we can correctly reference the underlying type.
 	deferTypes map[*gogen.TypeDecl]func() (types.Type, error)
+
+	nameMapper *names.NameMapper // handles name mapping and uniqueness
 }
 
 type PackageConfig struct {
@@ -58,6 +74,7 @@ func NewPackage(config *PackageConfig) *Package {
 		conf:       config,
 		incomplete: make(map[string]*gogen.TypeDecl),
 		deferTypes: make(map[*gogen.TypeDecl]func() (types.Type, error)),
+		nameMapper: names.NewNameMapper(),
 	}
 
 	mod, err := gopmod.Load(config.OutputDir)
@@ -66,6 +83,9 @@ func NewPackage(config *PackageConfig) *Package {
 	}
 
 	p.PkgInfo = NewPkgInfo(config.PkgPath, config.OutputDir, config.CppgConf, config.Pubs)
+	for name, goName := range config.Pubs {
+		p.nameMapper.SetMapping(name, goName)
+	}
 
 	pkgManager := NewPkgDepLoader(mod, p.p)
 	err = pkgManager.InitDeps(p.PkgInfo)
@@ -284,9 +304,10 @@ func (p *Package) handleCompleteType(decl *gogen.TypeDecl, typ *ast.RecordType, 
 // For such declarations, create a empty type decl and store it in the
 // incomplete map, but not in the public symbol table.
 func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
-	pubName, _ := p.GetGoName(name)
+	pubName := p.nameMapper.GetGoName(name, p.trimPrefixes())
 	decl := p.emptyTypeDecl(pubName, nil)
 	p.incomplete[name] = decl
+	p.nameMapper.SetMapping(name, pubName)
 	return decl
 }
 
@@ -543,7 +564,7 @@ func (p *Package) WritePubFile() error {
 
 // For a decl name, it should be unique
 func (p *Package) DeclName(name string) (pubName string, changed bool, err error) {
-	pubName, changed = p.GetGoName(name)
+	pubName, changed = p.nameMapper.GetUniqueGoName(name, p.trimPrefixes())
 	// if the type is incomplete,it's ok to have the same name
 	if obj := p.p.Types.Scope().Lookup(name); obj != nil && p.incomplete[name] == nil {
 		return "", false, errs.NewTypeDefinedError(pubName, name)
@@ -551,31 +572,23 @@ func (p *Package) DeclName(name string) (pubName string, changed bool, err error
 	return pubName, changed, nil
 }
 
-// For a decl name, if it's a current package, remove the prefixed name
-func (p *Package) GetGoName(name string) (pubName string, changed bool) {
-	if goName, exists := p.Pubs[name]; exists {
-		if goName == "" {
-			return name, false
-		}
-		return goName, goName != name
-	}
-	var prefixes []string
+func (p *Package) trimPrefixes() []string {
 	if p.curFile.inCurPkg {
-		prefixes = p.CppgConf.TrimPrefixes
+		return p.CppgConf.TrimPrefixes
 	}
-
-	pubName = names.GoName(name, prefixes)
-	return pubName, pubName != name
+	return []string{}
 }
 
+// Collect the name mapping between origin name and pubname
+// if in current package, it will be collected in public symbol table
 func (p *Package) CollectNameMapping(originName, newName string) {
-	if !p.curFile.inCurPkg {
-		return
-	}
+	value := ""
 	if originName != newName {
-		p.Pubs[originName] = newName
-	} else {
-		p.Pubs[originName] = ""
+		value = newName
+	}
+	p.nameMapper.SetMapping(originName, value)
+	if p.curFile.inCurPkg {
+		p.Pubs[originName] = value
 	}
 }
 
