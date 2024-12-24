@@ -16,3 +16,5 @@ typedef enum {
     UNKNOWN2 = 0,
     NULL2 = 1,
 } algorithm_t2;
+
+typedef algorithm_t algorithm;
