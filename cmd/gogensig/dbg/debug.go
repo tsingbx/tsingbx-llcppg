@@ -6,8 +6,8 @@ var flags dbgFlags
 
 const (
 	DbgSymbolNotFound dbgFlags = 1 << iota
-	DbgError                   //print when error ocur
-	DbgLog                     //print log info
+	DbgError                   // print when error ocur
+	DbgLog                     // print log info
 	DbgFlagAll        = 0 | DbgError | DbgLog
 )
 

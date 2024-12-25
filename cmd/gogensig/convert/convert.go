@@ -81,7 +81,9 @@ func (p *AstConvert) WritePubFile() {
 func (p *AstConvert) VisitFuncDecl(funcDecl *ast.FuncDecl) {
 	err := p.Pkg.NewFuncDecl(funcDecl)
 	if err != nil {
-		log.Printf("NewFuncDecl %s Fail: %s\n", funcDecl.Name.Name, err.Error())
+		if dbg.GetDebugError() {
+			log.Printf("NewFuncDecl %s Fail: %s\n", funcDecl.Name.Name, err.Error())
+		}
 	}
 }
 
