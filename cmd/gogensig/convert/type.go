@@ -211,9 +211,13 @@ func (p *TypeConv) ToSignature(funcType *ast.FuncType, recv *types.Var) (*types.
 	ctx := p.ctx
 	p.ctx = Param
 	defer func() { p.ctx = ctx }()
-	params, variadic, err := p.fieldListToParams(funcType.Params)
+	var params *types.Tuple
+	var variadic bool
+	var err error
 	if recv != nil {
 		params, variadic, err = p.fieldListToParams(&ast.FieldList{List: funcType.Params.List[1:]})
+	} else {
+		params, variadic, err = p.fieldListToParams(funcType.Params)
 	}
 	if err != nil {
 		return nil, err
