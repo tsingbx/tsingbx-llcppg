@@ -1,7 +1,6 @@
 package parse
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -503,7 +502,7 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	defer ct.decIndent()
 	name, kind := getCursorDesc(cursor)
 	mangledName := toStr(cursor.Mangling())
-	ct.logln("ProcessFuncDecl: CursorName:", name, "CursorKind:", kind)
+	ct.logln("ProcessFuncDecl: CursorName:", name, "CursorKind:", kind, "mangledName:", mangledName)
 
 	// function type will only collect return type
 	// ProcessType can't get the field names,will collect in follows
@@ -527,10 +526,15 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	// For function type references (e.g. `typedef void (fntype)(); fntype foo;`),
 	// params are already processed in ProcessType via CanonicalType
 	if fnType.Kind != clang.TypeElaborated {
-		count := len(funcType.Params.List)
-		funcType.Params = ct.ProcessFieldList(cursor)
-		if len(funcType.Params.List) != count {
-			panic(errors.New("lost parameter"))
+		numArgs := cursor.NumArguments()
+		numFields := c.Int(len(funcType.Params.List))
+		for i := c.Int(0); i < numArgs; i++ {
+			arg := cursor.Argument(c.Uint(i))
+			name := clang.GoString(arg.DisplayName())
+			if len(name) > 0 && i < numFields {
+				field := funcType.Params.List[i]
+				field.Names = []*ast.Ident{&ast.Ident{Name: name}}
+			}
 		}
 	}
 
