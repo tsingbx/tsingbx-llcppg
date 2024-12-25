@@ -6,11 +6,8 @@ import (
 	_ "unsafe"
 )
 
-type X__Uint32T c.Uint
-type InAddrT X__Uint32T
-
-type InAddr struct {
-	SAddr InAddrT
+type InAddr1 struct {
+	SAddr c.Uint
 }
 
 type AresIn6Addr struct {
@@ -22,7 +19,7 @@ type AresIn6Addr struct {
 ===== use.go =====
 package receiver
 
-import _ "unsafe"
+import "unsafe"
 
 type AresAddr struct {
 	Family c.Int
@@ -30,14 +27,14 @@ type AresAddr struct {
 		Addr6 AresIn6Addr
 	}
 }
+//go:linkname AresDnsPton C.ares_dns_pton
+func AresDnsPton(ipaddr *int8, addr *AresAddr) unsafe.Pointer
 // llgo:link (*aresAddr).AresDnsAddrToPtr C.ares_dns_addr_to_ptr
 func (p *AresAddr) AresDnsAddrToPtr() *int8 {
 	return nil
 }
 
 ===== llcppg.pub =====
-__uint32_t X__Uint32T
 ares_addr AresAddr
 ares_in6_addr AresIn6Addr
-in_addr InAddr
-in_addr_t InAddrT
+in_addr1 InAddr1

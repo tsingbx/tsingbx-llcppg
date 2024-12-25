@@ -1,7 +1,5 @@
-typedef unsigned int __uint32_t;
-typedef __uint32_t in_addr_t;
-struct in_addr {
-    in_addr_t s_addr;
+struct in_addr1 {
+    unsigned int s_addr;
 };
 
 struct ares_in6_addr {
@@ -14,7 +12,7 @@ struct ares_addr {
     int family;
 
     union {
-        struct in_addr addr4;
+        struct in_addr1 addr4;
         struct ares_in6_addr addr6;
     } addr;
 };
