@@ -26,17 +26,17 @@ type SqliteUint64 c.UlongLong
 type Int64 SqliteInt64
 type Uint64 SqliteUint64
 // llgo:link (*Sqlite3).Close C.sqlite3_close
-func (p *Sqlite3) Close() c.Int {
+func (recv_ *Sqlite3) Close() c.Int {
 	return 0
 }
 // llgo:link (*Sqlite3).CloseV2 C.sqlite3_close_v2
-func (p *Sqlite3) CloseV2() c.Int {
+func (recv_ *Sqlite3) CloseV2() c.Int {
 	return 0
 }
 // llgo:type C
 type Callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int
 // llgo:link (*Sqlite3).Exec C.sqlite3_exec
-func (p *Sqlite3) Exec(sql *int8, callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int, __llgo_arg_2 unsafe.Pointer, errmsg **int8) c.Int {
+func (recv_ *Sqlite3) Exec(sql *int8, callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int, __llgo_arg_2 unsafe.Pointer, errmsg **int8) c.Int {
 	return 0
 }
 
