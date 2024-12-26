@@ -297,6 +297,9 @@ func (p *Package) handleCompleteType(decl *gogen.TypeDecl, typ *ast.RecordType, 
 // For such declarations, create a empty type decl and store it in the
 // incomplete map, but not in the public symbol table.
 func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
+	if decl, ok := p.incomplete[name]; ok {
+		return decl
+	}
 	pubName := p.nameMapper.GetGoName(name, p.trimPrefixes())
 	decl := p.emptyTypeDecl(pubName, nil)
 	p.incomplete[name] = decl
