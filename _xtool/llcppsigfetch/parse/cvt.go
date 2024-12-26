@@ -7,6 +7,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/token"
@@ -47,7 +48,7 @@ type Config struct {
 }
 
 func NewConverter(config *clangutils.Config) (*Converter, error) {
-	if debugParse {
+	if dbg.GetDebugParse() {
 		fmt.Fprintln(os.Stderr, "NewConverter: config")
 		fmt.Fprintln(os.Stderr, "config.File", config.File)
 		fmt.Fprintln(os.Stderr, "config.Args", config.Args)
@@ -131,12 +132,12 @@ func (ct *Converter) decIndent() {
 }
 
 func (ct *Converter) logf(format string, args ...interface{}) {
-	if debugParse {
+	if dbg.GetDebugParse() {
 		fmt.Fprintf(os.Stderr, ct.logBase()+format, args...)
 	}
 }
 func (ct *Converter) logln(args ...interface{}) {
-	if debugParse {
+	if dbg.GetDebugParse() {
 		if len(args) > 0 {
 			firstArg := fmt.Sprintf("%s%v", ct.logBase(), args[0])
 			fmt.Fprintln(os.Stderr, append([]interface{}{firstArg}, args[1:]...)...)
@@ -501,7 +502,7 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	defer ct.decIndent()
 	name, kind := getCursorDesc(cursor)
 	mangledName := toStr(cursor.Mangling())
-	ct.logln("ProcessFuncDecl: CursorName:", name, "CursorKind:", kind)
+	ct.logln("ProcessFuncDecl: CursorName:", name, "CursorKind:", kind, "mangledName:", mangledName)
 
 	// function type will only collect return type
 	// ProcessType can't get the field names,will collect in follows
@@ -525,7 +526,16 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	// For function type references (e.g. `typedef void (fntype)(); fntype foo;`),
 	// params are already processed in ProcessType via CanonicalType
 	if fnType.Kind != clang.TypeElaborated {
-		funcType.Params = ct.ProcessFieldList(cursor)
+		numArgs := cursor.NumArguments()
+		numFields := c.Int(len(funcType.Params.List))
+		for i := c.Int(0); i < numArgs; i++ {
+			arg := cursor.Argument(c.Uint(i))
+			name := clang.GoString(arg.DisplayName())
+			if len(name) > 0 && i < numFields {
+				field := funcType.Params.List[i]
+				field.Names = []*ast.Ident{&ast.Ident{Name: name}}
+			}
+		}
 	}
 
 	// Linux has one less leading underscore than macOS, so remove one leading underscore on macOS
