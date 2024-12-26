@@ -39,13 +39,35 @@ func runSingleDemo(demoPath string) {
 		panic(fmt.Sprintf("failed to write config file: %v", err))
 	}
 
+	// run llcppg to gen pkg
 	if err := runCommand(outDir, "llcppg", llcppgArgs...); err != nil {
 		panic(fmt.Sprintf("llcppg execution failed: %v", err))
 	}
+	fmt.Printf("llcppg execution success\n")
 
+	// check if the gen pkg is ok
 	resultDir := filepath.Join(outDir, filepath.Base(absPath))
 	if err := runCommand(resultDir, "llgo", "build", "."); err != nil {
-		panic(fmt.Sprintf("go build failed in %s: %v", resultDir, err))
+		panic(fmt.Sprintf("llgo build failed in %s: %v", resultDir, err))
+	}
+	fmt.Printf("llgo build success\n")
+
+	// go mod tidy,because the demo is dependent on the gen pkg
+	modPath := filepath.Join(demoPath, "demo")
+	if err := runCommand(modPath, "go", "mod", "tidy"); err != nil {
+		panic(fmt.Sprintf("go mod tidy failed in %s: %v", demoPath, err))
+	}
+	fmt.Printf("go mod tidy success\n")
+
+	// run the demo
+	demos, err := os.ReadDir(modPath)
+	if err != nil {
+		panic(fmt.Sprintf("failed to read demo directory: %v", err))
+	}
+	for _, demo := range demos {
+		if demo.IsDir() {
+			runCommand(filepath.Join(modPath, demo.Name()), "llgo", "run", ".")
+		}
 	}
 }
 
