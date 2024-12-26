@@ -55,7 +55,7 @@ jobs:
       run: go build -v ./...
 
     - name: Install llcppg modules
-      run: bash .github/workflows/install_llcppg_modules.sh
+      run: bash ./install.sh
 
     - name: Test llcppsymg & llcppsigfetch
       run: |

@@ -1,9 +1,12 @@
 #!/bin/bash
+set -e
 
-llgo install ./_xtool/llcppsymg
-llgo install ./_xtool/llcppsigfetch
+# for test
 go install ./cmd/llcppcfg
-go install ./cmd/gogensig
 go install ./cmd/llcppgtest
 
+# main process required
+llgo install ./_xtool/llcppsymg
+llgo install ./_xtool/llcppsigfetch
+go install ./cmd/gogensig
 go install .
