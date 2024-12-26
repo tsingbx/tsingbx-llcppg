@@ -1,7 +1,7 @@
 package main
 
 import (
-	"_llcppgtest/lua/out/lua"
+	"lua"
 
 	"github.com/goplus/llgo/c"
 )

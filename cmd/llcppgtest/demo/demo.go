@@ -7,66 +7,102 @@ import (
 	"path/filepath"
 )
 
-func runSingleDemo(demoPath string) {
-	fmt.Printf("Testing demo: %s\n", demoPath)
+// runSingleDemo tests a single LLCPPG conversion case in the given demo directory.
+// The testing process includes:
+// 1. Reading and validating the llcppg.cfg configuration file
+// 2. Running LLCPPG to generate the converted package
+// 3. Verifying the generated package can be built using llgo
+// 4. Running example programs in the demo subdirectory that use the generated package
+//
+// Directory structure (take _llcppgtest/lua as an example):
+// _llcppgtest/lua/           - Demo root directory
+//
+//	├── llcppg.cfg          - LLCPPG configuration file
+//	├── out/                - Generated package output directory
+//	└── demo/               - Example programs directory
+//	    ├── example1/       - First example program
+//	    └── example2/       - Second example program
+//
+// The function will panic if any step in the testing process fails.
+//
+// Parameters:
+//   - demoRoot: Path to the root directory of a single demo case
+func runSingleDemo(demoRoot string) {
+	fmt.Printf("Testing demo: %s\n", demoRoot)
 
-	absPath, err := filepath.Abs(demoPath)
+	absPath, err := filepath.Abs(demoRoot)
 	if err != nil {
-		panic(fmt.Sprintf("failed to get absolute path for %s: %v", demoPath, err))
+		panic(fmt.Sprintf("failed to get absolute path for %s: %v", demoRoot, err))
 	}
+	demoPkgName := filepath.Base(absPath)
 
 	configFile := filepath.Join(absPath, "llcppg.cfg")
 	fmt.Printf("Looking for config file at: %s\n", configFile)
 
-	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+	if _, err = os.Stat(configFile); os.IsNotExist(err) {
 		panic(fmt.Sprintf("config file not found: %s", configFile))
 	}
 
 	llcppgArgs := []string{"-v"}
 
 	outDir := filepath.Join(absPath, "out")
-	if err := os.MkdirAll(outDir, 0755); err != nil {
+	if err = os.MkdirAll(outDir, 0755); err != nil {
 		panic(fmt.Sprintf("failed to create output directory: %v", err))
 	}
+	defer os.RemoveAll(outDir)
 
 	// copy llcppg.cfg to out dir
+	var cfgFileContent []byte
 	cfgFile := filepath.Join(outDir, "llcppg.cfg")
-	cfgFileContent, err := os.ReadFile(configFile)
+	cfgFileContent, err = os.ReadFile(configFile)
 	if err != nil {
 		panic(fmt.Sprintf("failed to read config file: %v", err))
 	}
-	if err := os.WriteFile(cfgFile, cfgFileContent, 0644); err != nil {
+
+	if err = os.WriteFile(cfgFile, cfgFileContent, 0600); err != nil {
 		panic(fmt.Sprintf("failed to write config file: %v", err))
 	}
 
 	// run llcppg to gen pkg
-	if err := runCommand(outDir, "llcppg", llcppgArgs...); err != nil {
+	if err = runCommand(outDir, "llcppg", llcppgArgs...); err != nil {
 		panic(fmt.Sprintf("llcppg execution failed: %v", err))
 	}
 	fmt.Printf("llcppg execution success\n")
 
 	// check if the gen pkg is ok
-	resultDir := filepath.Join(outDir, filepath.Base(absPath))
-	if err := runCommand(resultDir, "llgo", "build", "."); err != nil {
-		panic(fmt.Sprintf("llgo build failed in %s: %v", resultDir, err))
+	genPkgDir := filepath.Join(outDir, demoPkgName)
+	if err = runCommand(genPkgDir, "llgo", "build", "."); err != nil {
+		panic(fmt.Sprintf("llgo build failed in %s: %v", genPkgDir, err))
 	}
 	fmt.Printf("llgo build success\n")
 
-	// go mod tidy,because the demo is dependent on the gen pkg
-	modPath := filepath.Join(demoPath, "demo")
-	if err := runCommand(modPath, "go", "mod", "tidy"); err != nil {
-		panic(fmt.Sprintf("go mod tidy failed in %s: %v", demoPath, err))
+	demosPath := filepath.Join(demoRoot, "demo")
+	// init mods to test package,because the demo is dependent on the gen pkg
+	if err = runCommand(demoRoot, "go", "mod", "init", "demo"); err != nil {
+		panic(fmt.Sprintf("go mod init failed in %s: %v", demoRoot, err))
 	}
-	fmt.Printf("go mod tidy success\n")
+	if err = runCommand(demoRoot, "go", "mod", "edit", "-replace", demoPkgName+"="+"./out/"+demoPkgName); err != nil {
+		panic(fmt.Sprintf("go mod edit failed in %s: %v", demoRoot, err))
+	}
+	if err = runCommand(demoRoot, "go", "mod", "tidy"); err != nil {
+		panic(fmt.Sprintf("go mod tidy failed in %s: %v", demoRoot, err))
+	}
+	defer os.Remove(filepath.Join(absPath, "go.mod"))
+	defer os.Remove(filepath.Join(absPath, "go.sum"))
 
+	fmt.Printf("testing demos in %s\n", demosPath)
 	// run the demo
-	demos, err := os.ReadDir(modPath)
+	var demos []os.DirEntry
+	demos, err = os.ReadDir(demosPath)
 	if err != nil {
 		panic(fmt.Sprintf("failed to read demo directory: %v", err))
 	}
 	for _, demo := range demos {
 		if demo.IsDir() {
-			runCommand(filepath.Join(modPath, demo.Name()), "llgo", "run", ".")
+			fmt.Printf("Running demo: %s\n", demo.Name())
+			if demoErr := runCommand(filepath.Join(demosPath, demo.Name()), "llgo", "run", "."); demoErr != nil {
+				panic(fmt.Sprintf("failed to run demo: %s: %v", demo.Name(), demoErr))
+			}
 		}
 	}
 }
@@ -81,10 +117,10 @@ func getFirstLevelDemos(baseDir string) []string {
 	var demos []string
 	for _, entry := range entries {
 		if entry.IsDir() {
-			demoPath := filepath.Join(baseDir, entry.Name())
-			configPath := filepath.Join(demoPath, "llcppg.cfg")
+			demoRoot := filepath.Join(baseDir, entry.Name())
+			configPath := filepath.Join(demoRoot, "llcppg.cfg")
 			if _, err := os.Stat(configPath); err == nil {
-				demos = append(demos, demoPath)
+				demos = append(demos, demoRoot)
 			}
 		}
 	}
@@ -107,7 +143,7 @@ func TestDemos(path string) {
 	// Test each demo
 	for _, demo := range demos {
 		runSingleDemo(demo)
-		fmt.Printf("Test completed for %s\n", demo)
+		fmt.Printf("Success for %s\n", demo)
 	}
 }
 
