@@ -1,18 +1,29 @@
 package convert
 
-import "strings"
+import (
+	"strings"
+)
 
-type GoFuncName struct {
-	goSymbolName string
-	recvName     string
-	funcName     string
-	ptrRecv      bool // if the receiver is a pointer
+// GoFuncSpec parses and stores components of a Go function name
+// Input examples from llcppg.symb.json's "go" field:
+// 1. Simple function: "AddPatchToArray"
+// 2. Method with pointer receiver: "(*Sqlite3Stmt).Sqlite3BindParameterIndex"
+// 3. Method with value receiver: "CJSONBool.CJSONCreateBool"
+type GoFuncSpec struct {
+	GoSymbName string // original full name from input
+	FnName     string // function name without receiver
+	IsMethod   bool   // if the function is a method
+	RecvName   string // receiver name
+	PtrRecv    bool   // if the receiver is a pointer
 }
 
-func NewGoFuncName(name string) *GoFuncName {
+// - "AddPatchToArray" -> {goSymbolName: "AddPatchToArray", funcName: "AddPatchToArray"}
+// - "(*Sqlite3Stmt).Sqlite3BindParameterIndex" -> {goSymbolName: "...", recvName: "Sqlite3Stmt", funcName: "Sqlite3BindParameterIndex", ptrRecv: true}
+// - "CJSONBool.CJSONCreateBool" -> {goSymbolName: "...", recvName: "CJSONBool", funcName: "CJSONCreateBool", ptrRecv: false}
+func NewGoFuncSpec(name string) *GoFuncSpec {
 	l := strings.Split(name, ".")
 	if len(l) < 2 {
-		return &GoFuncName{goSymbolName: name, funcName: name}
+		return &GoFuncSpec{GoSymbName: name, FnName: name, IsMethod: false}
 	}
 	recvName := l[0]
 	ptrRecv := false
@@ -21,13 +32,5 @@ func NewGoFuncName(name string) *GoFuncName {
 		recvName = strings.TrimPrefix(recvName, "(*")
 		recvName = strings.TrimSuffix(recvName, ")")
 	}
-	return &GoFuncName{goSymbolName: name, recvName: recvName, funcName: l[1], ptrRecv: ptrRecv}
-}
-
-func (p *GoFuncName) HasReceiver() bool {
-	return len(p.recvName) > 0
-}
-
-func (p *GoFuncName) OriginGoSymbolName() string {
-	return p.goSymbolName
+	return &GoFuncSpec{GoSymbName: name, RecvName: recvName, FnName: l[1], PtrRecv: ptrRecv, IsMethod: true}
 }

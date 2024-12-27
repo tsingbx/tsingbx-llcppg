@@ -145,11 +145,11 @@ func (p *Package) newReceiver(typ *ast.FuncType) *types.Var {
 	return p.p.NewParam(token.NoPos, "recv_", recvType)
 }
 
-func (p *Package) ToSigSignature(goFuncName *GoFuncName, funcDecl *ast.FuncDecl) (*types.Signature, error) {
+func (p *Package) ToSigSignature(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (*types.Signature, error) {
 	var sig *types.Signature
 	var recv *types.Var
 	var err error
-	if goFuncName.HasReceiver() &&
+	if fnSpec.IsMethod &&
 		funcDecl.Type.Params.List != nil &&
 		len(funcDecl.Type.Params.List) > 0 {
 		recv = p.newReceiver(funcDecl.Type)
@@ -174,38 +174,49 @@ func (p *Package) bodyStart(decl *gogen.Func, ret ast.Expr) error {
 	return nil
 }
 
-func (p *Package) newFuncDeclAndComment(goFuncName *GoFuncName, sig *types.Signature, funcDecl *ast.FuncDecl) error {
+func (p *Package) handleFuncDecl(fnSpec *GoFuncSpec, sig *types.Signature, funcDecl *ast.FuncDecl) error {
 	var decl *gogen.Func
-	funcPubname := goFuncName.OriginGoSymbolName()
-	if goFuncName.HasReceiver() {
-		decl = p.p.NewFuncDecl(token.NoPos, goFuncName.funcName, sig)
+	fnPubName := fnSpec.GoSymbName
+	if fnSpec.IsMethod {
+		decl = p.p.NewFuncDecl(token.NoPos, fnSpec.FnName, sig)
 		err := p.bodyStart(decl, funcDecl.Type.Ret)
 		if err != nil {
 			return err
 		}
-
 		// we need to use the actual receiver name in link comment
 		// both for value receiver and pointer receiver
-
-		if t, ok := sig.Recv().Type().(*types.Pointer); ok {
-			elemType := t.Elem()
-			namedType := elemType.(*types.Named)
-			name := namedType.Obj().Name()
-			funcPubname = "(*" + name + ")." + goFuncName.funcName
-		}
-
-		if t, ok := sig.Recv().Type().(*types.Named); ok {
-			name := t.Obj().Name()
-			funcPubname = name + "." + goFuncName.funcName
-		}
+		fnPubName = pubMethodName(sig.Recv().Type(), fnSpec.FnName)
 	} else {
-		decl = p.p.NewFuncDecl(token.NoPos, funcPubname, sig)
+		decl = p.p.NewFuncDecl(token.NoPos, fnPubName, sig)
 	}
 
 	doc := CommentGroup(funcDecl.Doc)
-	doc.AddCommentGroup(NewFuncDocComments(funcDecl.Name.Name, funcPubname))
+	doc.AddCommentGroup(NewFuncDocComments(funcDecl.Name.Name, fnPubName))
 	decl.SetComments(p.p, doc.CommentGroup)
 	return nil
+}
+
+// pubMethodName generates a public method name based on the receiver type and function name.
+// It handles both pointer and value receivers.
+//
+// Parameters:
+//   - recv: The receiver type from types.Signature
+//   - fnName: The base function name
+//
+// Returns:
+//   - For pointer receiver: "(*TypeName).FuncName"
+//   - For value receiver: "TypeName.FuncName"
+//   - For invalid/unknown receiver: just "FuncName"
+func pubMethodName(recv types.Type, fnName string) string {
+	switch t := recv.(type) {
+	case *types.Pointer:
+		if named, ok := t.Elem().(*types.Named); ok {
+			return "(*" + named.Obj().Name() + ")." + fnName
+		}
+	case *types.Named:
+		return t.Obj().Name() + "." + fnName
+	}
+	return fnName
 }
 
 func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
@@ -223,20 +234,19 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		return errs.NewAnonymousFuncNotSupportError()
 	}
 
-	goSymbolName, err := p.cvt.LookupSymbol(funcDecl.MangledName)
+	fnSpec, err := p.cvt.LookupSymbol(funcDecl.MangledName)
 	if err != nil {
 		// not gen the function not in the symbolmap
 		return err
 	}
-	if obj := p.p.Types.Scope().Lookup(goSymbolName); obj != nil {
-		return errs.NewFuncAlreadyDefinedError(goSymbolName)
+	if obj := p.p.Types.Scope().Lookup(fnSpec.FnName); obj != nil {
+		return errs.NewFuncAlreadyDefinedError(fnSpec.GoSymbName)
 	}
-	goFuncName := NewGoFuncName(goSymbolName)
-	sig, err := p.ToSigSignature(goFuncName, funcDecl)
+	sig, err := p.ToSigSignature(fnSpec, funcDecl)
 	if err != nil {
 		return err
 	}
-	return p.newFuncDeclAndComment(goFuncName, sig, funcDecl)
+	return p.handleFuncDecl(fnSpec, sig, funcDecl)
 }
 
 // NewTypeDecl converts C/C++ type declarations to Go.

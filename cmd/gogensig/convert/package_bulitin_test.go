@@ -1,6 +1,7 @@
 package convert
 
 import (
+	"go/types"
 	"testing"
 
 	"github.com/goplus/gogen"
@@ -53,4 +54,26 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 			X: &ast.Ident{Name: "Bar"},
 		},
 	}, nil)
+}
+
+func TestPubMethodName(t *testing.T) {
+	name := types.NewTypeName(0, nil, "Foo", nil)
+	named := types.NewNamed(name, nil, nil)
+	ptrRecv := types.NewPointer(named)
+	fnName := "Foo"
+	pubName := pubMethodName(ptrRecv, fnName)
+	if pubName != "(*Foo).Foo" {
+		t.Fatal("Expected pubName to be '(*Foo).Foo', got", pubName)
+	}
+	valRecv := named
+	pubName = pubMethodName(valRecv, fnName)
+	if pubName != "Foo.Foo" {
+		t.Fatal("Expected pubName to be 'Foo.Foo', got", pubName)
+	}
+
+	unknownRecv := types.NewStruct(nil, []string{})
+	pubName = pubMethodName(unknownRecv, fnName)
+	if pubName != fnName {
+		t.Fatal("Expected pubName to be 'Foo', got", pubName)
+	}
 }
