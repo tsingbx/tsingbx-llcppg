@@ -78,6 +78,10 @@ func runSingleDemo(demoRoot string) {
 
 	// check if the gen pkg is ok
 	genPkgDir := filepath.Join(outDir, demoPkgName)
+	if err = runCommand(genPkgDir, "go", "fmt"); err != nil {
+		panic(fmt.Sprintf("go fmt failed in %s: %v", genPkgDir, err))
+	}
+
 	if err = runCommand(genPkgDir, "llgo", "build", "."); err != nil {
 		panic(fmt.Sprintf("llgo build failed in %s: %v", genPkgDir, err))
 	}
