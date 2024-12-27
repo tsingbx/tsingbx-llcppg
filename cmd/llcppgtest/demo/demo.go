@@ -51,16 +51,22 @@ func runSingleDemo(demoRoot string) {
 	}
 	defer os.RemoveAll(outDir)
 
-	// copy llcppg.cfg to out dir
-	var cfgFileContent []byte
-	cfgFile := filepath.Join(outDir, "llcppg.cfg")
-	cfgFileContent, err = os.ReadFile(configFile)
-	if err != nil {
-		panic(fmt.Sprintf("failed to read config file: %v", err))
-	}
-
-	if err = os.WriteFile(cfgFile, cfgFileContent, 0600); err != nil {
-		panic(fmt.Sprintf("failed to write config file: %v", err))
+	// copy configs to out dir
+	cfgFiles := []string{"llcppg.cfg", "llcppg.pub", "llcppg.symb.json"}
+	for _, cfg := range cfgFiles {
+		src := filepath.Join(absPath, cfg)
+		dst := filepath.Join(outDir, cfg)
+		var content []byte
+		content, err = os.ReadFile(src)
+		if err != nil {
+			if os.IsNotExist(err) && cfg != "llcppg.cfg" {
+				continue
+			}
+			panic(fmt.Sprintf("failed to read config file: %v", err))
+		}
+		if err = os.WriteFile(dst, content, 0600); err != nil {
+			panic(fmt.Sprintf("failed to write config file: %v", err))
+		}
 	}
 
 	// run llcppg to gen pkg
