@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // runSingleDemo tests a single LLCPPG conversion case in the given demo directory.
@@ -51,16 +52,22 @@ func runSingleDemo(demoRoot string) {
 	}
 	defer os.RemoveAll(outDir)
 
-	// copy llcppg.cfg to out dir
-	var cfgFileContent []byte
-	cfgFile := filepath.Join(outDir, "llcppg.cfg")
-	cfgFileContent, err = os.ReadFile(configFile)
-	if err != nil {
-		panic(fmt.Sprintf("failed to read config file: %v", err))
-	}
-
-	if err = os.WriteFile(cfgFile, cfgFileContent, 0600); err != nil {
-		panic(fmt.Sprintf("failed to write config file: %v", err))
+	// copy configs to out dir
+	cfgFiles := []string{"llcppg.cfg", "llcppg.pub", "llcppg.symb.json"}
+	for _, cfg := range cfgFiles {
+		src := filepath.Join(absPath, cfg)
+		dst := filepath.Join(outDir, cfg)
+		var content []byte
+		content, err = os.ReadFile(src)
+		if err != nil {
+			if os.IsNotExist(err) && cfg != "llcppg.cfg" {
+				continue
+			}
+			panic(fmt.Sprintf("failed to read config file: %v", err))
+		}
+		if err = os.WriteFile(dst, content, 0600); err != nil {
+			panic(fmt.Sprintf("failed to write config file: %v", err))
+		}
 	}
 
 	// run llcppg to gen pkg
@@ -71,6 +78,10 @@ func runSingleDemo(demoRoot string) {
 
 	// check if the gen pkg is ok
 	genPkgDir := filepath.Join(outDir, demoPkgName)
+	if err = runCommand(genPkgDir, "go", "fmt"); err != nil {
+		panic(fmt.Sprintf("go fmt failed in %s: %v", genPkgDir, err))
+	}
+
 	if err = runCommand(genPkgDir, "llgo", "build", "."); err != nil {
 		panic(fmt.Sprintf("llgo build failed in %s: %v", genPkgDir, err))
 	}
@@ -143,8 +154,8 @@ func TestDemos(path string) {
 	// Test each demo
 	for _, demo := range demos {
 		runSingleDemo(demo)
-		fmt.Printf("Success for %s\n", demo)
 	}
+	fmt.Println("All demos passed", strings.Join(demos, ","))
 }
 
 func runCommand(dir, command string, args ...string) error {
