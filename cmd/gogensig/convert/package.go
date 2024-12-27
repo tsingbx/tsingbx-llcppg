@@ -176,17 +176,34 @@ func (p *Package) bodyStart(decl *gogen.Func, ret ast.Expr) error {
 
 func (p *Package) newFuncDeclAndComment(goFuncName *GoFuncName, sig *types.Signature, funcDecl *ast.FuncDecl) error {
 	var decl *gogen.Func
+	funcPubname := goFuncName.OriginGoSymbolName()
 	if goFuncName.HasReceiver() {
 		decl = p.p.NewFuncDecl(token.NoPos, goFuncName.funcName, sig)
 		err := p.bodyStart(decl, funcDecl.Type.Ret)
 		if err != nil {
 			return err
 		}
+
+		// we need to use the actual receiver name in link comment
+		// both for value receiver and pointer receiver
+
+		if t, ok := sig.Recv().Type().(*types.Pointer); ok {
+			elemType := t.Elem()
+			namedType := elemType.(*types.Named)
+			name := namedType.Obj().Name()
+			funcPubname = "(*" + name + ")." + goFuncName.funcName
+		}
+
+		if t, ok := sig.Recv().Type().(*types.Named); ok {
+			name := t.Obj().Name()
+			funcPubname = name + "." + goFuncName.funcName
+		}
 	} else {
-		decl = p.p.NewFuncDecl(token.NoPos, goFuncName.OriginGoSymbolName(), sig)
+		decl = p.p.NewFuncDecl(token.NoPos, funcPubname, sig)
 	}
+
 	doc := CommentGroup(funcDecl.Doc)
-	doc.AddCommentGroup(NewFuncDocComments(funcDecl.Name.Name, goFuncName.OriginGoSymbolName()))
+	doc.AddCommentGroup(NewFuncDocComments(funcDecl.Name.Name, funcPubname))
 	decl.SetComments(p.p, doc.CommentGroup)
 	return nil
 }

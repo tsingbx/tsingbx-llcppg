@@ -6,6 +6,7 @@ type GoFuncName struct {
 	goSymbolName string
 	recvName     string
 	funcName     string
+	ptrRecv      bool // if the receiver is a pointer
 }
 
 func NewGoFuncName(name string) *GoFuncName {
@@ -13,7 +14,14 @@ func NewGoFuncName(name string) *GoFuncName {
 	if len(l) < 2 {
 		return &GoFuncName{goSymbolName: name, funcName: name}
 	}
-	return &GoFuncName{goSymbolName: name, recvName: l[0], funcName: l[1]}
+	recvName := l[0]
+	ptrRecv := false
+	if strings.HasPrefix(recvName, "(*") {
+		ptrRecv = true
+		recvName = strings.TrimPrefix(recvName, "(*")
+		recvName = strings.TrimSuffix(recvName, ")")
+	}
+	return &GoFuncName{goSymbolName: name, recvName: recvName, funcName: l[1], ptrRecv: ptrRecv}
 }
 
 func (p *GoFuncName) HasReceiver() bool {
