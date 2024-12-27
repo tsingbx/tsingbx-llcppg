@@ -11,6 +11,8 @@ import (
 	"os/exec"
 	"sync"
 	"time"
+
+	"github.com/goplus/llcppg/cmd/llcppgtest/demo"
 )
 
 func RunCommandWithOut(out *io.PipeWriter, dir, cmdName string, args ...string) {
@@ -90,6 +92,7 @@ const (
 	runSelected runAppMode = iota
 	runRand
 	runAll
+	runDemos
 )
 
 func runPkgs(pkgs []string, runMode runPkgMode) {
@@ -162,6 +165,7 @@ func main() {
 	help := false
 	flag.BoolVar(&help, "h", false, "print help message")
 	flag.BoolVar(&help, "help", false, "print help message")
+	demoPath := flag.String("demos", "", "test all first-level demo directories in the specified path")
 	flag.Parse()
 
 	if help || len(os.Args) == 1 {
@@ -191,12 +195,18 @@ func main() {
 	if all {
 		appMode = runAll
 	}
+
+	if *demoPath != "" {
+		appMode = runDemos
+	}
 	switch {
 	case appMode == runRand:
 		runPkg(runPkgMode(runMode))
 	case appMode == runAll:
 		pkgs := getPkgs()
 		runPkgs(pkgs, runPkgMode(runMode))
+	case appMode == runDemos:
+		demo.TestDemos(*demoPath)
 	default:
 		if len(flag.Args()) > 0 {
 			arg := flag.Arg(0)
