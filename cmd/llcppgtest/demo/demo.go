@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // runSingleDemo tests a single LLCPPG conversion case in the given demo directory.
@@ -149,8 +150,8 @@ func TestDemos(path string) {
 	// Test each demo
 	for _, demo := range demos {
 		runSingleDemo(demo)
-		fmt.Printf("Success for %s\n", demo)
 	}
+	fmt.Println("All demos passed", strings.Join(demos, ","))
 }
 
 func runCommand(dir, command string, args ...string) error {
