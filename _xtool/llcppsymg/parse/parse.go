@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llgo/c"
@@ -19,9 +20,18 @@ type SymbolInfo struct {
 	ProtoName string
 }
 
+type SymbolProcessorConfig struct {
+	cflags       *cfgparse.CFlags
+	trimPrefixes []string
+	isCpp        bool
+}
+
+func NewSymbolProcessorConfig(cflags *cfgparse.CFlags, trimPrefixes []string, isCpp bool) *SymbolProcessorConfig {
+	return &SymbolProcessorConfig{cflags: cflags, trimPrefixes: trimPrefixes, isCpp: isCpp}
+}
+
 type SymbolProcessor struct {
-	Files       []string
-	Prefixes    []string
+	Conf        *SymbolProcessorConfig
 	SymbolMap   map[string]*SymbolInfo
 	CurrentFile string
 	NameCounts  map[string]int
@@ -35,10 +45,9 @@ func panicSourceLocation(loc clang.SourceLocation, prefix string) {
 	panic(logString)
 }
 
-func NewSymbolProcessor(Files []string, Prefixes []string) *SymbolProcessor {
+func NewSymbolProcessor(conf *SymbolProcessorConfig) *SymbolProcessor {
 	return &SymbolProcessor{
-		Files:      Files,
-		Prefixes:   Prefixes,
+		Conf:       conf,
 		SymbolMap:  make(map[string]*SymbolInfo),
 		NameCounts: make(map[string]int),
 	}
@@ -52,12 +61,7 @@ func (p *SymbolProcessor) isSelfFile(filename string) bool {
 	if filename == p.CurrentFile {
 		return true
 	}
-	for _, file := range p.Files {
-		if file == filename {
-			return true
-		}
-	}
-	return false
+	return p.Conf.cflags.InPaths(filename)
 }
 
 func (p *SymbolProcessor) typeCursor(arg clang.Cursor) clang.Cursor {
@@ -141,7 +145,7 @@ func (p *SymbolProcessor) pointerLevel(typ clang.Type) int {
 func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, string) {
 	typ := cur.Type()
 	if p.pointerLevel(typ) > 1 {
-		return false, false, names.GoName(clang.GoString(typ.String()), p.Prefixes, false)
+		return false, false, names.GoName(clang.GoString(typ.String()), p.Conf.trimPrefixes, false)
 	}
 	isInCurPkg := p.inCurPkg(cur, isArg)
 	p.printTypeInfo(typ, isArg, "typ")
@@ -152,8 +156,9 @@ func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, st
 		namedTypeGoString := clang.GoString(pointeeTypeNamedType.String())
 		p.printTypeInfo(pointeeTypeNamedType, isArg, "typ.PointeeType().NamedType()")
 		if len(namedTypeGoString) > 0 {
-			goName := names.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
+			goName := names.GoName(namedTypeGoString, p.Conf.trimPrefixes, isInCurPkg)
 			printResult(isInCurPkg, true, goName, "typ.pointeeType().NamedType()")
+			isInCurPkg = p.inCurPkg(pointeeTypeNamedType.TypeDeclaration(), isArg)
 			return isInCurPkg, true, goName
 		}
 		return p.isMethod(pointeeType.TypeDeclaration(), isArg)
@@ -168,13 +173,15 @@ func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, st
 	namedType := typ.NamedType()
 	namedTypeGoString := clang.GoString(namedType.String())
 	if len(namedTypeGoString) > 0 {
-		goName := names.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
+		goName := names.GoName(namedTypeGoString, p.Conf.trimPrefixes, isInCurPkg)
 		printResult(isInCurPkg, false, goName, "typ.NamedType()")
+		isInCurPkg = p.inCurPkg(namedType.TypeDeclaration(), isArg)
 		return isInCurPkg, false, goName
 	}
 	typeGoString := clang.GoString(typ.String())
-	goName := names.GoName(typeGoString, p.Prefixes, isInCurPkg)
+	goName := names.GoName(typeGoString, p.Conf.trimPrefixes, isInCurPkg)
 	printResult(isInCurPkg, false, goName, "typ")
+	isInCurPkg = p.inCurPkg(typ.TypeDeclaration(), isArg)
 	return isInCurPkg, false, goName
 }
 
@@ -183,13 +190,13 @@ func (p *SymbolProcessor) genGoName(cursor clang.Cursor) string {
 	isDestructor := cursor.Kind == clang.CursorDestructor
 	var convertedName string
 	if isDestructor {
-		convertedName = names.GoName(originName[1:], p.Prefixes, p.inCurPkg(cursor, false))
+		convertedName = names.GoName(originName[1:], p.Conf.trimPrefixes, p.inCurPkg(cursor, false))
 	} else {
-		convertedName = names.GoName(originName, p.Prefixes, p.inCurPkg(cursor, false))
+		convertedName = names.GoName(originName, p.Conf.trimPrefixes, p.inCurPkg(cursor, false))
 	}
 
 	if parent := cursor.SemanticParent(); parent.Kind == clang.CursorClassDecl {
-		class := names.GoName(clang.GoString(parent.String()), p.Prefixes, p.inCurPkg(cursor, false))
+		class := names.GoName(clang.GoString(parent.String()), p.Conf.trimPrefixes, p.inCurPkg(cursor, false))
 		return p.AddSuffix(p.GenMethodName(class, convertedName, isDestructor, true))
 	} else if cursor.Kind == clang.CursorFunctionDecl {
 		numArgs := cursor.NumArguments()
@@ -257,14 +264,14 @@ func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisit
 	return clang.ChildVisit_Continue
 }
 
-func ParseHeaderFile(files []string, Prefixes []string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
-	processer := NewSymbolProcessor(files, Prefixes)
+func ParseHeaderFile(files []string, conf *SymbolProcessorConfig, isTemp bool) (map[string]*SymbolInfo, error) {
+	processer := NewSymbolProcessor(conf)
 	index := clang.CreateIndex(0, 0)
 	for _, file := range files {
 		_, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 			File:  file,
 			Temp:  isTemp,
-			IsCpp: isCpp,
+			IsCpp: conf.isCpp,
 			Index: index,
 		})
 		if err != nil {

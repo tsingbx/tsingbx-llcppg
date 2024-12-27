@@ -83,7 +83,8 @@ func main() {
 		}
 	}
 
-	headerInfos, err := parse.ParseHeaderFile(filepaths, conf.TrimPrefixes, conf.Cplusplus, false)
+	parseConfig := parse.NewSymbolProcessorConfig(cflag, conf.TrimPrefixes, conf.Cplusplus)
+	headerInfos, err := parse.ParseHeaderFile(filepaths, parseConfig, false)
 	check(err)
 
 	symbolData, err := symbol.GenerateAndUpdateSymbolTable(symbols, headerInfos, symbFile)
