@@ -21,6 +21,15 @@ type CFlags struct {
 	Paths []string // Include Path
 }
 
+func (cflags CFlags) InPaths(fileName string) bool {
+	for _, path := range cflags.Paths {
+		if strings.HasPrefix(fileName, path) {
+			return true
+		}
+	}
+	return false
+}
+
 func ParseLibs(libs string) *Libs {
 	parts := strings.Fields(libs)
 	lbs := &Libs{}
