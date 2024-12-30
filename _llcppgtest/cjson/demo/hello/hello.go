@@ -44,6 +44,6 @@ func cjsonLoad(str string) {
 	mod.Delete()
 }
 
-func ParseString(value string) *cjson.CJSON {
+func ParseString(value string) *cjson.JSON {
 	return cjson.ParseWithLength((*c.Char)(unsafe.Pointer(unsafe.StringData(value))), uintptr(len(value)))
 }
