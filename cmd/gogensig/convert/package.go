@@ -29,7 +29,7 @@ type Package struct {
 
 	// incomplete stores type declarations that are not fully defined yet.
 	// This is used to handle forward declarations and self-referential types in C/C++.
-	incomplete map[string]*gogen.TypeDecl // origin name(in c) -> TypeDecl
+	incomplete map[string]*Incomplete
 
 	// deferTypes stores type declarations that need to be resolved later.
 	// The key is the Go type declaration, and the value is a function that will return
@@ -46,6 +46,11 @@ type Package struct {
 	nameMapper *names.NameMapper // handles name mapping and uniqueness
 }
 
+type Incomplete struct {
+	file *HeaderFile
+	decl *gogen.TypeDecl // origin name(in c) -> TypeDecl
+}
+
 type PackageConfig struct {
 	PkgBase
 	Name        string // current package name
@@ -60,7 +65,7 @@ func NewPackage(config *PackageConfig) *Package {
 	p := &Package{
 		p:          gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
 		conf:       config,
-		incomplete: make(map[string]*gogen.TypeDecl),
+		incomplete: make(map[string]*Incomplete),
 		deferTypes: make(map[*gogen.TypeDecl]func() (types.Type, error)),
 		nameMapper: names.NewNameMapper(),
 	}
@@ -97,13 +102,25 @@ func NewPackage(config *PackageConfig) *Package {
 }
 
 func (p *Package) SetCurFile(file string, incPath string, isHeaderFile bool, inCurPkg bool, isSys bool) error {
-	curHeaderFile, err := NewHeaderFile(file, incPath, isHeaderFile, inCurPkg, isSys)
-	if err != nil {
-		return err
+	var curHeaderFile *HeaderFile
+	for _, f := range p.files {
+		if f.file == file {
+			curHeaderFile = f
+			break
+		}
 	}
-	p.files = append(p.files, curHeaderFile)
+
+	if curHeaderFile == nil {
+		var err error
+		curHeaderFile, err = NewHeaderFile(file, incPath, isHeaderFile, inCurPkg, isSys)
+		if err != nil {
+			return err
+		}
+		p.files = append(p.files, curHeaderFile)
+	}
+
 	p.curFile = curHeaderFile
-	fileName := p.curFile.ToGoFileName()
+	fileName := curHeaderFile.ToGoFileName()
 	if dbg.GetDebugLog() {
 		log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, inCurPkg)
 	}
@@ -282,14 +299,14 @@ func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 	}
 	p.CollectNameMapping(cname, name)
 
-	decl := p.handleTypeDecl(name, cname, typeDecl)
+	incom := p.handleTypeDecl(name, cname, typeDecl)
 
 	if changed {
-		substObj(p.p.Types, p.p.Types.Scope(), cname, decl.Type().Obj())
+		substObj(p.p.Types, p.p.Types.Scope(), cname, incom.decl.Type().Obj())
 	}
 
 	if !isForward {
-		if err := p.handleCompleteType(decl, typeDecl.Type, cname); err != nil {
+		if err := p.handleCompleteType(incom, typeDecl.Type, cname); err != nil {
 			return err
 		}
 	}
@@ -297,26 +314,30 @@ func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 }
 
 // handleTypeDecl creates a new type declaration or retrieves existing one
-func (p *Package) handleTypeDecl(pubname string, cname string, typeDecl *ast.TypeDecl) *gogen.TypeDecl {
+func (p *Package) handleTypeDecl(pubname string, cname string, typeDecl *ast.TypeDecl) *Incomplete {
 	if existDecl, exists := p.incomplete[cname]; exists {
 		return existDecl
 	}
 	decl := p.emptyTypeDecl(pubname, typeDecl.Doc)
-	if p.cvt.inComplete(typeDecl.Type) {
-		p.incomplete[cname] = decl
+	inc := &Incomplete{
+		file: p.curFile,
+		decl: decl,
 	}
-	return decl
+	p.incomplete[cname] = inc
+	return inc
 }
 
-func (p *Package) handleCompleteType(decl *gogen.TypeDecl, typ *ast.RecordType, name string) error {
+func (p *Package) handleCompleteType(incom *Incomplete, typ *ast.RecordType, name string) error {
 	defer delete(p.incomplete, name)
+	defer p.SetCurFile(p.curFile.file, p.curFile.incPath, p.curFile.isHeaderFile, p.curFile.inCurPkg, p.curFile.isSys)
+	p.SetCurFile(incom.file.file, incom.file.incPath, incom.file.isHeaderFile, incom.file.inCurPkg, incom.file.isSys)
 	structType, err := p.cvt.RecordTypeToStruct(typ)
 	if err != nil {
 		// For incomplete type's conerter error, we use default struct type
-		decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
+		incom.decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
 		return err
 	}
-	decl.InitType(p.p, structType)
+	incom.decl.InitType(p.p, structType)
 	return nil
 }
 
@@ -325,11 +346,14 @@ func (p *Package) handleCompleteType(decl *gogen.TypeDecl, typ *ast.RecordType, 
 // incomplete map, but not in the public symbol table.
 func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
 	if decl, ok := p.incomplete[name]; ok {
-		return decl
+		return decl.decl
 	}
 	pubName := p.nameMapper.GetGoName(name, p.trimPrefixes())
 	decl := p.emptyTypeDecl(pubName, nil)
-	p.incomplete[name] = decl
+	p.incomplete[name] = &Incomplete{
+		file: p.curFile,
+		decl: decl,
+	}
 	p.nameMapper.SetMapping(name, pubName)
 	return decl
 }
@@ -584,8 +608,9 @@ func (p *Package) WriteToBuffer(genFName string) (*bytes.Buffer, error) {
 }
 
 func (p *Package) deferTypeBuild() error {
-	for _, decl := range p.incomplete {
-		decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
+	for _, inc := range p.incomplete {
+		p.SetCurFile(inc.file.file, inc.file.incPath, inc.file.isHeaderFile, inc.file.inCurPkg, inc.file.isSys)
+		inc.decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
 	}
 	for decl, getTyp := range p.deferTypes {
 		typ, err := getTyp()
@@ -596,7 +621,7 @@ func (p *Package) deferTypeBuild() error {
 			return err
 		}
 	}
-	p.incomplete = make(map[string]*gogen.TypeDecl, 0)
+	p.incomplete = make(map[string]*Incomplete, 0)
 	p.deferTypes = make(map[*gogen.TypeDecl]func() (types.Type, error), 0)
 	return nil
 }

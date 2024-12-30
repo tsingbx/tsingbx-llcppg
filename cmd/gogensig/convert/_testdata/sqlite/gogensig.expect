@@ -417,7 +417,7 @@ package sqlite
 
 import (
 	"github.com/goplus/llgo/c"
-	"unsafe"
+	_ "unsafe"
 )
 // llgo:type C
 type LoadextEntry func(*Sqlite3, **int8, *ApiRoutines) c.Int
