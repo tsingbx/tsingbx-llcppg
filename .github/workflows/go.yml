@@ -92,7 +92,9 @@ jobs:
       if: startsWith(matrix.os, 'macos')
       run: |
         # install demo's lib
-        brew install lua
+        brew install lua zlib
+
+        export PKG_CONFIG_PATH="/opt/homebrew/opt/zlib/lib/pkgconfig"
         llcppgtest -demos ./_llcppgtest
 
     - name: Upload coverage reports to Codecov
