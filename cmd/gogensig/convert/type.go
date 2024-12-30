@@ -414,15 +414,15 @@ func (p *TypeConv) referSysType(name string) (types.Object, error) {
 	return nil, nil
 }
 
-func (p *TypeConv) LookupSymbol(mangleName config.MangleNameType) (config.GoNameType, error) {
+func (p *TypeConv) LookupSymbol(mangleName config.MangleNameType) (*GoFuncSpec, error) {
 	if p.symbolTable == nil {
-		return "", fmt.Errorf("symbol table not initialized")
+		return nil, fmt.Errorf("symbol table not initialized")
 	}
 	e, err := p.symbolTable.LookupSymbol(mangleName)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return e.GoName, nil
+	return NewGoFuncSpec(e.GoName), nil
 }
 
 // The field name should be public if it's a record field
