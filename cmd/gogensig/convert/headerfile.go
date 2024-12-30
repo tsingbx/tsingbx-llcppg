@@ -1,50 +1,35 @@
 package convert
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
-	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 )
 
 type HeaderFile struct {
-	file         string
-	incPath      string
-	isHeaderFile bool
-	inCurPkg     bool
-	isSys        bool
-	sysIncPath   string
-}
-
-func (p *HeaderFile) setSysIncPath(isSys bool, incPath string) error {
-	if isSys {
-		if incPath == "" {
-			return fmt.Errorf("system header file %s has no include path", p.file)
-		}
-		p.sysIncPath = incPath
-		if dbg.GetDebugLog() {
-			log.Printf("%s is a system header file,include path: %s\n", p.file, incPath)
-		}
-		return nil
-	}
-	return nil
+	File         string
+	IncPath      string
+	IsHeaderFile bool
+	InCurPkg     bool
+	IsSys        bool
 }
 
 func (p *HeaderFile) ToGoFileName() string {
 	var fileName string
-	if p.isHeaderFile {
+	if p.IsHeaderFile {
 		// path to go filename
-		fileName = names.HeaderFileToGo(p.file)
+		fileName = names.HeaderFileToGo(p.File)
 	} else {
 		// package name as the default file
-		fileName = p.file + ".go"
+		fileName = p.File + ".go"
 	}
 	return fileName
 }
 
-func NewHeaderFile(file string, incPath string, isHeaderFile bool, inCurPkg bool, isSys bool) (*HeaderFile, error) {
-	p := &HeaderFile{file: file, incPath: incPath, isHeaderFile: isHeaderFile, inCurPkg: inCurPkg, isSys: isSys}
-	err := p.setSysIncPath(isSys, incPath)
-	return p, err
+func NewHeaderFile(file string, incPath string, isHeaderFile bool, inCurPkg bool, isSys bool) *HeaderFile {
+	return &HeaderFile{
+		File:         file,
+		IncPath:      incPath,
+		IsHeaderFile: isHeaderFile,
+		InCurPkg:     inCurPkg,
+		IsSys:        isSys,
+	}
 }

@@ -147,7 +147,13 @@ func (p *AstConvert) VisitStart(path string, incPath string, isSys bool) {
 			break
 		}
 	}
-	p.Pkg.SetCurFile(path, incPath, true, inPkgIncPath, isSys)
+	p.Pkg.SetCurFile(&HeaderFile{
+		File:         path,
+		IncPath:      incPath,
+		IsHeaderFile: true,
+		InCurPkg:     inPkgIncPath,
+		IsSys:        isSys,
+	})
 }
 
 func (p *AstConvert) VisitDone(incPath string) {

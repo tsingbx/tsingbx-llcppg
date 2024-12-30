@@ -243,6 +243,8 @@ func TestPackageWrite(t *testing.T) {
 	filePath := filepath.Join("/path", "to", incPath)
 	genPath := names.HeaderFileToGo(filePath)
 
+	headerFile := convert.NewHeaderFile(filePath, incPath, true, true, false)
+
 	t.Run("OutputToTempDir", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp(dir, "test_package_write")
 		if err != nil {
@@ -253,10 +255,8 @@ func TestPackageWrite(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: tempDir,
 		})
-		err = pkg.SetCurFile(filePath, incPath, true, true, false)
-		if err != nil {
-			t.Fatalf("SetCurFile method failed: %v", err)
-		}
+
+		pkg.SetCurFile(headerFile)
 		err = pkg.Write(filePath)
 		if err != nil {
 			t.Fatalf("Write method failed: %v", err)
@@ -280,11 +280,8 @@ func TestPackageWrite(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: testpkgDir,
 		})
-		err := pkg.SetCurFile(filePath, incPath, true, true, false)
-		if err != nil {
-			t.Fatalf("SetCurFile method failed: %v", err)
-		}
-		err = pkg.Write(filePath)
+		pkg.SetCurFile(headerFile)
+		err := pkg.Write(filePath)
 		if err != nil {
 			t.Fatalf("Write method failed: %v", err)
 		}
@@ -1457,7 +1454,13 @@ const (
 
 func TestIdentRefer(t *testing.T) {
 	pkg := createTestPkg(t, &convert.PackageConfig{})
-	pkg.SetCurFile("/path/to/stdio.h", "stdio.h", true, false, true)
+	pkg.SetCurFile(&convert.HeaderFile{
+		File:         "/path/to/stdio.h",
+		IncPath:      "stdio.h",
+		IsHeaderFile: true,
+		InCurPkg:     true,
+		IsSys:        true,
+	})
 	pkg.NewTypedefDecl(&ast.TypedefDecl{
 		DeclBase: ast.DeclBase{
 			Loc: &ast.Location{File: "/path/to/stdio.h"},
@@ -1468,7 +1471,13 @@ func TestIdentRefer(t *testing.T) {
 			Flags: ast.Signed,
 		},
 	})
-	pkg.SetCurFile("/path/to/notsys.h", "notsys.h", true, true, false)
+	pkg.SetCurFile(&convert.HeaderFile{
+		File:         "/path/to/notsys.h",
+		IncPath:      "notsys.h",
+		IsHeaderFile: true,
+		InCurPkg:     true,
+		IsSys:        false,
+	})
 	t.Run("undef sys ident ref", func(t *testing.T) {
 		err := pkg.NewTypeDecl(&ast.TypeDecl{
 			DeclBase: ast.DeclBase{
@@ -1778,7 +1787,13 @@ func TestTypeClean(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		pkg.SetCurFile(tc.headerFile, tc.incPath, true, true, false)
+		pkg.SetCurFile(&convert.HeaderFile{
+			File:         tc.headerFile,
+			IncPath:      tc.incPath,
+			IsHeaderFile: true,
+			InCurPkg:     true,
+			IsSys:        false,
+		})
 		tc.addType()
 
 		goFileName := names.HeaderFileToGo(tc.headerFile)
