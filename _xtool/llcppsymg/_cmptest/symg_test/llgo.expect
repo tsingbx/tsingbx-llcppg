@@ -53,6 +53,12 @@
 		"c++":	"cJSON_Delete(cJSON *)",
 		"go":	"(*CJSON).Delete"
 	}]
+=== Test Case: isl ===
+[{
+		"mangle":	"isl_pw_qpolynomial_get_ctx",
+		"c++":	"isl_pw_qpolynomial_get_ctx(isl_pw_qpolynomial *)",
+		"go":	"(*IslPwQpolynomial).IslPwQpolynomialGetCtx"
+	}]
 
 #stderr
 

@@ -50,6 +50,13 @@ func TestParseHeaderFile() {
 				"cJSON_Delete",
 			},
 		},
+		{
+			name: "isl",
+			path: "./isl",
+			dylibSymbols: []string{
+				"isl_pw_qpolynomial_get_ctx",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
