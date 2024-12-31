@@ -14,11 +14,12 @@ import (
 	"github.com/goplus/llcppg/types"
 )
 
-type CfgExpandMode int
+type CfgMode int
 
 const (
-	NormalMode CfgExpandMode = iota
+	NormalMode CfgMode = iota
 	ExpandMode
+	SortMode
 )
 
 type LLCppConfig types.Config
@@ -46,13 +47,17 @@ func NewEmptyStringError(name string) *EmptyStringError {
 	return &EmptyStringError{name: name}
 }
 
-func CmdOutString(cmd *exec.Cmd) (string, error) {
+func CmdOutString(cmd *exec.Cmd, dir string) (string, error) {
 	if cmd == nil {
 		return "", NewNilError()
 	}
 	outBuf := bytes.NewBufferString("")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = outBuf
+	cmd.Env = os.Environ()
+	if len(dir) > 0 {
+		cmd.Dir = dir
+	}
 	err := cmd.Run()
 	if err != nil {
 		return outBuf.String(), err
@@ -65,7 +70,7 @@ func ExecCommand(cmdStr string, args ...string) *exec.Cmd {
 	return exec.Command(cmdStr, args...)
 }
 
-func ExpandString(str string) string {
+func ExpandString(str string, dir string) string {
 	str = strings.ReplaceAll(str, "(", "{")
 	str = strings.ReplaceAll(str, ")", "}")
 	expandStr := os.Expand(str, func(s string) string {
@@ -73,7 +78,7 @@ func ExpandString(str string) string {
 		if len(args) == 0 {
 			return ""
 		}
-		outString, err := CmdOutString(ExecCommand(args[0], args[1:]...))
+		outString, err := CmdOutString(ExecCommand(args[0], args[1:]...), dir)
 		if err != nil {
 			return ""
 		}
@@ -133,13 +138,13 @@ func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
 	return includes, flags
 }
 
-func ExpandLibsName(name string) string {
+func ExpandLibsName(name string, dir string) string {
 	originLibs := fmt.Sprintf("${pkg-config --libs %s}", name)
-	return ExpandString(originLibs)
+	return ExpandString(originLibs, dir)
 }
 
 func ExpandCflags(originCFlags string) ([]string, string) {
-	cflags := ExpandString(originCFlags)
+	cflags := ExpandString(originCFlags, "")
 	expandIncludes, expandCflags := doExpandCflags(cflags, func(s string) bool {
 		ext := filepath.Ext(s)
 		return ext == ".h" || ext == ".hpp"
@@ -155,9 +160,94 @@ func ExpandCFlagsName(name string) ([]string, string) {
 	return ExpandCflags(originCFlags)
 }
 
-func expandCFlagsAndLibs(name string, cfg *LLCppConfig) {
+func expandCFlagsAndLibs(name string, cfg *LLCppConfig, dir string) {
 	cfg.Include, cfg.CFlags = ExpandCFlagsName(name)
-	cfg.Libs = ExpandLibsName(name)
+	cfg.Libs = ExpandLibsName(name, dir)
+}
+
+func sortIncludes(name string, cfg *LLCppConfig, dir string) error {
+	cfg.Include, cfg.CFlags = ExpandCFlagsName(name)
+	cfg.Libs = ExpandLibsName(name, dir)
+	originCFlags := fmt.Sprintf("${pkg-config --cflags %s}", name)
+	// expand cflags
+	cflags := ExpandString(originCFlags, "")
+	// split cflags
+	list := strings.Fields(cflags)
+	// list include for every cflag
+	cflagEntryList := make([]types.CflagEntry, 0)
+	for _, l := range list {
+		trimStr := strings.TrimPrefix(l, "-I")
+		trimStr += "/"
+		var cflagEntry types.CflagEntry
+		cflagEntry.Cflag = l
+		cflagEntry.ObjFiles = make([]types.ObjFile, 0)
+		err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			if !strings.HasSuffix(d.Name(), ".h") {
+				return nil
+			}
+			if !strings.HasPrefix(d.Name(), ".") {
+				relPath, err := filepath.Rel(trimStr, path)
+				if err != nil {
+					return nil
+				}
+				clangCmd := ExecCommand("clang", l, "-E", "-MM", relPath)
+				outString, err := CmdOutString(clangCmd, trimStr)
+				if err != nil {
+					return nil
+				}
+				var objFile types.ObjFile
+				objFile.Deps = make([]string, 0)
+				lines := strings.Split(outString, "\n")
+				for _, line := range lines {
+					slashs := strings.Split(line, "\\")
+					for _, slash := range slashs {
+						if len(objFile.OFile) == 0 {
+							kv := strings.Split(slash, ":")
+							if len(kv) == 2 {
+								objFile.OFile = kv[0]
+								objFile.HFile = relPath
+								dep := strings.TrimSpace(kv[1])
+								dep = strings.TrimPrefix(dep, relPath)
+								dep = strings.TrimSpace(dep)
+								if len(dep) > 0 {
+									objFile.Deps = append(objFile.Deps, dep)
+								}
+							}
+						} else {
+							if len(slash) > 0 {
+								slash = strings.TrimSpace(slash)
+								objFile.Deps = append(objFile.Deps, slash)
+							}
+						}
+					}
+				}
+				cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, objFile)
+			}
+			return nil
+		})
+		if err != nil {
+			log.Println(err)
+		}
+		cflagEntryList = append(cflagEntryList, cflagEntry)
+	}
+	includeMap := make(map[string]struct{})
+	cfg.Include = make([]string, 0)
+	for _, cflagEntry := range cflagEntryList {
+		for _, objFile := range cflagEntry.ObjFiles {
+			if _, ok := includeMap[objFile.HFile]; !ok {
+				includeMap[objFile.HFile] = struct{}{}
+				cfg.Include = append(cfg.Include, objFile.HFile)
+			}
+		}
+	}
+	cfg.CflagEntrys = cflagEntryList
+	return nil
 }
 
 func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
@@ -172,13 +262,16 @@ func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
 	return cfg
 }
 
-func GenCfg(name string, cpp bool, expand CfgExpandMode) (*bytes.Buffer, error) {
+func GenCfg(name string, cpp bool, expand CfgMode) (*bytes.Buffer, error) {
 	if len(name) == 0 {
 		return nil, NewEmptyStringError("name")
 	}
 	cfg := NewLLCppConfig(name, cpp)
-	if expand == ExpandMode {
-		expandCFlagsAndLibs(name, cfg)
+	switch expand {
+	case ExpandMode:
+		expandCFlagsAndLibs(name, cfg, "")
+	case SortMode:
+		sortIncludes(name, cfg, "")
 	}
 	buf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(buf)
