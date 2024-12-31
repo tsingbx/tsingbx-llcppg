@@ -157,7 +157,7 @@ int(lua_sizecomp)(size_t s, int idx1, int idx2, int op);
 	for _, tc := range testCases {
 		fmt.Printf("=== Test Case: %s ===\n", tc.name)
 
-		symbolMap, err := parse.ParseHeaderFile([]string{tc.content}, tc.prefixes, tc.isCpp, true)
+		symbolMap, err := parse.ParseHeaderFile([]string{tc.content}, tc.prefixes, []string{}, tc.isCpp, true)
 
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)

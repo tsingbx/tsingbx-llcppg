@@ -74,7 +74,8 @@ func TestParseHeaderFile() {
 			files = append(files, filepath.Join(projPath, include))
 		}
 
-		headerSymbolMap, err := parse.ParseHeaderFile(files, cfg.TrimPrefixes, cfg.Cplusplus, false)
+		cflags := []string{"-I" + projPath}
+		headerSymbolMap, err := parse.ParseHeaderFile(files, cfg.TrimPrefixes, cflags, cfg.Cplusplus, false)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}

@@ -240,9 +240,18 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResult {
 	filename := clang.GoString(cursor.Location().File().FileName())
 	if _, ok := p.processedFiles[filename]; ok {
+		if dbg.GetDebugSymbol() {
+			fmt.Printf("visitTop: %s has been processed: \n", filename)
+		}
+		return clang.ChildVisit_Continue
+	}
+	if filename == "" {
 		return clang.ChildVisit_Continue
 	}
 	p.processingFiles[filename] = struct{}{}
+	if dbg.GetDebugSymbol() && filename != "" {
+		fmt.Printf("visitTop: %s\n", filename)
+	}
 	switch cursor.Kind {
 	case clang.CursorNamespace, clang.CursorClassDecl:
 		clangutils.VisitChildren(cursor, p.visitTop)
@@ -261,10 +270,13 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
 		filename = clangutils.TEMP_FILE
 	}
 	if _, ok := p.processedFiles[filename]; ok {
-		if dbg.GetDebugParseIsMethod() {
+		if dbg.GetDebugSymbol() {
 			fmt.Printf("%s has been processed: \n", filename)
 		}
 		return nil
+	}
+	if dbg.GetDebugSymbol() {
+		fmt.Printf("create translation unit: \nfile:%s\nIsCpp:%v\nTemp:%v\nArgs:%v\n", filename, cfg.IsCpp, cfg.Temp, cfg.Args)
 	}
 	_, unit, err := clangutils.CreateTranslationUnit(cfg)
 	if err != nil {
@@ -283,18 +295,19 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
 	return nil
 }
 
-func ParseHeaderFile(files []string, Prefixes []string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
+func ParseHeaderFile(files []string, prefixes []string, cflags []string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
 	index := clang.CreateIndex(0, 0)
 	if isTemp {
 		files = append(files, clangutils.TEMP_FILE)
 	}
-	processer := NewSymbolProcessor(files, Prefixes)
+	processer := NewSymbolProcessor(files, prefixes)
 	for _, file := range files {
 		processer.collect(&clangutils.Config{
 			File:  file,
 			Temp:  isTemp,
 			IsCpp: isCpp,
 			Index: index,
+			Args:  cflags,
 		})
 	}
 	index.Dispose()
