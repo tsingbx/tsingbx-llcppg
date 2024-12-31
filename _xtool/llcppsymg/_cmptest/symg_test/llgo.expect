@@ -39,6 +39,20 @@
 		"c++":	"lua_stringtonumber(lua_State *, const char *)",
 		"go":	"(*State).Stringtonumber"
 	}]
+=== Test Case: cjson ===
+[{
+		"mangle":	"cJSON_Print",
+		"c++":	"cJSON_Print(const cJSON *)",
+		"go":	"(*CJSON).Print"
+	}, {
+		"mangle":	"cJSON_ParseWithLength",
+		"c++":	"cJSON_ParseWithLength(const char *, size_t)",
+		"go":	"ParseWithLength"
+	}, {
+		"mangle":	"cJSON_Delete",
+		"c++":	"cJSON_Delete(cJSON *)",
+		"go":	"(*CJSON).Delete"
+	}]
 
 #stderr
 
