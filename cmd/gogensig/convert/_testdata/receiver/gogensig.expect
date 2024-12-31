@@ -19,7 +19,10 @@ type AresIn6Addr struct {
 ===== use.go =====
 package receiver
 
-import "unsafe"
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
 
 type AresAddr struct {
 	Family c.Int

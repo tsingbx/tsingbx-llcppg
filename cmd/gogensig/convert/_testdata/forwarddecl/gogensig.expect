@@ -3,7 +3,7 @@ package forwarddecl
 
 import (
 	"github.com/goplus/llgo/c"
-	_ "unsafe"
+	"unsafe"
 )
 
 type Foo struct {
@@ -12,6 +12,10 @@ type Foo struct {
 
 type File struct {
 	PMethods *IoMethods
+}
+
+type IoMethods struct {
+	XUnfetch unsafe.Pointer
 }
 
 ===== temp.go =====
@@ -24,10 +28,6 @@ import (
 
 type Bar struct {
 	A *Foo
-}
-
-type IoMethods struct {
-	XUnfetch unsafe.Pointer
 }
 
 type PcachePage struct {

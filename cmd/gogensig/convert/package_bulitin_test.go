@@ -31,7 +31,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 		IncPath: "Bar",
 		Path:    "Bar",
 	}
-	pkg.incomplete["Bar"] = &gogen.TypeDecl{}
+	pkg.incomplete["Bar"] = &Incomplete{}
 	err := pkg.NewTypedefDecl(&ast.TypedefDecl{
 		Name: &ast.Ident{Name: "Foo"},
 		Type: &ast.TagExpr{
