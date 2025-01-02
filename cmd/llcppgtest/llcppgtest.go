@@ -6,9 +6,11 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -51,6 +53,17 @@ func RunCommand(name string, args ...string) {
 	}
 }
 
+func RemoveFile(fileName string) {
+	cmd := exec.Command("rm", fileName)
+	outBuf := bytes.NewBufferString("")
+	cmd.Stderr = outBuf
+	cmd.Stdout = outBuf
+	err := cmd.Run()
+	if err != nil {
+		log.Println("")
+	}
+}
+
 func PkgList(r io.Reader) []string {
 	pkgs := make([]string, 0)
 	scan := bufio.NewScanner(r)
@@ -82,6 +95,7 @@ type runPkgMode int
 
 const (
 	withCpp runPkgMode = 1 << iota
+	withSort
 	withSigfetchVerbose
 	withSymgVerbose
 )
@@ -103,6 +117,9 @@ func runPkgs(pkgs []string, runMode runPkgMode) {
 	if runMode&withCpp != 0 {
 		llcppcfgArg = append(llcppcfgArg, "-cpp")
 	}
+	if runMode&withSort != 0 {
+		llcppcfgArg = append(llcppcfgArg, "-sort")
+	}
 	llcppgArg := []string{}
 	if runMode&withSigfetchVerbose != 0 {
 		llcppgArg = append(llcppgArg, "-vfetch")
@@ -113,6 +130,8 @@ func runPkgs(pkgs []string, runMode runPkgMode) {
 	runs := make([]string, 0)
 	for _, pkg := range pkgs {
 		dir := "./out/" + pkg
+		llcppsymgFile := filepath.Join(dir, "llcppg.symb.json")
+		RemoveFile(llcppsymgFile)
 		RunCommand("mkdir", "-p", dir)
 		RunCommand("cd", dir)
 		curDir := wd + "/out/" + pkg
@@ -142,7 +161,7 @@ func runPkg(runMode runPkgMode) {
 
 func printHelp() {
 	helpString := `llcppgtest is used to test llcppg
-usage: llcppgtest [-r|-rand|-a|-all] [-v|-vfetch|-vsym] [-cpp] [-h|-help] pkgname`
+usage: llcppgtest [-r|-rand|-a|-all] [-v|-vfetch|-vsym] [-cpp|-sort] [-h|-help] pkgname`
 	fmt.Println(helpString)
 	flag.PrintDefaults()
 }
@@ -162,6 +181,8 @@ func main() {
 	flag.BoolVar(&vSym, "vsym", false, "enable verbose of llcppsymg")
 	cpp := false
 	flag.BoolVar(&cpp, "cpp", false, "if it is a cpp library")
+	sortIncludes := false
+	flag.BoolVar(&sortIncludes, "sort", false, "sort includes in llcppg.cfg")
 	help := false
 	flag.BoolVar(&help, "h", false, "print help message")
 	flag.BoolVar(&help, "help", false, "print help message")
@@ -176,6 +197,9 @@ func main() {
 	runMode := 0
 	if cpp {
 		runMode |= int(withCpp)
+	}
+	if sortIncludes {
+		runMode |= int(withSort)
 	}
 	if vSig {
 		runMode |= int(withSigfetchVerbose)
