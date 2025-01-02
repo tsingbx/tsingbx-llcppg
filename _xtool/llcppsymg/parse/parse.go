@@ -10,7 +10,6 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
-	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/clang"
 )
 
@@ -20,11 +19,14 @@ type SymbolInfo struct {
 }
 
 type SymbolProcessor struct {
-	Files       []string
-	Prefixes    []string
-	SymbolMap   map[string]*SymbolInfo
-	CurrentFile string
-	NameCounts  map[string]int
+	Files      []string
+	Prefixes   []string
+	SymbolMap  map[string]*SymbolInfo
+	NameCounts map[string]int
+	// for independent files,signal that the file has been processed
+	// will clean in a translation unit process end
+	processingFiles map[string]struct{}
+	processedFiles  map[string]struct{}
 }
 
 func panicSourceLocation(loc clang.SourceLocation, prefix string) {
@@ -37,21 +39,16 @@ func panicSourceLocation(loc clang.SourceLocation, prefix string) {
 
 func NewSymbolProcessor(Files []string, Prefixes []string) *SymbolProcessor {
 	return &SymbolProcessor{
-		Files:      Files,
-		Prefixes:   Prefixes,
-		SymbolMap:  make(map[string]*SymbolInfo),
-		NameCounts: make(map[string]int),
+		Files:           Files,
+		Prefixes:        Prefixes,
+		SymbolMap:       make(map[string]*SymbolInfo),
+		NameCounts:      make(map[string]int),
+		processedFiles:  make(map[string]struct{}),
+		processingFiles: make(map[string]struct{}),
 	}
-}
-
-func (p *SymbolProcessor) setCurrentFile(filename string) {
-	p.CurrentFile = filename
 }
 
 func (p *SymbolProcessor) isSelfFile(filename string) bool {
-	if filename == p.CurrentFile {
-		return true
-	}
 	for _, file := range p.Files {
 		if file == filename {
 			return true
@@ -227,6 +224,9 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 	// On Linux, C++ symbols typically have one leading underscore
 	// On macOS, C++ symbols may have two leading underscores
 	// For consistency, we remove the first leading underscore on macOS
+	if dbg.GetDebugSymbol() {
+		fmt.Printf("collectFuncInfo: %s %s\n", clang.GoString(cursor.Mangling()), clang.GoString(cursor.String()))
+	}
 	symbolName := clang.GoString(cursor.Mangling())
 	if runtime.GOOS == "darwin" {
 		symbolName = strings.TrimPrefix(symbolName, "_")
@@ -238,46 +238,77 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 }
 
 func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResult {
+	filename := clang.GoString(cursor.Location().File().FileName())
+	if _, ok := p.processedFiles[filename]; ok {
+		if dbg.GetDebugSymbol() {
+			fmt.Printf("visitTop: %s has been processed: \n", filename)
+		}
+		return clang.ChildVisit_Continue
+	}
+	if filename == "" {
+		return clang.ChildVisit_Continue
+	}
+	p.processingFiles[filename] = struct{}{}
+	if dbg.GetDebugSymbol() && filename != "" {
+		fmt.Printf("visitTop: %s\n", filename)
+	}
 	switch cursor.Kind {
 	case clang.CursorNamespace, clang.CursorClassDecl:
 		clangutils.VisitChildren(cursor, p.visitTop)
 	case clang.CursorCXXMethod, clang.CursorFunctionDecl, clang.CursorConstructor, clang.CursorDestructor:
-		loc := cursor.Location()
-		file, _, _, _ := clangutils.GetLocation(loc)
-		filename := file.FileName()
-		defer filename.Dispose()
-
-		isCurrentFile := c.Strcmp(filename.CStr(), c.AllocaCStr(p.CurrentFile)) == 0
 		isPublicMethod := (cursor.CXXAccessSpecifier() == clang.CXXPublic) && cursor.Kind == clang.CursorCXXMethod || cursor.Kind == clang.CursorConstructor || cursor.Kind == clang.CursorDestructor
-
-		if isCurrentFile && (cursor.Kind == clang.CursorFunctionDecl || isPublicMethod) {
+		if p.isSelfFile(filename) && (cursor.Kind == clang.CursorFunctionDecl || isPublicMethod) {
 			p.collectFuncInfo(cursor)
 		}
 	}
 	return clang.ChildVisit_Continue
 }
 
-func ParseHeaderFile(files []string, Prefixes []string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
-	processer := NewSymbolProcessor(files, Prefixes)
+func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
+	filename := cfg.File
+	if cfg.Temp {
+		filename = clangutils.TEMP_FILE
+	}
+	if _, ok := p.processedFiles[filename]; ok {
+		if dbg.GetDebugSymbol() {
+			fmt.Printf("%s has been processed: \n", filename)
+		}
+		return nil
+	}
+	if dbg.GetDebugSymbol() {
+		fmt.Printf("create translation unit: \nfile:%s\nIsCpp:%v\nTemp:%v\nArgs:%v\n", filename, cfg.IsCpp, cfg.Temp, cfg.Args)
+	}
+	_, unit, err := clangutils.CreateTranslationUnit(cfg)
+	if err != nil {
+		return errors.New("Unable to parse translation unit for file " + filename)
+	}
+	cursor := unit.Cursor()
+	if dbg.GetDebugSymbol() {
+		fmt.Printf("%s start collect \n", filename)
+	}
+	clangutils.VisitChildren(cursor, p.visitTop)
+	for filename := range p.processingFiles {
+		p.processedFiles[filename] = struct{}{}
+	}
+	p.processingFiles = make(map[string]struct{})
+	unit.Dispose()
+	return nil
+}
+
+func ParseHeaderFile(files []string, prefixes []string, cflags []string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
 	index := clang.CreateIndex(0, 0)
+	if isTemp {
+		files = append(files, clangutils.TEMP_FILE)
+	}
+	processer := NewSymbolProcessor(files, prefixes)
 	for _, file := range files {
-		_, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
+		processer.collect(&clangutils.Config{
 			File:  file,
 			Temp:  isTemp,
 			IsCpp: isCpp,
 			Index: index,
+			Args:  cflags,
 		})
-		if err != nil {
-			return nil, errors.New("Unable to parse translation unit for file " + file)
-		}
-		cursor := unit.Cursor()
-		if isTemp {
-			processer.setCurrentFile(clangutils.TEMP_FILE)
-		} else {
-			processer.setCurrentFile(file)
-		}
-		clangutils.VisitChildren(cursor, processer.visitTop)
-		unit.Dispose()
 	}
 	index.Dispose()
 	return processer.SymbolMap, nil

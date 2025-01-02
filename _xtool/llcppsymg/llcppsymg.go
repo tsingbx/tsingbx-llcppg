@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
@@ -83,7 +84,7 @@ func main() {
 		}
 	}
 
-	headerInfos, err := parse.ParseHeaderFile(filepaths, conf.TrimPrefixes, conf.Cplusplus, false)
+	headerInfos, err := parse.ParseHeaderFile(filepaths, conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.Cplusplus, false)
 	check(err)
 
 	symbolData, err := symbol.GenerateAndUpdateSymbolTable(symbols, headerInfos, symbFile)

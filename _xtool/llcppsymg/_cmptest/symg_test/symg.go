@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symbol"
 	"github.com/goplus/llgo/xtool/nm"
@@ -14,104 +16,90 @@ func main() {
 }
 func TestParseHeaderFile() {
 	testCases := []struct {
-		name            string
-		content         string
-		isCpp           bool
-		prefixes        []string
-		dylibSymbols    []*nm.Symbol
-		symbFileContent string
+		name         string
+		path         string
+		dylibSymbols []string
 	}{
 		{
 			name: "inireader",
-			content: `
-#define INI_API __attribute__((visibility("default")))
-class INIReader {
-  public:
-    __attribute__((visibility("default"))) explicit INIReader(const char *filename);
-    INI_API explicit INIReader(const char *buffer, long buffer_size);
-    ~INIReader();
-    INI_API int ParseError() const;
-	INI_API const char * Get(const char *section, const char *name,
-						const char *default_value) const;
-  private:
-    static const char * MakeKey(const char *section, const char *name);
-};
-            `,
-			isCpp:    true,
-			prefixes: []string{"INI"},
-			dylibSymbols: []*nm.Symbol{
-				{Name: symbol.AddSymbolPrefixUnder("ZN9INIReaderC1EPKc", true)},
-				{Name: symbol.AddSymbolPrefixUnder("ZN9INIReaderC1EPKcl", true)},
-				{Name: symbol.AddSymbolPrefixUnder("ZN9INIReaderD1Ev", true)},
-				{Name: symbol.AddSymbolPrefixUnder("ZNK9INIReader10ParseErrorEv", true)},
-				{Name: symbol.AddSymbolPrefixUnder("ZNK9INIReader3GetEPKcS1_S1_", true)},
+			path: "./inireader",
+			dylibSymbols: []string{
+				"ZN9INIReaderC1EPKc",
+				"ZN9INIReaderC1EPKcl",
+				"ZN9INIReaderD1Ev",
+				"ZNK9INIReader10ParseErrorEv",
+				"ZNK9INIReader3GetEPKcS1_S1_",
 			},
-			symbFileContent: `
-[{
-		"mangle":       "_ZN9INIReaderC1EPKc",
-		"c++":  "INIReader::INIReader(const char *)",
-		"go":   "(*Reader).Init"
-}, {
-		"mangle":       "_ZN9INIReaderC1EPKcl",
-		"c++":  "INIReader::INIReader(const char *, long)",
-		"go":   "(*Reader).Init__1"
-}, {
-		"mangle":       "_ZN9INIReaderD1Ev",
-		"c++":  "INIReader::~INIReader()",
-		"go":   "(*Reader).Dispose"
-}, {
-		"mangle":       "_ZNK9INIReader10ParseErrorEv",
-		"c++":  "INIReader::ParseError()",
-		"go":   "(*Reader).ModifyedParseError"
-}]`,
 		},
 		{
 			name: "lua",
-			content: `
-typedef struct lua_State lua_State;
-
-LUA_API int(lua_error)(lua_State *L);
-
-LUA_API int(lua_next)(lua_State *L, int idx);
-
-LUA_API void(lua_concat)(lua_State *L, int n);
-LUA_API void(lua_len)(lua_State *L, int idx);
-
-LUA_API long unsigned int(lua_stringtonumber)(lua_State *L, const char *s);
-
-LUA_API void(lua_setallocf)(lua_State *L, lua_Alloc f, void *ud);
-
-LUA_API void(lua_toclose)(lua_State *L, int idx);
-LUA_API void(lua_closeslot)(lua_State *L, int idx);
-            `,
-			isCpp:    false,
-			prefixes: []string{"lua_"},
-			dylibSymbols: []*nm.Symbol{
-				{Name: symbol.AddSymbolPrefixUnder("lua_error", false)},
-				{Name: symbol.AddSymbolPrefixUnder("lua_next", false)},
-				{Name: symbol.AddSymbolPrefixUnder("lua_concat", false)},
-				{Name: symbol.AddSymbolPrefixUnder("lua_stringtonumber", false)},
+			path: "./lua",
+			dylibSymbols: []string{
+				"lua_error",
+				"lua_next",
+				"lua_concat",
+				"lua_stringtonumber",
+			},
+		},
+		{
+			name: "cjson",
+			path: "./cjson",
+			dylibSymbols: []string{
+				"cJSON_Print",
+				"cJSON_ParseWithLength",
+				"cJSON_Delete",
+			},
+		},
+		{
+			name: "isl",
+			path: "./isl",
+			dylibSymbols: []string{
+				"isl_pw_qpolynomial_get_ctx",
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		fmt.Printf("=== Test Case: %s ===\n", tc.name)
-		headerSymbolMap, err := parse.ParseHeaderFile([]string{tc.content}, tc.prefixes, tc.isCpp, true)
+		projPath, err := filepath.Abs(tc.path)
+		if err != nil {
+			fmt.Println("Get Abs Path Error:", err)
+		}
+		cfgdata, err := os.ReadFile(filepath.Join(projPath, "llcppg.cfg"))
+		if err != nil {
+			fmt.Println("Read Cfg File Error:", err)
+		}
+		cfg, err := config.GetConf(cfgdata)
+		if err != nil {
+			fmt.Println("Get Conf Error:", err)
+		}
+		if err != nil {
+			fmt.Println("Read Symb File Error:", err)
+		}
+		files := []string{}
+		for _, include := range cfg.Include {
+			files = append(files, filepath.Join(projPath, include))
+		}
+
+		cflags := []string{"-I" + projPath}
+		headerSymbolMap, err := parse.ParseHeaderFile(files, cfg.TrimPrefixes, cflags, cfg.Cplusplus, false)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
-		tmpFile, err := os.CreateTemp("", "llcppg.symb.json")
 		if err != nil {
 			fmt.Printf("Failed to create temp file: %v\n", err)
 			return
 		}
-		tmpFile.Write([]byte(tc.symbFileContent))
-		symbolData, err := symbol.GenerateAndUpdateSymbolTable(tc.dylibSymbols, headerSymbolMap, tmpFile.Name())
+
+		// trim to nm symbols
+		var dylibsymbs []*nm.Symbol
+		for _, symb := range tc.dylibSymbols {
+			dylibsymbs = append(dylibsymbs, &nm.Symbol{Name: symbol.AddSymbolPrefixUnder(symb, cfg.Cplusplus)})
+		}
+		symbolData, err := symbol.GenerateAndUpdateSymbolTable(dylibsymbs, headerSymbolMap, filepath.Join(projPath, "llcppg.symb.json"))
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
 		fmt.Println(string(symbolData))
-		os.Remove(tmpFile.Name())
 	}
 }
