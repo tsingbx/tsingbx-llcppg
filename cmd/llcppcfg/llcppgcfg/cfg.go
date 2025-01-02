@@ -195,7 +195,7 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []strin
 	clangCmd := ExecCommand("clang", "-I"+trimStr, "-E", "-MM", relPath)
 	outString, err := CmdOutString(clangCmd, trimStr)
 	if err != nil {
-		return nil, nil
+		log.Println(err)
 	}
 	var objFile types.ObjFile
 	objFile.Deps = make([]string, 0)
@@ -241,6 +241,9 @@ func parseCFlagsEntry(l string, exts []string) (*types.CflagEntry, error) {
 			cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, *pObjFile)
 		}
 		return nil
+	})
+	sort.Slice(cflagEntry.ObjFiles, func(i, j int) bool {
+		return len(cflagEntry.ObjFiles[i].Deps) > len(cflagEntry.ObjFiles[j].Deps)
 	})
 	return &cflagEntry, err
 }

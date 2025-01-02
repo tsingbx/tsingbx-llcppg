@@ -10,7 +10,7 @@ import (
 
 func printHelp() {
 	log.Println(`llcppcfg is to generate llcppg.cfg file.
-usage: llcppcfg [-cpp|-help|-expand] libname`)
+usage: llcppcfg [-cpp|-help|-expand|-sort] libname`)
 	flag.PrintDefaults()
 }
 
