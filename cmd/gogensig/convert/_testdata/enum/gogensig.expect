@@ -64,11 +64,37 @@ const (
 	AlgorithmT2NULL2    AlgorithmT2 = 1
 )
 
+type CodeT c.Int
+
+const (
+	CodeTNOERROR        CodeT = 0
+	CodeTGENERAL        CodeT = 1
+	CodeTUNKNOWNPACKET  CodeT = 2
+	CodeTUNKNOWNVERSION CodeT = 3
+	CodeTPUBKEYALGO     CodeT = 4
+	CodeTDIGESTALGO     CodeT = 5
+	CodeTBADPUBKEY      CodeT = 6
+	CodeTBADSECKEY      CodeT = 7
+	CodeTBADSIGNATURE   CodeT = 8
+	CodeTNOPUBKEY       CodeT = 9
+	CodeTCHECKSUM       CodeT = 10
+	CodeTBADPASSPHRASE  CodeT = 11
+	CodeTCIPHERALGO     CodeT = 12
+	CodeTKEYRINGOPEN    CodeT = 13
+	CodeTINVPACKET      CodeT = 14
+	CodeTINVARMOR       CodeT = 15
+	CodeTNOUSERID       CodeT = 16
+	CodeTNOSECKEY       CodeT = 17
+	CodeTWRONGSECKEY    CodeT = 18
+	CodeTBADKEY         CodeT = 19
+)
+
 ===== llcppg.pub =====
 algorithm Algorithm
 algorithm_t AlgorithmT
 algorithm_t2 AlgorithmT2
 feline Feline
+gpg_err_code_t CodeT
 kids Kids
 levels Levels
 spectrum Spectrum
