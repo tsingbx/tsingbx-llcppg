@@ -138,9 +138,13 @@ func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
 	return includes, flags
 }
 
-func ExpandLibsName(name string, dir string) string {
-	originLibs := fmt.Sprintf("${pkg-config --libs %s}", name)
-	return ExpandString(originLibs, dir)
+func ExpandName(name string, dir string, libsOrCflags string) (string, string) {
+	originString := fmt.Sprintf("$(pkg-config --%s %s)", libsOrCflags, name)
+	return ExpandString(originString, dir), originString
+}
+
+func ExpandLibsName(name string, dir string) (string, string) {
+	return ExpandName(name, dir, "libs")
 }
 
 func ExpandCflags(originCFlags string) ([]string, string) {
@@ -156,85 +160,136 @@ func ExpandCflags(originCFlags string) ([]string, string) {
 }
 
 func ExpandCFlagsName(name string) ([]string, string) {
-	originCFlags := fmt.Sprintf("${pkg-config --cflags %s}", name)
+	originCFlags := fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	return ExpandCflags(originCFlags)
 }
 
 func expandCFlagsAndLibs(name string, cfg *LLCppConfig, dir string) {
 	cfg.Include, cfg.CFlags = ExpandCFlagsName(name)
-	cfg.Libs = ExpandLibsName(name, dir)
+	cfg.Libs, _ = ExpandLibsName(name, dir)
+}
+
+func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []string) (*types.ObjFile, error) {
+	if err != nil {
+		return nil, err
+	}
+	if d.IsDir() || strings.HasPrefix(d.Name(), ".") {
+		return nil, nil
+	}
+	idx := len(exts)
+	for i, ext := range exts {
+		if strings.HasSuffix(d.Name(), ext) {
+			idx = i
+			break
+		}
+	}
+	if idx == len(exts) {
+		return nil, nil
+	}
+	relPath, err := filepath.Rel(trimStr, path)
+	if err != nil {
+		return nil, nil
+	}
+	clangCmd := ExecCommand("clang", "-I"+trimStr, "-E", "-MM", relPath)
+	outString, err := CmdOutString(clangCmd, trimStr)
+	if err != nil {
+		return nil, nil
+	}
+	var objFile types.ObjFile
+	objFile.Deps = make([]string, 0)
+	lines := strings.Split(outString, "\n")
+	for _, line := range lines {
+		slashs := strings.Split(line, "\\")
+		for _, slash := range slashs {
+			if len(objFile.OFile) == 0 {
+				kv := strings.Split(slash, ":")
+				if len(kv) == 2 {
+					objFile.OFile = kv[0]
+					objFile.HFile = relPath
+					dep := strings.TrimSpace(kv[1])
+					dep = strings.TrimPrefix(dep, relPath)
+					dep = strings.TrimSpace(dep)
+					if len(dep) > 0 {
+						objFile.Deps = append(objFile.Deps, dep)
+					}
+				}
+			} else {
+				if len(slash) > 0 {
+					slash = strings.TrimSpace(slash)
+					objFile.Deps = append(objFile.Deps, slash)
+				}
+			}
+		}
+	}
+	return &objFile, nil
+}
+
+func parseCFlagsEntry(l string, exts []string) (*types.CflagEntry, error) {
+	trimStr := strings.TrimPrefix(l, "-I")
+	trimStr += "/"
+	var cflagEntry types.CflagEntry
+	cflagEntry.Include = trimStr
+	cflagEntry.ObjFiles = make([]types.ObjFile, 0)
+	err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
+		pObjFile, parseError := parseFileEntry(trimStr, path, d, err, exts)
+		if parseError != nil {
+			return err
+		}
+		if pObjFile != nil {
+			cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, *pObjFile)
+		}
+		return nil
+	})
+	return &cflagEntry, err
+}
+
+type DepCtx struct {
+	include string
+	objMap  map[string]types.ObjFile
+}
+
+func NewDepCtx(cflagEntry *types.CflagEntry) *DepCtx {
+	m := make(map[string]types.ObjFile)
+	for _, objFile := range cflagEntry.ObjFiles {
+		m[objFile.HFile] = objFile
+	}
+	return &DepCtx{include: cflagEntry.Include, objMap: m}
+}
+
+func expandDeps(objFile *types.ObjFile, depCtx *DepCtx) {
+	for _, dep := range objFile.Deps {
+		if _, ok := depCtx.objMap[dep]; !ok {
+			dep2, err := filepath.Rel(depCtx.include, dep)
+			if err == nil {
+				depObjFile := types.ObjFile{HFile: dep2}
+				depCtx.objMap[dep] = depObjFile
+				expandDeps(&depObjFile, depCtx)
+			}
+		}
+	}
 }
 
 func sortIncludes(name string, cfg *LLCppConfig, dir string) error {
-	cfg.Include, cfg.CFlags = ExpandCFlagsName(name)
-	cfg.Libs = ExpandLibsName(name, dir)
-	originCFlags := fmt.Sprintf("${pkg-config --cflags %s}", name)
-	// expand cflags
-	cflags := ExpandString(originCFlags, "")
-	// split cflags
+	cflags, originCflags := ExpandName(name, dir, "cflags")
+	cfg.CFlags = originCflags
+	_, cfg.Libs = ExpandName(name, dir, "libs")
 	list := strings.Fields(cflags)
-	// list include for every cflag
 	cflagEntryList := make([]types.CflagEntry, 0)
 	for _, l := range list {
-		trimStr := strings.TrimPrefix(l, "-I")
-		trimStr += "/"
-		var cflagEntry types.CflagEntry
-		cflagEntry.Cflag = l
-		cflagEntry.ObjFiles = make([]types.ObjFile, 0)
-		err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			if d.IsDir() {
-				return nil
-			}
-			if !strings.HasSuffix(d.Name(), ".h") {
-				return nil
-			}
-			if !strings.HasPrefix(d.Name(), ".") {
-				relPath, err := filepath.Rel(trimStr, path)
-				if err != nil {
-					return nil
-				}
-				clangCmd := ExecCommand("clang", l, "-E", "-MM", relPath)
-				outString, err := CmdOutString(clangCmd, trimStr)
-				if err != nil {
-					return nil
-				}
-				var objFile types.ObjFile
-				objFile.Deps = make([]string, 0)
-				lines := strings.Split(outString, "\n")
-				for _, line := range lines {
-					slashs := strings.Split(line, "\\")
-					for _, slash := range slashs {
-						if len(objFile.OFile) == 0 {
-							kv := strings.Split(slash, ":")
-							if len(kv) == 2 {
-								objFile.OFile = kv[0]
-								objFile.HFile = relPath
-								dep := strings.TrimSpace(kv[1])
-								dep = strings.TrimPrefix(dep, relPath)
-								dep = strings.TrimSpace(dep)
-								if len(dep) > 0 {
-									objFile.Deps = append(objFile.Deps, dep)
-								}
-							}
-						} else {
-							if len(slash) > 0 {
-								slash = strings.TrimSpace(slash)
-								objFile.Deps = append(objFile.Deps, slash)
-							}
-						}
-					}
-				}
-				cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, objFile)
-			}
-			return nil
-		})
+		pCflagEntry, err := parseCFlagsEntry(l, []string{".h", ".hpp"})
 		if err != nil {
-			log.Println(err)
+			log.Panic(err)
 		}
-		cflagEntryList = append(cflagEntryList, cflagEntry)
+		if pCflagEntry != nil {
+			cflagEntryList = append(cflagEntryList, *pCflagEntry)
+		}
+	}
+	for _, cflagEntry := range cflagEntryList {
+		depCtx := NewDepCtx(&cflagEntry)
+		for i, objFile := range cflagEntry.ObjFiles {
+			expandDeps(&objFile, depCtx)
+			cflagEntry.ObjFiles[i] = objFile
+		}
 	}
 	includeMap := make(map[string]struct{})
 	cfg.Include = make([]string, 0)

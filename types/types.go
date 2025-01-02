@@ -29,12 +29,12 @@ func (o *ObjFile) String() string {
 }
 
 type CflagEntry struct {
-	Cflag    string    `json:"cflag"`
+	Include  string    `json:"include"`
 	ObjFiles []ObjFile `json:"objfiles"`
 }
 
 func (c *CflagEntry) String() string {
-	return fmt.Sprintf("{Cflag:%s, ObjFiles:%v}", c.Cflag, c.ObjFiles)
+	return fmt.Sprintf("{Include:%s, ObjFiles:%v}", c.Include, c.ObjFiles)
 }
 
 // Config represents a configuration for the llcppg tool.
