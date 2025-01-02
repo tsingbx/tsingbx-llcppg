@@ -39,14 +39,14 @@ func (c *CflagEntry) String() string {
 
 // Config represents a configuration for the llcppg tool.
 type Config struct {
-	Name         string       `json:"name"`
-	CFlags       string       `json:"cflags"`
-	CflagEntrys  []CflagEntry `json:"cflagEntrys"`
-	Libs         string       `json:"libs"`
-	Include      []string     `json:"include"`
-	Deps         []string     `json:"deps"`
-	TrimPrefixes []string     `json:"trimPrefixes"`
-	Cplusplus    bool         `json:"cplusplus"`
+	Name         string   `json:"name"`
+	CFlags       string   `json:"cflags"`
+	Libs         string   `json:"libs"`
+	Include      []string `json:"include"`
+	SortInclude  []string `json:"sortInclude"`
+	Deps         []string `json:"deps"`
+	TrimPrefixes []string `json:"trimPrefixes"`
+	Cplusplus    bool     `json:"cplusplus"`
 }
 
 type SymbolInfo struct {

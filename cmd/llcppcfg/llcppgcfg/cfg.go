@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/goplus/llcppg/types"
@@ -70,7 +71,8 @@ func ExecCommand(cmdStr string, args ...string) *exec.Cmd {
 	return exec.Command(cmdStr, args...)
 }
 
-func ExpandString(str string, dir string) string {
+func ExpandString(str string, dir string) (string, string) {
+	org := str
 	str = strings.ReplaceAll(str, "(", "{")
 	str = strings.ReplaceAll(str, ")", "}")
 	expandStr := os.Expand(str, func(s string) string {
@@ -84,7 +86,7 @@ func ExpandString(str string, dir string) string {
 		}
 		return outString
 	})
-	return strings.TrimSpace(expandStr)
+	return strings.TrimSpace(expandStr), org
 }
 
 func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
@@ -140,15 +142,15 @@ func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
 
 func ExpandName(name string, dir string, libsOrCflags string) (string, string) {
 	originString := fmt.Sprintf("$(pkg-config --%s %s)", libsOrCflags, name)
-	return ExpandString(originString, dir), originString
+	return ExpandString(originString, dir)
 }
 
 func ExpandLibsName(name string, dir string) (string, string) {
 	return ExpandName(name, dir, "libs")
 }
 
-func ExpandCflags(originCFlags string) ([]string, string) {
-	cflags := ExpandString(originCFlags, "")
+func ExpandCflags(originCFlags string) ([]string, string, string) {
+	cflags, orgCflags := ExpandString(originCFlags, "")
 	expandIncludes, expandCflags := doExpandCflags(cflags, func(s string) bool {
 		ext := filepath.Ext(s)
 		return ext == ".h" || ext == ".hpp"
@@ -156,16 +158,16 @@ func ExpandCflags(originCFlags string) ([]string, string) {
 	if len(expandCflags) > 0 {
 		cflags = expandCflags
 	}
-	return expandIncludes, cflags
+	return expandIncludes, cflags, orgCflags
 }
 
-func ExpandCFlagsName(name string) ([]string, string) {
+func ExpandCFlagsName(name string) ([]string, string, string) {
 	originCFlags := fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	return ExpandCflags(originCFlags)
 }
 
 func expandCFlagsAndLibs(name string, cfg *LLCppConfig, dir string) {
-	cfg.Include, cfg.CFlags = ExpandCFlagsName(name)
+	cfg.Include, cfg.CFlags, _ = ExpandCFlagsName(name)
 	cfg.Libs, _ = ExpandLibsName(name, dir)
 }
 
@@ -256,24 +258,39 @@ func NewDepCtx(cflagEntry *types.CflagEntry) *DepCtx {
 	return &DepCtx{include: cflagEntry.Include, objMap: m}
 }
 
-func expandDeps(objFile *types.ObjFile, depCtx *DepCtx) {
+func expandDeps(objFile *types.ObjFile, depCtx *DepCtx) []string {
+	deps := make([]string, 0)
 	for _, dep := range objFile.Deps {
-		if _, ok := depCtx.objMap[dep]; !ok {
-			dep2, err := filepath.Rel(depCtx.include, dep)
-			if err == nil {
-				depObjFile := types.ObjFile{HFile: dep2}
-				depCtx.objMap[dep] = depObjFile
-				expandDeps(&depObjFile, depCtx)
-			}
+		deps = append(deps, dep)
+		dep2, _ := filepath.Rel(depCtx.include, dep)
+		if obj, ok := depCtx.objMap[dep2]; ok {
+			expandDeps(&obj, depCtx)
+			deps = append(deps, obj.Deps...)
 		}
 	}
+	fnRemoveDup := func(s []string) []string {
+		if len(s) < 1 {
+			return s
+		}
+		sort.Strings(s)
+		prev := 1
+		for curr := 1; curr < len(s); curr++ {
+			if s[curr-1] != s[curr] {
+				s[prev] = s[curr]
+				prev++
+			}
+		}
+		return s[:prev]
+	}
+	objFile.Deps = fnRemoveDup(deps)
+	return objFile.Deps
 }
 
 func sortIncludes(name string, cfg *LLCppConfig, dir string) error {
-	cflags, originCflags := ExpandName(name, dir, "cflags")
-	cfg.CFlags = originCflags
+	var expandCflags string
+	cfg.Include, expandCflags, cfg.CFlags = ExpandCFlagsName(name)
 	_, cfg.Libs = ExpandName(name, dir, "libs")
-	list := strings.Fields(cflags)
+	list := strings.Fields(expandCflags)
 	cflagEntryList := make([]types.CflagEntry, 0)
 	for _, l := range list {
 		pCflagEntry, err := parseCFlagsEntry(l, []string{".h", ".hpp"})
@@ -286,22 +303,20 @@ func sortIncludes(name string, cfg *LLCppConfig, dir string) error {
 	}
 	for _, cflagEntry := range cflagEntryList {
 		depCtx := NewDepCtx(&cflagEntry)
-		for i, objFile := range cflagEntry.ObjFiles {
-			expandDeps(&objFile, depCtx)
-			cflagEntry.ObjFiles[i] = objFile
+		for i := range cflagEntry.ObjFiles {
+			expandDeps(&cflagEntry.ObjFiles[i], depCtx)
 		}
 	}
 	includeMap := make(map[string]struct{})
-	cfg.Include = make([]string, 0)
+	cfg.SortInclude = make([]string, 0)
 	for _, cflagEntry := range cflagEntryList {
 		for _, objFile := range cflagEntry.ObjFiles {
 			if _, ok := includeMap[objFile.HFile]; !ok {
 				includeMap[objFile.HFile] = struct{}{}
-				cfg.Include = append(cfg.Include, objFile.HFile)
+				cfg.SortInclude = append(cfg.SortInclude, objFile.HFile)
 			}
 		}
 	}
-	cfg.CflagEntrys = cflagEntryList
 	return nil
 }
 
@@ -313,7 +328,7 @@ func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
 	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
 	cfg.TrimPrefixes = []string{}
 	cfg.Cplusplus = isCpp
-	cfg.Include, _ = ExpandCFlagsName(name)
+	cfg.Include, _, _ = ExpandCFlagsName(name)
 	return cfg
 }
 
