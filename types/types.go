@@ -16,34 +16,12 @@
 
 package types
 
-import "fmt"
-
-type ObjFile struct {
-	OFile string   `json:"ofile"`
-	HFile string   `json:"hfile"`
-	Deps  []string `json:"deps"`
-}
-
-func (o *ObjFile) String() string {
-	return fmt.Sprintf("{OFile:%s, HFile:%s, Deps:%v}", o.OFile, o.HFile, o.Deps)
-}
-
-type CflagEntry struct {
-	Include  string    `json:"include"`
-	ObjFiles []ObjFile `json:"objfiles"`
-}
-
-func (c *CflagEntry) String() string {
-	return fmt.Sprintf("{Include:%s, ObjFiles:%v}", c.Include, c.ObjFiles)
-}
-
 // Config represents a configuration for the llcppg tool.
 type Config struct {
 	Name         string   `json:"name"`
 	CFlags       string   `json:"cflags"`
 	Libs         string   `json:"libs"`
 	Include      []string `json:"include"`
-	SortInclude  []string `json:"sortInclude"`
 	Deps         []string `json:"deps"`
 	TrimPrefixes []string `json:"trimPrefixes"`
 	Cplusplus    bool     `json:"cplusplus"`

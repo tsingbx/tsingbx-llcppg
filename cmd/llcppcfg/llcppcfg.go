@@ -19,7 +19,7 @@ func main() {
 	flag.BoolVar(&cpp, "cpp", false, "if it is c++ lib")
 	flag.BoolVar(&help, "help", false, "print help message")
 	flag.BoolVar(&expand, "expand", false, "expand pkg-config command to result")
-	flag.BoolVar(&sortByDep, "sort", false, "expand every cflag and list it's include files and sort include files by dependency")
+	flag.BoolVar(&sortByDep, "sort", true, "expand every cflag and list it's include files and sort include files by dependency")
 	flag.Usage = printHelp
 	flag.Parse()
 	if help || len(os.Args) <= 1 {

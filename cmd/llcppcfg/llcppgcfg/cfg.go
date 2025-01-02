@@ -23,6 +23,42 @@ const (
 	SortMode
 )
 
+type ObjFile struct {
+	OFile string
+	HFile string
+	Deps  []string
+}
+
+func NewObjFile(str string) (*ObjFile, string) {
+	fields := strings.Split(str, ":")
+	if len(fields) != 2 {
+		return nil, ""
+	}
+	paths := strings.Fields(fields[1])
+	objFile := &ObjFile{
+		OFile: strings.TrimSpace(fields[0]),
+		HFile: strings.TrimSpace(paths[0]),
+		Deps:  make([]string, 0),
+	}
+	if len(paths) > 1 {
+		return objFile, paths[1]
+	}
+	return objFile, ""
+}
+
+func (o *ObjFile) String() string {
+	return fmt.Sprintf("{OFile:%s, HFile:%s, Deps:%v}", o.OFile, o.HFile, o.Deps)
+}
+
+type CflagEntry struct {
+	Include  string
+	ObjFiles []ObjFile
+}
+
+func (c *CflagEntry) String() string {
+	return fmt.Sprintf("{Include:%s, ObjFiles:%v}", c.Include, c.ObjFiles)
+}
+
 type LLCppConfig types.Config
 
 type NilError struct {
@@ -167,11 +203,11 @@ func ExpandCFlagsName(name string) ([]string, string, string) {
 }
 
 func expandCFlagsAndLibs(name string, cfg *LLCppConfig, dir string) {
-	cfg.Include, cfg.CFlags, _ = ExpandCFlagsName(name)
+	cfg.CFlags, _ = ExpandName(name, dir, "cflags")
 	cfg.Libs, _ = ExpandLibsName(name, dir)
 }
 
-func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []string) (*types.ObjFile, error) {
+func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []string) (*ObjFile, error) {
 	if err != nil {
 		return nil, err
 	}
@@ -192,46 +228,40 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []strin
 	if err != nil {
 		return nil, nil
 	}
-	clangCmd := ExecCommand("clang", "-I"+trimStr, "-E", "-MM", relPath)
+	clangCmd := ExecCommand("clang", "-I"+trimStr, "-MM", relPath)
 	outString, err := CmdOutString(clangCmd, trimStr)
 	if err != nil {
-		log.Println(err)
+		obj, _ := NewObjFile(outString)
+		return obj, nil
 	}
-	var objFile types.ObjFile
-	objFile.Deps = make([]string, 0)
+	var objFile *ObjFile
 	lines := strings.Split(outString, "\n")
 	for _, line := range lines {
 		slashs := strings.Split(line, "\\")
 		for _, slash := range slashs {
-			if len(objFile.OFile) == 0 {
-				kv := strings.Split(slash, ":")
-				if len(kv) == 2 {
-					objFile.OFile = kv[0]
-					objFile.HFile = relPath
-					dep := strings.TrimSpace(kv[1])
-					dep = strings.TrimPrefix(dep, relPath)
-					dep = strings.TrimSpace(dep)
-					if len(dep) > 0 {
-						objFile.Deps = append(objFile.Deps, dep)
-					}
+			if objFile == nil {
+				var dep string
+				objFile, dep = NewObjFile(slash)
+				if len(dep) > 0 {
+					objFile.Deps = append(objFile.Deps, dep)
 				}
 			} else {
-				if len(slash) > 0 {
-					slash = strings.TrimSpace(slash)
-					objFile.Deps = append(objFile.Deps, slash)
+				if len(slash) > 0 && objFile != nil {
+					dep := strings.TrimSpace(slash)
+					objFile.Deps = append(objFile.Deps, dep)
 				}
 			}
 		}
 	}
-	return &objFile, nil
+	return objFile, nil
 }
 
-func parseCFlagsEntry(l string, exts []string) (*types.CflagEntry, error) {
+func parseCFlagsEntry(l string, exts []string) (*CflagEntry, error) {
 	trimStr := strings.TrimPrefix(l, "-I")
 	trimStr += "/"
-	var cflagEntry types.CflagEntry
+	var cflagEntry CflagEntry
 	cflagEntry.Include = trimStr
-	cflagEntry.ObjFiles = make([]types.ObjFile, 0)
+	cflagEntry.ObjFiles = make([]ObjFile, 0)
 	err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
 		pObjFile, parseError := parseFileEntry(trimStr, path, d, err, exts)
 		if parseError != nil {
@@ -250,18 +280,18 @@ func parseCFlagsEntry(l string, exts []string) (*types.CflagEntry, error) {
 
 type DepCtx struct {
 	include string
-	objMap  map[string]types.ObjFile
+	objMap  map[string]ObjFile
 }
 
-func NewDepCtx(cflagEntry *types.CflagEntry) *DepCtx {
-	m := make(map[string]types.ObjFile)
+func NewDepCtx(cflagEntry *CflagEntry) *DepCtx {
+	m := make(map[string]ObjFile)
 	for _, objFile := range cflagEntry.ObjFiles {
 		m[objFile.HFile] = objFile
 	}
 	return &DepCtx{include: cflagEntry.Include, objMap: m}
 }
 
-func expandDeps(objFile *types.ObjFile, depCtx *DepCtx) []string {
+func expandDeps(objFile *ObjFile, depCtx *DepCtx) []string {
 	deps := make([]string, 0)
 	for _, dep := range objFile.Deps {
 		deps = append(deps, dep)
@@ -289,12 +319,9 @@ func expandDeps(objFile *types.ObjFile, depCtx *DepCtx) []string {
 	return objFile.Deps
 }
 
-func sortIncludes(name string, cfg *LLCppConfig, dir string) error {
-	var expandCflags string
-	cfg.Include, expandCflags, cfg.CFlags = ExpandCFlagsName(name)
-	_, cfg.Libs = ExpandName(name, dir, "libs")
+func sortIncludes(expandCflags string, cfg *LLCppConfig, dir string) error {
 	list := strings.Fields(expandCflags)
-	cflagEntryList := make([]types.CflagEntry, 0)
+	cflagEntryList := make([]CflagEntry, 0)
 	for _, l := range list {
 		pCflagEntry, err := parseCFlagsEntry(l, []string{".h", ".hpp"})
 		if err != nil {
@@ -311,12 +338,12 @@ func sortIncludes(name string, cfg *LLCppConfig, dir string) error {
 		}
 	}
 	includeMap := make(map[string]struct{})
-	cfg.SortInclude = make([]string, 0)
+	cfg.Include = make([]string, 0)
 	for _, cflagEntry := range cflagEntryList {
 		for _, objFile := range cflagEntry.ObjFiles {
 			if _, ok := includeMap[objFile.HFile]; !ok {
 				includeMap[objFile.HFile] = struct{}{}
-				cfg.SortInclude = append(cfg.SortInclude, objFile.HFile)
+				cfg.Include = append(cfg.Include, objFile.HFile)
 			}
 		}
 	}
@@ -331,7 +358,6 @@ func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
 	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
 	cfg.TrimPrefixes = []string{}
 	cfg.Cplusplus = isCpp
-	cfg.Include, _, _ = ExpandCFlagsName(name)
 	return cfg
 }
 
@@ -343,8 +369,12 @@ func GenCfg(name string, cpp bool, expand CfgMode) (*bytes.Buffer, error) {
 	switch expand {
 	case ExpandMode:
 		expandCFlagsAndLibs(name, cfg, "")
+		sortIncludes(cfg.CFlags, cfg, "")
 	case SortMode:
-		sortIncludes(name, cfg, "")
+		expandCflags, _ := ExpandName(name, "", "cflags")
+		sortIncludes(expandCflags, cfg, "")
+	case NormalMode:
+		cfg.Include, cfg.CFlags, _ = ExpandCFlagsName(name)
 	}
 	buf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(buf)
