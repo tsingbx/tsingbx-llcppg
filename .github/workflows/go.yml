@@ -92,7 +92,7 @@ jobs:
       if: startsWith(matrix.os, 'macos')
       run: |
         # install demo's lib
-        brew install lua zlib isl libgpg-error z3
+        brew install lua zlib isl libgpg-error raylib z3
 
         export PKG_CONFIG_PATH="/opt/homebrew/opt/zlib/lib/pkgconfig"
         llcppgtest -demos ./_llcppgtest
