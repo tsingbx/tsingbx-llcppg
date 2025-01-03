@@ -231,6 +231,14 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 	if runtime.GOOS == "darwin" {
 		symbolName = strings.TrimPrefix(symbolName, "_")
 	}
+
+	// In C, multiple declarations of the same function are allowed.
+	// Functions with identical signatures will have the same mangled name.
+	// We treat them as the same function rather than overloads, so we only
+	// process the first occurrence and skip subsequent declarations.
+	if _, exists := p.SymbolMap[symbolName]; exists {
+		return
+	}
 	p.SymbolMap[symbolName] = &SymbolInfo{
 		GoName:    p.genGoName(cursor),
 		ProtoName: p.genProtoName(cursor),

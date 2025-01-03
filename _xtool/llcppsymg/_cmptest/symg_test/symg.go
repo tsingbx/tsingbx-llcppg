@@ -57,6 +57,15 @@ func TestParseHeaderFile() {
 				"isl_pw_qpolynomial_get_ctx",
 			},
 		},
+		{
+			name: "gpgerror",
+			path: "./gpgerror",
+			dylibSymbols: []string{
+				"gpg_strsource",
+				"gpg_strerror_r",
+				"gpg_strerror",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
