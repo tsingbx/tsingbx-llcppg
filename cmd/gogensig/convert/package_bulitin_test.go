@@ -77,3 +77,24 @@ func TestPubMethodName(t *testing.T) {
 		t.Fatal("Expected pubName to be 'Foo', got", pubName)
 	}
 }
+
+func TestGetNameType(t *testing.T) {
+	named := types.NewNamed(types.NewTypeName(0, nil, "Foo", nil), nil, nil)
+	ptrNamed := types.NewPointer(named)
+	customSturct := types.NewStruct(nil, nil)
+
+	namedRes := getNamedType(named)
+	if namedRes != named {
+		t.Fatal("Expected namedRes to be *types.Named, got", namedRes)
+	}
+
+	ptrNamedRes := getNamedType(ptrNamed)
+	if ptrNamedRes != named {
+		t.Fatal("Expected ptrNamedRes to be *types.Named, got", ptrNamedRes)
+	}
+
+	customRes := getNamedType(customSturct)
+	if customRes != nil {
+		t.Fatal("Expected nil, got", customRes)
+	}
+}
