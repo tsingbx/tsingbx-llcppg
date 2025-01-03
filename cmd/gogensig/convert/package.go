@@ -154,15 +154,9 @@ func (p *Package) newReceiver(typ *ast.FuncType) *types.Var {
 	return p.p.NewParam(token.NoPos, "recv_", recvType)
 }
 
-func (p *Package) ToSigSignature(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (*types.Signature, error) {
+func (p *Package) ToSigSignature(recv *types.Var, funcDecl *ast.FuncDecl) (*types.Signature, error) {
 	var sig *types.Signature
-	var recv *types.Var
 	var err error
-	if fnSpec.IsMethod &&
-		funcDecl.Type.Params.List != nil &&
-		len(funcDecl.Type.Params.List) > 0 {
-		recv = p.newReceiver(funcDecl.Type)
-	}
 	sig, err = p.cvt.ToSignature(funcDecl.Type, recv)
 	if err != nil {
 		return nil, err
@@ -248,14 +242,46 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		// not gen the function not in the symbolmap
 		return err
 	}
-	if obj := p.p.Types.Scope().Lookup(fnSpec.FnName); obj != nil {
-		return errs.NewFuncAlreadyDefinedError(fnSpec.GoSymbName)
+
+	recv, err := p.funcIsDefined(fnSpec, funcDecl)
+	if err != nil {
+		return err
 	}
-	sig, err := p.ToSigSignature(fnSpec, funcDecl)
+
+	sig, err := p.ToSigSignature(recv, funcDecl)
 	if err != nil {
 		return err
 	}
 	return p.handleFuncDecl(fnSpec, sig, funcDecl)
+}
+
+func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (recv *types.Var, err error) {
+	if fnSpec.IsMethod &&
+		funcDecl.Type.Params.List != nil &&
+		len(funcDecl.Type.Params.List) > 0 {
+		recv = p.newReceiver(funcDecl.Type)
+
+		var namedType *types.Named
+		switch t := recv.Type().(type) {
+		case *types.Named:
+			namedType = t
+		case *types.Pointer:
+			if named, ok := t.Elem().(*types.Named); ok {
+				namedType = named
+			}
+		}
+		methodName := fnSpec.FnName
+		for i := 0; i < namedType.NumMethods(); i++ {
+			if namedType.Method(i).Name() == methodName {
+				return nil, errs.NewFuncAlreadyDefinedError(fnSpec.GoSymbName)
+			}
+		}
+	} else {
+		if obj := p.p.Types.Scope().Lookup(fnSpec.FnName); obj != nil {
+			return nil, errs.NewFuncAlreadyDefinedError(fnSpec.GoSymbName)
+		}
+	}
+	return
 }
 
 // NewTypeDecl converts C/C++ type declarations to Go.
