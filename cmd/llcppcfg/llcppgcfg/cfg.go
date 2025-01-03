@@ -342,12 +342,6 @@ func sortIncludes(expandCflags string, cfg *LLCppConfig, dir string) error {
 			cflagEntryList = append(cflagEntryList, *pCflagEntry)
 		}
 	}
-	for _, cflagEntry := range cflagEntryList {
-		depCtx := NewDepCtx(&cflagEntry)
-		for i := range cflagEntry.ObjFiles {
-			expandDeps(&cflagEntry.ObjFiles[i], depCtx)
-		}
-	}
 	includeMap := make(map[string]struct{})
 	cfg.Include = make([]string, 0)
 	for _, cflagEntry := range cflagEntryList {
