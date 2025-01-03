@@ -29,7 +29,15 @@ type ObjFile struct {
 	Deps  []string
 }
 
-func NewObjFile(str string) (*ObjFile, string) {
+func NewObjFile(oFile, hFile string) *ObjFile {
+	return &ObjFile{
+		OFile: oFile,
+		HFile: hFile,
+		Deps:  make([]string, 0),
+	}
+}
+
+func NewObjFileString(str string) (*ObjFile, string) {
 	fields := strings.Split(str, ":")
 	if len(fields) != 2 {
 		return nil, ""
@@ -231,7 +239,10 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []strin
 	clangCmd := ExecCommand("clang", "-I"+trimStr, "-MM", relPath)
 	outString, err := CmdOutString(clangCmd, trimStr)
 	if err != nil {
-		obj, _ := NewObjFile(outString)
+		obj, _ := NewObjFileString(outString)
+		if obj == nil {
+			obj = NewObjFile("", relPath)
+		}
 		return obj, nil
 	}
 	var objFile *ObjFile
@@ -241,7 +252,7 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []strin
 		for _, slash := range slashs {
 			if objFile == nil {
 				var dep string
-				objFile, dep = NewObjFile(slash)
+				objFile, dep = NewObjFileString(slash)
 				if len(dep) > 0 {
 					objFile.Deps = append(objFile.Deps, dep)
 				}
