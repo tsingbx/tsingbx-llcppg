@@ -96,6 +96,7 @@ type runPkgMode int
 const (
 	withCpp runPkgMode = 1 << iota
 	withSort
+	withExts
 	withSigfetchVerbose
 	withSymgVerbose
 )
@@ -109,7 +110,7 @@ const (
 	runDemos
 )
 
-func runPkgs(pkgs []string, runMode runPkgMode) {
+func runPkgs(pkgs []string, runMode runPkgMode, exts string) {
 	wd, _ := os.Getwd()
 	wg := sync.WaitGroup{}
 	wg.Add(len(pkgs))
@@ -120,6 +121,9 @@ func runPkgs(pkgs []string, runMode runPkgMode) {
 	if runMode&withSort != 0 {
 		llcppcfgArg = append(llcppcfgArg, "-sort")
 	}
+	if len(exts) > 0 {
+		llcppcfgArg = append(llcppcfgArg, "-exts="+exts)
+	}
 	llcppgArg := []string{}
 	if runMode&withSigfetchVerbose != 0 {
 		llcppgArg = append(llcppgArg, "-vfetch")
@@ -129,12 +133,10 @@ func runPkgs(pkgs []string, runMode runPkgMode) {
 	}
 	runs := make([]string, 0)
 	for _, pkg := range pkgs {
-		dir := "./out/" + pkg
-		llcppsymgFile := filepath.Join(dir, "llcppg.symb.json")
-		RemoveFile(llcppsymgFile)
-		RunCommand("mkdir", "-p", dir)
-		RunCommand("cd", dir)
 		curDir := wd + "/out/" + pkg
+		llcppsymgFile := filepath.Join(curDir, "llcppg.symb.json")
+		RemoveFile(llcppsymgFile)
+		RunCommand("mkdir", "-p", curDir)
 		RunCommandInDir(curDir, func(error) {
 			runs = append(runs, pkg)
 			go RunCommandInDir(curDir, func(error) {
@@ -151,12 +153,12 @@ func randIndex(maxInt int) int {
 	return r.Intn(maxInt)
 }
 
-func runPkg(runMode runPkgMode) {
+func runPkg(runMode runPkgMode, exts string) {
 	pkgs := getPkgs()
 	idx := randIndex(len(pkgs))
 	pkg := pkgs[idx]
 	fmt.Printf("***start test %s\n", pkg)
-	runPkgs([]string{pkg}, runMode)
+	runPkgs([]string{pkg}, runMode, exts)
 }
 
 func printHelp() {
@@ -183,6 +185,8 @@ func main() {
 	flag.BoolVar(&cpp, "cpp", false, "if it is a cpp library")
 	sortIncludes := false
 	flag.BoolVar(&sortIncludes, "sort", false, "sort includes in llcppg.cfg")
+	exts := ""
+	flag.StringVar(&exts, "exts", ".h", "exts to be included in llcppg.cfg")
 	help := false
 	flag.BoolVar(&help, "h", false, "print help message")
 	flag.BoolVar(&help, "help", false, "print help message")
@@ -200,6 +204,9 @@ func main() {
 	}
 	if sortIncludes {
 		runMode |= int(withSort)
+	}
+	if len(exts) > 0 {
+		runMode |= int(withExts)
 	}
 	if vSig {
 		runMode |= int(withSigfetchVerbose)
@@ -225,17 +232,17 @@ func main() {
 	}
 	switch {
 	case appMode == runRand:
-		runPkg(runPkgMode(runMode))
+		runPkg(runPkgMode(runMode), exts)
 	case appMode == runAll:
 		pkgs := getPkgs()
-		runPkgs(pkgs, runPkgMode(runMode))
+		runPkgs(pkgs, runPkgMode(runMode), exts)
 	case appMode == runDemos:
 		demo.TestDemos(*demoPath)
 	default:
 		if len(flag.Args()) > 0 {
 			arg := flag.Arg(0)
 			fmt.Printf("***start test %s\n", arg)
-			runPkgs([]string{arg}, runPkgMode(runMode))
+			runPkgs([]string{arg}, runPkgMode(runMode), exts)
 		} else {
 			printHelp()
 		}
