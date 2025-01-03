@@ -38,21 +38,17 @@ func NewObjFile(oFile, hFile string) *ObjFile {
 	}
 }
 
-func NewObjFileString(str string) (*ObjFile, string) {
+func NewObjFileString(str string) *ObjFile {
 	fields := strings.Split(str, ":")
 	if len(fields) != 2 {
-		return nil, ""
+		return nil
 	}
-	paths := strings.Fields(fields[1])
 	objFile := &ObjFile{
-		OFile: strings.TrimSpace(fields[0]),
-		HFile: strings.TrimSpace(paths[0]),
+		OFile: fields[0],
+		HFile: fields[1],
 		Deps:  make([]string, 0),
 	}
-	if len(paths) > 1 {
-		return objFile, paths[1]
-	}
-	return objFile, ""
+	return objFile
 }
 
 func (o *ObjFile) String() string {
@@ -61,7 +57,7 @@ func (o *ObjFile) String() string {
 
 type CflagEntry struct {
 	Include  string
-	ObjFiles []ObjFile
+	ObjFiles []*ObjFile
 }
 
 func (c *CflagEntry) String() string {
@@ -217,12 +213,40 @@ func expandCFlagsAndLibs(name string, cfg *LLCppConfig, dir string) {
 	cfg.Libs, _ = ExpandLibsName(name, dir)
 }
 
-func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []string) (*ObjFile, error) {
-	if err != nil {
-		return nil, err
+func findDepSlice(lines []string) ([]string, string) {
+	objFileString := ""
+	iStart := 0
+	numLines := len(lines)
+	complete := false
+	for i := 0; i < numLines && !complete; i++ {
+		line := lines[i]
+		iFind := strings.Index(line, ":")
+		if iFind < 0 {
+			break
+		}
+		if iFind+1 < len(line) {
+			objFileString = line
+			iStart = i + 1
+			break
+		}
+		complete = true
+		for j := i + 1; j < numLines; j++ {
+			line2 := lines[j]
+			if len(line2) > 0 {
+				objFileString = line + line2
+				break
+			}
+		}
 	}
+	if iStart < numLines {
+		return lines[iStart:], objFileString
+	}
+	return []string{}, objFileString
+}
+
+func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string) *ObjFile {
 	if d.IsDir() || strings.HasPrefix(d.Name(), ".") {
-		return nil, nil
+		return nil
 	}
 	idx := len(exts)
 	for i, ext := range exts {
@@ -232,39 +256,26 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []strin
 		}
 	}
 	if idx == len(exts) {
-		return nil, nil
+		return nil
 	}
 	relPath, err := filepath.Rel(trimStr, path)
 	if err != nil {
-		return nil, nil
+		return nil
 	}
 	clangCmd := ExecCommand("clang", "-I"+trimStr, "-MM", relPath)
 	outString, err := CmdOutString(clangCmd, trimStr)
+	outString = strings.ReplaceAll(outString, "\\\n", "\n")
+	fields := strings.Fields(outString)
+	lines, objFileStr := findDepSlice(fields)
+	objFile := NewObjFileString(objFileStr)
 	if err != nil {
-		obj, _ := NewObjFileString(outString)
-		if obj == nil {
-			obj = NewObjFile("", relPath)
+		if objFile == nil {
+			objFile = NewObjFile("", relPath)
 		}
-		return obj, nil
+		return objFile
 	}
-	var objFile *ObjFile
-	lines := strings.Split(outString, "\n")
-	for _, line := range lines {
-		slashs := strings.Split(line, "\\")
-		for _, slash := range slashs {
-			if objFile == nil {
-				var dep string
-				objFile, dep = NewObjFileString(slash)
-				if len(dep) > 0 {
-					objFile.Deps = append(objFile.Deps, dep)
-				}
-			} else if len(slash) > 0 {
-				dep := strings.TrimSpace(slash)
-				objFile.Deps = append(objFile.Deps, dep)
-			}
-		}
-	}
-	return objFile, nil
+	objFile.Deps = append(objFile.Deps, lines...)
+	return objFile
 }
 
 func parseCFlagsEntry(l string, exts []string) (*CflagEntry, error) {
@@ -272,14 +283,14 @@ func parseCFlagsEntry(l string, exts []string) (*CflagEntry, error) {
 	trimStr += "/"
 	var cflagEntry CflagEntry
 	cflagEntry.Include = trimStr
-	cflagEntry.ObjFiles = make([]ObjFile, 0)
+	cflagEntry.ObjFiles = make([]*ObjFile, 0)
 	err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
-		pObjFile, parseError := parseFileEntry(trimStr, path, d, err, exts)
-		if parseError != nil {
+		if err != nil {
 			return err
 		}
+		pObjFile := parseFileEntry(trimStr, path, d, exts)
 		if pObjFile != nil {
-			cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, *pObjFile)
+			cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, pObjFile)
 		}
 		return nil
 	})
@@ -291,11 +302,11 @@ func parseCFlagsEntry(l string, exts []string) (*CflagEntry, error) {
 
 type DepCtx struct {
 	include string
-	objMap  map[string]ObjFile
+	objMap  map[string]*ObjFile
 }
 
 func NewDepCtx(cflagEntry *CflagEntry) *DepCtx {
-	m := make(map[string]ObjFile)
+	m := make(map[string]*ObjFile)
 	for _, objFile := range cflagEntry.ObjFiles {
 		m[objFile.HFile] = objFile
 	}
@@ -334,14 +345,14 @@ func expandDeps(objFile *ObjFile, depCtx *DepCtx) []string {
 
 func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string) {
 	list := strings.Fields(expandCflags)
-	cflagEntryList := make([]CflagEntry, 0)
+	cflagEntryList := make([]*CflagEntry, 0)
 	for _, l := range list {
 		pCflagEntry, err := parseCFlagsEntry(l, exts)
 		if err != nil {
 			log.Panic(err)
 		}
 		if pCflagEntry != nil {
-			cflagEntryList = append(cflagEntryList, *pCflagEntry)
+			cflagEntryList = append(cflagEntryList, pCflagEntry)
 		}
 	}
 	includeMap := make(map[string]struct{})
