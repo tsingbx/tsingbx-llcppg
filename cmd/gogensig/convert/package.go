@@ -488,16 +488,14 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, string, error
 func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type, enumTypeName string) error {
 	constDefs := p.p.NewConstDefs(p.p.Types.Scope())
 	for _, item := range items {
-		var constName string
 		// maybe get a new name,because the after executed name,have some situation will found same name
+		constName := p.nameMapper.GetGoName(item.Name.Name, p.trimPrefixes())
 		if enumTypeName != "" {
-			constName = enumTypeName + "_" + item.Name.Name
-		} else {
-			constName = item.Name.Name
+			constName = enumTypeName + "_" + constName
 		}
 		name, changed, err := p.DeclName(constName)
 		if err != nil {
-			return errs.NewTypeDefinedError(name, constName)
+			return errs.NewTypeDefinedError(name, item.Name.Name)
 		}
 		val, err := Expr(item.Value).ToInt()
 		if err != nil {
