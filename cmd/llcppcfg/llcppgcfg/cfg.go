@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/goplus/llcppg/types"
 )
@@ -366,6 +367,18 @@ func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
 	return cfg
 }
 
+func NormalizePackageName(name string) string {
+	fields := strings.FieldsFunc(name, func(r rune) bool {
+		return !unicode.IsLetter(r) && r != '_' && !unicode.IsDigit(r)
+	})
+	if len(fields) > 0 {
+		if len(fields[0]) > 0 && unicode.IsDigit(rune(fields[0][0])) {
+			fields[0] = "_" + fields[0]
+		}
+	}
+	return strings.Join(fields, "_")
+}
+
 func GenCfg(name string, cpp bool, expand CfgMode, exts []string) (*bytes.Buffer, error) {
 	if len(name) == 0 {
 		return nil, NewEmptyStringError("name")
@@ -381,6 +394,9 @@ func GenCfg(name string, cpp bool, expand CfgMode, exts []string) (*bytes.Buffer
 	case NormalMode:
 		cfg.Include, cfg.CFlags, _ = ExpandCFlagsName(name)
 	}
+
+	cfg.Name = NormalizePackageName(cfg.Name)
+
 	buf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(buf)
 	jsonEncoder.SetIndent("", "\t")
