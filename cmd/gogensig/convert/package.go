@@ -188,7 +188,7 @@ func (p *Package) handleFuncDecl(fnSpec *GoFuncSpec, sig *types.Signature, funcD
 		}
 		// we need to use the actual receiver name in link comment
 		// both for value receiver and pointer receiver
-		fnPubName = pubMethodName(sig.Recv().Type(), fnSpec.FnName)
+		fnPubName = pubMethodName(sig.Recv().Type(), fnSpec)
 	} else {
 		decl = p.p.NewFuncDecl(token.NoPos, fnPubName, sig)
 	}
@@ -196,6 +196,18 @@ func (p *Package) handleFuncDecl(fnSpec *GoFuncSpec, sig *types.Signature, funcD
 	doc := CommentGroup(funcDecl.Doc)
 	doc.AddCommentGroup(NewFuncDocComments(funcDecl.Name.Name, fnPubName))
 	decl.SetComments(p.p, doc.CommentGroup)
+	return nil
+}
+
+func getNamedType(recvType types.Type) *types.Named {
+	switch t := recvType.(type) {
+	case *types.Named:
+		return t
+	case *types.Pointer:
+		if named, ok := t.Elem().(*types.Named); ok {
+			return named
+		}
+	}
 	return nil
 }
 
@@ -210,16 +222,15 @@ func (p *Package) handleFuncDecl(fnSpec *GoFuncSpec, sig *types.Signature, funcD
 //   - For pointer receiver: "(*TypeName).FuncName"
 //   - For value receiver: "TypeName.FuncName"
 //   - For invalid/unknown receiver: just "FuncName"
-func pubMethodName(recv types.Type, fnName string) string {
-	switch t := recv.(type) {
-	case *types.Pointer:
-		if named, ok := t.Elem().(*types.Named); ok {
-			return "(*" + named.Obj().Name() + ")." + fnName
-		}
-	case *types.Named:
-		return t.Obj().Name() + "." + fnName
+func pubMethodName(recv types.Type, fnSpec *GoFuncSpec) string {
+	if !fnSpec.IsMethod {
+		return fnSpec.FnName
 	}
-	return fnName
+	named := getNamedType(recv)
+	if fnSpec.PtrRecv {
+		return "(*" + named.Obj().Name() + ")." + fnSpec.FnName
+	}
+	return named.Obj().Name() + "." + fnSpec.FnName
 }
 
 func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
@@ -260,16 +271,7 @@ func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (rec
 		funcDecl.Type.Params.List != nil &&
 		len(funcDecl.Type.Params.List) > 0 {
 		recv = p.newReceiver(funcDecl.Type)
-
-		var namedType *types.Named
-		switch t := recv.Type().(type) {
-		case *types.Named:
-			namedType = t
-		case *types.Pointer:
-			if named, ok := t.Elem().(*types.Named); ok {
-				namedType = named
-			}
-		}
+		var namedType = getNamedType(recv.Type())
 		methodName := fnSpec.FnName
 		for i := 0; i < namedType.NumMethods(); i++ {
 			if namedType.Method(i).Name() == methodName {
