@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/goplus/llcppg/cmd/llcppcfg/llcppgcfg"
 )
@@ -20,6 +21,8 @@ func main() {
 	flag.BoolVar(&help, "help", false, "print help message")
 	flag.BoolVar(&expand, "expand", false, "expand pkg-config command to result")
 	flag.BoolVar(&sortByDep, "sort", true, "expand every cflag and list it's include files and sort include files by dependency")
+	extsString := ""
+	flag.StringVar(&extsString, "exts", ".h", "extra include file extensions for example \"-exts=.h .hpp .hh\"")
 	flag.Usage = printHelp
 	flag.Parse()
 	if help || len(os.Args) <= 1 {
@@ -39,8 +42,8 @@ func main() {
 		}
 		return llcppgcfg.NormalMode
 	}
-
-	buf, err := llcppgcfg.GenCfg(name, cpp, fnToCfgExpandMode())
+	exts := strings.Fields(extsString)
+	buf, err := llcppgcfg.GenCfg(name, cpp, fnToCfgExpandMode(), exts)
 	if err != nil {
 		log.Fatal(err)
 	}

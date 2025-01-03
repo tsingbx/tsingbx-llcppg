@@ -115,8 +115,8 @@ func ExecCommand(cmdStr string, args ...string) *exec.Cmd {
 	return exec.Command(cmdStr, args...)
 }
 
-func ExpandString(str string, dir string) (string, string) {
-	org := str
+func ExpandString(str string, dir string) (expand string, org string) {
+	org = str
 	str = strings.ReplaceAll(str, "(", "{")
 	str = strings.ReplaceAll(str, ")", "}")
 	expandStr := os.Expand(str, func(s string) string {
@@ -130,7 +130,8 @@ func ExpandString(str string, dir string) (string, string) {
 		}
 		return outString
 	})
-	return strings.TrimSpace(expandStr), org
+	expand = strings.TrimSpace(expandStr)
+	return expand, org
 }
 
 func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
@@ -184,16 +185,16 @@ func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
 	return includes, flags
 }
 
-func ExpandName(name string, dir string, libsOrCflags string) (string, string) {
+func ExpandName(name string, dir string, libsOrCflags string) (expand string, org string) {
 	originString := fmt.Sprintf("$(pkg-config --%s %s)", libsOrCflags, name)
 	return ExpandString(originString, dir)
 }
 
-func ExpandLibsName(name string, dir string) (string, string) {
+func ExpandLibsName(name string, dir string) (expand string, org string) {
 	return ExpandName(name, dir, "libs")
 }
 
-func ExpandCflags(originCFlags string) ([]string, string, string) {
+func ExpandCflags(originCFlags string) (includes []string, expand string, org string) {
 	cflags, orgCflags := ExpandString(originCFlags, "")
 	expandIncludes, expandCflags := doExpandCflags(cflags, func(s string) bool {
 		ext := filepath.Ext(s)
@@ -205,7 +206,7 @@ func ExpandCflags(originCFlags string) ([]string, string, string) {
 	return expandIncludes, cflags, orgCflags
 }
 
-func ExpandCFlagsName(name string) ([]string, string, string) {
+func ExpandCFlagsName(name string) (includes []string, expand string, org string) {
 	originCFlags := fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	return ExpandCflags(originCFlags)
 }
@@ -256,11 +257,9 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, err error, exts []strin
 				if len(dep) > 0 {
 					objFile.Deps = append(objFile.Deps, dep)
 				}
-			} else {
-				if len(slash) > 0 && objFile != nil {
-					dep := strings.TrimSpace(slash)
-					objFile.Deps = append(objFile.Deps, dep)
-				}
+			} else if len(slash) > 0 {
+				dep := strings.TrimSpace(slash)
+				objFile.Deps = append(objFile.Deps, dep)
 			}
 		}
 	}
@@ -302,6 +301,7 @@ func NewDepCtx(cflagEntry *CflagEntry) *DepCtx {
 	return &DepCtx{include: cflagEntry.Include, objMap: m}
 }
 
+/*
 func expandDeps(objFile *ObjFile, depCtx *DepCtx) []string {
 	deps := make([]string, 0)
 	for _, dep := range objFile.Deps {
@@ -329,12 +329,13 @@ func expandDeps(objFile *ObjFile, depCtx *DepCtx) []string {
 	objFile.Deps = fnRemoveDup(deps)
 	return objFile.Deps
 }
+*/
 
-func sortIncludes(expandCflags string, cfg *LLCppConfig, dir string) error {
+func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string) {
 	list := strings.Fields(expandCflags)
 	cflagEntryList := make([]CflagEntry, 0)
 	for _, l := range list {
-		pCflagEntry, err := parseCFlagsEntry(l, []string{".h", ".hpp"})
+		pCflagEntry, err := parseCFlagsEntry(l, exts)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -352,7 +353,6 @@ func sortIncludes(expandCflags string, cfg *LLCppConfig, dir string) error {
 			}
 		}
 	}
-	return nil
 }
 
 func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
@@ -366,7 +366,7 @@ func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
 	return cfg
 }
 
-func GenCfg(name string, cpp bool, expand CfgMode) (*bytes.Buffer, error) {
+func GenCfg(name string, cpp bool, expand CfgMode, exts []string) (*bytes.Buffer, error) {
 	if len(name) == 0 {
 		return nil, NewEmptyStringError("name")
 	}
@@ -374,10 +374,10 @@ func GenCfg(name string, cpp bool, expand CfgMode) (*bytes.Buffer, error) {
 	switch expand {
 	case ExpandMode:
 		expandCFlagsAndLibs(name, cfg, "")
-		sortIncludes(cfg.CFlags, cfg, "")
+		sortIncludes(cfg.CFlags, cfg, exts)
 	case SortMode:
 		expandCflags, _ := ExpandName(name, "", "cflags")
-		sortIncludes(expandCflags, cfg, "")
+		sortIncludes(expandCflags, cfg, exts)
 	case NormalMode:
 		cfg.Include, cfg.CFlags, _ = ExpandCFlagsName(name)
 	}
