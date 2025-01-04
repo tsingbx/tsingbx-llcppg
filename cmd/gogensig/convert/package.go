@@ -48,8 +48,10 @@ type Package struct {
 }
 
 type Incomplete struct {
-	file *HeaderFile
-	decl *gogen.TypeDecl // origin name(in c) -> TypeDecl
+	file   *HeaderFile
+	decl   *gogen.TypeDecl // origin name(in c) -> TypeDecl
+	typdef *gogen.TypeDefs
+	inited bool
 }
 
 type PackageConfig struct {
@@ -339,7 +341,7 @@ func (p *Package) handleTypeDecl(pubname string, cname string, typeDecl *ast.Typ
 	if existDecl, exists := p.incomplete[cname]; exists {
 		return existDecl
 	}
-	decl := p.emptyTypeDecl(pubname, typeDecl.Doc)
+	_, decl := p.emptyTypeDecl(pubname, typeDecl.Doc)
 	inc := &Incomplete{
 		file: p.curFile,
 		decl: decl,
@@ -355,10 +357,16 @@ func (p *Package) handleCompleteType(incom *Incomplete, typ *ast.RecordType, nam
 	structType, err := p.cvt.RecordTypeToStruct(typ)
 	if err != nil {
 		// For incomplete type's conerter error, we use default struct type
-		incom.decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
+		if !incom.inited {
+			incom.inited = true
+			incom.decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
+		}
 		return err
 	}
-	incom.decl.InitType(p.p, structType)
+	if !incom.inited {
+		incom.inited = true
+		incom.decl.InitType(p.p, structType)
+	}
 	return nil
 }
 
@@ -370,19 +378,20 @@ func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
 		return decl.decl
 	}
 	pubName := p.nameMapper.GetGoName(name, p.trimPrefixes())
-	decl := p.emptyTypeDecl(pubName, nil)
+	typdef, decl := p.emptyTypeDecl(pubName, nil)
 	p.incomplete[name] = &Incomplete{
-		file: p.curFile,
-		decl: decl,
+		file:   p.curFile,
+		decl:   decl,
+		typdef: typdef,
 	}
 	p.nameMapper.SetMapping(name, pubName)
 	return decl
 }
 
-func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) *gogen.TypeDecl {
+func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) (*gogen.TypeDefs, *gogen.TypeDecl) {
 	typeBlock := p.p.NewTypeDefs()
 	typeBlock.SetComments(CommentGroup(doc).CommentGroup)
-	return typeBlock.NewType(name)
+	return typeBlock, typeBlock.NewType(name)
 }
 
 func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
@@ -402,8 +411,16 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 	}
 	p.CollectNameMapping(typedefDecl.Name.Name, name)
 
-	genDecl := p.p.NewTypeDefs()
-	typeSpecdecl := genDecl.NewType(name)
+	var typeSpecdecl *gogen.TypeDecl
+	var genDecl *gogen.TypeDefs
+	var incompleteDecl *Incomplete
+	if incompleteDecl = p.incomplete[typedefDecl.Name.Name]; incompleteDecl != nil {
+		genDecl = incompleteDecl.typdef
+		typeSpecdecl = incompleteDecl.decl
+	} else {
+		genDecl = p.p.NewTypeDefs()
+		typeSpecdecl = genDecl.NewType(name)
+	}
 
 	if changed {
 		substObj(p.p.Types, p.p.Types.Scope(), typedefDecl.Name.Name, typeSpecdecl.Type().Obj())
@@ -418,13 +435,21 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 
 	typ, err := p.ToType(typedefDecl.Type)
 	if err != nil {
+		if incompleteDecl != nil {
+			incompleteDecl.inited = true
+		}
 		typeSpecdecl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
 		return err
 	}
 
+	if incompleteDecl != nil {
+		incompleteDecl.inited = true
+	}
 	typeSpecdecl.InitType(p.p, typ)
-	if _, ok := typ.(*types.Signature); ok {
-		genDecl.SetComments(NewTypecDocComments())
+	if genDecl != nil {
+		if _, ok := typ.(*types.Signature); ok {
+			genDecl.SetComments(NewTypecDocComments())
+		}
 	}
 
 	return nil
@@ -459,9 +484,20 @@ func (p *Package) ToType(expr ast.Expr) (types.Type, error) {
 	return p.cvt.ToType(expr)
 }
 
-func (p *Package) NewTypedefs(name string, typ types.Type) *gogen.TypeDecl {
-	def := p.p.NewTypeDefs()
-	t := def.NewType(name)
+func (p *Package) NewTypedefs(name string, typ types.Type, cname string) *gogen.TypeDecl {
+	var def *gogen.TypeDefs
+	var t *gogen.TypeDecl
+	var incompleteDecl *Incomplete
+	if incompleteDecl = p.incomplete[cname]; incompleteDecl != nil {
+		def = incompleteDecl.typdef
+		t = incompleteDecl.decl
+	} else {
+		def = p.p.NewTypeDefs()
+		t = def.NewType(name)
+	}
+	if incompleteDecl != nil {
+		incompleteDecl.inited = true
+	}
 	t.InitType(def.Pkg(), typ)
 	def.Complete()
 	return t
@@ -505,7 +541,7 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, string, error
 	}
 	enumType := p.cvt.ToDefaultEnumType()
 	if name != "" {
-		t = p.NewTypedefs(name, enumType)
+		t = p.NewTypedefs(name, enumType, enumName.Name)
 		enumType = p.p.Types.Scope().Lookup(name).Type()
 	}
 	if changed {
@@ -670,7 +706,10 @@ func (p *Package) WriteToBuffer(genFName string) (*bytes.Buffer, error) {
 func (p *Package) deferTypeBuild() error {
 	for _, inc := range p.incomplete {
 		p.SetCurFile(inc.file)
-		inc.decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
+		if !inc.inited {
+			inc.inited = true
+			inc.decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
+		}
 	}
 	for decl, getTyp := range p.deferTypes {
 		typ, err := getTyp()
