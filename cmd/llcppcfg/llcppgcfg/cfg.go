@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"unicode"
@@ -271,6 +272,8 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string) *ObjFile
 	if err != nil {
 		if objFile == nil {
 			objFile = NewObjFile("", relPath)
+		} else {
+			objFile.OFile = ""
 		}
 		return objFile
 	}
@@ -295,6 +298,9 @@ func parseCFlagsEntry(l string, exts []string) (*CflagEntry, error) {
 		return nil
 	})
 	sort.Slice(cflagEntry.ObjFiles, func(i, j int) bool {
+		if cflagEntry.ObjFiles[i].OFile == "" {
+			return false
+		}
 		return len(cflagEntry.ObjFiles[i].Deps) > len(cflagEntry.ObjFiles[j].Deps)
 	})
 	return &cflagEntry, err
@@ -359,6 +365,9 @@ func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string) {
 	cfg.Include = make([]string, 0)
 	for _, cflagEntry := range cflagEntryList {
 		for _, objFile := range cflagEntry.ObjFiles {
+			if objFile.OFile == "" {
+				continue
+			}
 			if _, ok := includeMap[objFile.HFile]; !ok {
 				includeMap[objFile.HFile] = struct{}{}
 				cfg.Include = append(cfg.Include, objFile.HFile)
@@ -407,6 +416,16 @@ func GenCfg(name string, cpp bool, expand CfgMode, exts []string) (*bytes.Buffer
 	}
 
 	cfg.Name = NormalizePackageName(cfg.Name)
+
+	if runtime.GOOS == LINUX {
+		libpath, _ := SearchLib(name)
+		if len(libpath) > 0 {
+			libs, err := CmdOutString(ExecCommand("pkg-config", "--libs", name), "")
+			if err == nil {
+				cfg.Libs = fmt.Sprintf("-L%s %s", libpath, strings.TrimSpace(libs))
+			}
+		}
+	}
 
 	buf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(buf)
