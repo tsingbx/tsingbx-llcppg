@@ -97,6 +97,7 @@ const (
 	withCpp runPkgMode = 1 << iota
 	withSort
 	withExts
+	withExcludes
 	withSigfetchVerbose
 	withSymgVerbose
 )
@@ -110,7 +111,7 @@ const (
 	runDemos
 )
 
-func runPkgs(pkgs []string, runMode runPkgMode, exts string) {
+func runPkgs(pkgs []string, runMode runPkgMode, exts string, excludes string) {
 	wd, _ := os.Getwd()
 	wg := sync.WaitGroup{}
 	wg.Add(len(pkgs))
@@ -123,6 +124,9 @@ func runPkgs(pkgs []string, runMode runPkgMode, exts string) {
 	}
 	if len(exts) > 0 {
 		llcppcfgArg = append(llcppcfgArg, "-exts="+exts)
+	}
+	if len(excludes) > 0 {
+		llcppcfgArg = append(llcppcfgArg, "-excludes="+excludes)
 	}
 	llcppgArg := []string{}
 	if runMode&withSigfetchVerbose != 0 {
@@ -153,17 +157,17 @@ func randIndex(maxInt int) int {
 	return r.Intn(maxInt)
 }
 
-func runPkg(runMode runPkgMode, exts string) {
+func runPkg(runMode runPkgMode, exts string, excludes string) {
 	pkgs := getPkgs()
 	idx := randIndex(len(pkgs))
 	pkg := pkgs[idx]
 	fmt.Printf("***start test %s\n", pkg)
-	runPkgs([]string{pkg}, runMode, exts)
+	runPkgs([]string{pkg}, runMode, exts, excludes)
 }
 
 func printHelp() {
 	helpString := `llcppgtest is used to test llcppg
-usage: llcppgtest [-r|-rand|-a|-all] [-v|-vfetch|-vsym] [-cpp|-sort] [-h|-help] pkgname`
+usage: llcppgtest [-r|-rand|-a|-all] [-v|-vfetch|-vsym] [-cpp|-sort|-exts|-ignore] [-h|-help] pkgname`
 	fmt.Println(helpString)
 	flag.PrintDefaults()
 }
@@ -184,9 +188,11 @@ func main() {
 	cpp := false
 	flag.BoolVar(&cpp, "cpp", false, "if it is a cpp library")
 	sortIncludes := false
-	flag.BoolVar(&sortIncludes, "sort", false, "sort includes in llcppg.cfg")
+	flag.BoolVar(&sortIncludes, "sort", true, "sort includes in llcppg.cfg")
 	exts := ""
 	flag.StringVar(&exts, "exts", ".h", "exts to be included in llcppg.cfg")
+	excludes := ""
+	flag.StringVar(&excludes, "excludes", "", "exclude all header files in subdir of the include")
 	help := false
 	flag.BoolVar(&help, "h", false, "print help message")
 	flag.BoolVar(&help, "help", false, "print help message")
@@ -207,6 +213,9 @@ func main() {
 	}
 	if len(exts) > 0 {
 		runMode |= int(withExts)
+	}
+	if len(excludes) > 0 {
+		runMode |= int(withExcludes)
 	}
 	if vSig {
 		runMode |= int(withSigfetchVerbose)
@@ -232,17 +241,17 @@ func main() {
 	}
 	switch {
 	case appMode == runRand:
-		runPkg(runPkgMode(runMode), exts)
+		runPkg(runPkgMode(runMode), exts, excludes)
 	case appMode == runAll:
 		pkgs := getPkgs()
-		runPkgs(pkgs, runPkgMode(runMode), exts)
+		runPkgs(pkgs, runPkgMode(runMode), exts, excludes)
 	case appMode == runDemos:
 		demo.TestDemos(*demoPath)
 	default:
 		if len(flag.Args()) > 0 {
 			arg := flag.Arg(0)
 			fmt.Printf("***start test %s\n", arg)
-			runPkgs([]string{arg}, runPkgMode(runMode), exts)
+			runPkgs([]string{arg}, runPkgMode(runMode), exts, excludes)
 		} else {
 			printHelp()
 		}
