@@ -9,7 +9,6 @@ import (
 type InAddr1 struct {
 	SAddr c.Uint
 }
-
 type AresIn6Addr struct {
 	X_S6Un struct {
 		X_S6U8 [16]int8

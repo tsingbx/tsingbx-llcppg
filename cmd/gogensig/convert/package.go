@@ -341,7 +341,7 @@ func (p *Package) handleTypeDecl(pubname string, cname string, typeDecl *ast.Typ
 	if existDecl, exists := p.incomplete[cname]; exists {
 		return existDecl
 	}
-	_, decl := p.emptyTypeDecl(pubname, typeDecl.Doc)
+	_, decl := p.NewEmptyTypeDecl(pubname, typeDecl.Doc)
 	inc := &Incomplete{
 		file: p.curFile,
 		decl: decl,
@@ -378,7 +378,7 @@ func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
 		return decl.decl
 	}
 	pubName := p.nameMapper.GetGoName(name, p.trimPrefixes())
-	typdef, decl := p.emptyTypeDecl(pubName, nil)
+	typdef, decl := p.NewEmptyTypeDecl(pubName, nil)
 	p.incomplete[name] = &Incomplete{
 		file:   p.curFile,
 		decl:   decl,
@@ -388,9 +388,11 @@ func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
 	return decl
 }
 
-func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) (*gogen.TypeDefs, *gogen.TypeDecl) {
+func (p *Package) NewEmptyTypeDecl(name string, doc *ast.CommentGroup) (*gogen.TypeDefs, *gogen.TypeDecl) {
 	typeBlock := p.p.NewTypeDefs()
-	typeBlock.SetComments(CommentGroup(doc).CommentGroup)
+	if doc != nil {
+		typeBlock.SetComments(CommentGroup(doc).CommentGroup)
+	}
 	return typeBlock, typeBlock.NewType(name)
 }
 
@@ -418,8 +420,7 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 		genDecl = incompleteDecl.typdef
 		typeSpecdecl = incompleteDecl.decl
 	} else {
-		genDecl = p.p.NewTypeDefs()
-		typeSpecdecl = genDecl.NewType(name)
+		genDecl, typeSpecdecl = p.NewEmptyTypeDecl(name, nil)
 	}
 
 	if changed {
@@ -484,7 +485,7 @@ func (p *Package) ToType(expr ast.Expr) (types.Type, error) {
 	return p.cvt.ToType(expr)
 }
 
-func (p *Package) NewTypedefs(name string, typ types.Type, cname string) *gogen.TypeDecl {
+func (p *Package) NewEnumTypedefs(name string, typ types.Type, cname string) *gogen.TypeDecl {
 	var def *gogen.TypeDefs
 	var t *gogen.TypeDecl
 	var incompleteDecl *Incomplete
@@ -492,8 +493,7 @@ func (p *Package) NewTypedefs(name string, typ types.Type, cname string) *gogen.
 		def = incompleteDecl.typdef
 		t = incompleteDecl.decl
 	} else {
-		def = p.p.NewTypeDefs()
-		t = def.NewType(name)
+		def, t = p.NewEmptyTypeDecl(name, nil)
 	}
 	if incompleteDecl != nil {
 		incompleteDecl.inited = true
@@ -541,7 +541,7 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, string, error
 	}
 	enumType := p.cvt.ToDefaultEnumType()
 	if name != "" {
-		t = p.NewTypedefs(name, enumType, enumName.Name)
+		t = p.NewEnumTypedefs(name, enumType, enumName.Name)
 		enumType = p.p.Types.Scope().Lookup(name).Type()
 	}
 	if changed {

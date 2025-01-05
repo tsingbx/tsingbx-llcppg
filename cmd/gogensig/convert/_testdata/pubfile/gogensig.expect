@@ -10,12 +10,10 @@ type Point struct {
 	X c.Int
 	Y c.Int
 }
-
 type Capital struct {
 	X c.Int
 	Y c.Int
 }
-
 type CustomData struct {
 	Str [20]int8
 }

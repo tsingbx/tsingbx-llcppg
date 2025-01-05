@@ -1,4 +1,5 @@
 enum { enum1, enum2 };
+
 enum spectrum { red, orange, yello, green, blue, violet };
 
 enum kids { nippy, slats, skippy, nina, liz };

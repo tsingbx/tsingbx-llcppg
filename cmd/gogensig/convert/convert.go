@@ -131,9 +131,6 @@ func (p *AstConvert) VisitUnion(unionName *ast.Ident, fields *ast.FieldList, typ
 }
 
 func (p *AstConvert) VisitEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl) {
-	if enumTypeDecl == nil || enumTypeDecl.Name == nil || len(enumTypeDecl.Name.Name) == 0 {
-		return
-	}
 	err := p.Pkg.NewEnumTypeDecl(enumTypeDecl)
 	if err != nil {
 		if name := enumTypeDecl.Name; name != nil {

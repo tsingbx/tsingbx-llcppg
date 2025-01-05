@@ -13,7 +13,6 @@ type Struct1 struct {
 		B [60]int8
 	}
 }
-
 type Struct2 struct {
 	B    *int8
 	Size uintptr
@@ -24,7 +23,6 @@ type Struct2 struct {
 		Rec Struct1
 	}
 }
-
 type Union1 struct {
 	Init struct {
 		L   c.Long
@@ -32,7 +30,6 @@ type Union1 struct {
 		Rec Struct2
 	}
 }
-
 type Union2 struct {
 	Init struct {
 		Rec Struct2

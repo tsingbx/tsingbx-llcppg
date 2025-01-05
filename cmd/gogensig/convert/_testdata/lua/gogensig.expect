@@ -20,7 +20,6 @@ type Buffer struct {
 		B [1024]int8
 	}
 }
-
 type Reg struct {
 	Name *int8
 	Func unsafe.Pointer
@@ -207,7 +206,6 @@ type Writer func(*State, unsafe.Pointer, uintptr, unsafe.Pointer) c.Int
 type Alloc func(unsafe.Pointer, unsafe.Pointer, uintptr, uintptr) unsafe.Pointer
 // llgo:type C
 type WarnFunction func(unsafe.Pointer, *int8, c.Int)
-
 type Debug struct {
 	Event           c.Int
 	Name            *int8

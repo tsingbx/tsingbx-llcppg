@@ -9,11 +9,9 @@ import (
 type Foo struct {
 	A c.Long
 }
-
 type File struct {
 	PMethods *IoMethods
 }
-
 type IoMethods struct {
 	XUnfetch unsafe.Pointer
 }
@@ -31,16 +29,13 @@ const IDSIZE c.Int = 60
 type Bar struct {
 	A *Foo
 }
-
 type PcachePage struct {
 	PBuf   unsafe.Pointer
 	PExtra unsafe.Pointer
 }
-
 type Pcache struct {
 	Unused [8]uint8
 }
-
 type PcacheMethods2 struct {
 	IVersion   c.Int
 	PArg       unsafe.Pointer
@@ -56,11 +51,9 @@ type PcacheMethods2 struct {
 	XDestroy   unsafe.Pointer
 	XShrink    unsafe.Pointer
 }
-
 type State struct {
 	Unused [8]uint8
 }
-
 type Debug struct {
 	Event           c.Int
 	Name            *int8
@@ -85,24 +78,19 @@ func Getstack(L *State, level c.Int, ar *Debug) c.Int
 type CallInfo struct {
 	Unused [8]uint8
 }
-
 type Fts5ExtensionApi struct {
 	Unused [8]uint8
 }
-
 type Fts5Context struct {
 	Unused [8]uint8
 }
-
 type Fts5PhraseIter struct {
 	A *int8
 	B *int8
 }
-
 type Value struct {
 	Unused [8]uint8
 }
-
 type Context struct {
 	Unused [8]uint8
 }

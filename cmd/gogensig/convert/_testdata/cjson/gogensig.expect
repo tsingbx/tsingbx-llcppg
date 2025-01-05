@@ -23,7 +23,6 @@ type JSON struct {
 	Valuedouble float64
 	String      *int8
 }
-
 type Hooks struct {
 	MallocFn unsafe.Pointer
 	FreeFn   unsafe.Pointer

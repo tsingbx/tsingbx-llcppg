@@ -16,7 +16,6 @@ type Hooks struct {
 	MallocFn unsafe.Pointer
 	FreeFn   unsafe.Pointer
 }
-
 type Stream struct {
 	F  *c.FILE
 	Cb unsafe.Pointer
@@ -29,7 +28,6 @@ func ProviderInit2(__llgo_va_list ...interface{})
 type OSSLCOREHANDLE struct {
 	Unused [8]uint8
 }
-
 type OSSLDISPATCH struct {
 	Unused [8]uint8
 }
