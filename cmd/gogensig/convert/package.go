@@ -173,6 +173,12 @@ func (p *Package) bodyStart(decl *gogen.Func, ret ast.Expr) error {
 		if err != nil {
 			return err
 		}
+		typ, ok := retType.(*types.Named)
+		if ok && typ.Underlying() == nil {
+			decl.BodyStart(p.p).End()
+			log.Println("underlying type of", ret, "of func ", decl.Func.Name(), "is unknown")
+			return nil
+		}
 		decl.BodyStart(p.p).ZeroLit(retType).Return(1).End()
 	} else {
 		decl.BodyStart(p.p).End()
