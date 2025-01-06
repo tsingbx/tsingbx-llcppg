@@ -700,16 +700,15 @@ func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
 	return field
 }
 
-// For Record Type(struct,union ...) & Func 's FieldList
+// For Record Type(struct,union ...)'s FieldList
 func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 	ct.incIndent()
 	defer ct.decIndent()
-
-	params := &ast.FieldList{}
+	flds := &ast.FieldList{}
 	ct.logln("ProcessFieldList: VisitChildren")
 	clangutils.VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
 		switch subcsr.Kind {
-		case clang.CursorParmDecl, clang.CursorFieldDecl:
+		case clang.CursorFieldDecl:
 			// In C language, parameter lists do not have similar parameter grouping in Go.
 			// func foo(a, b int)
 
@@ -717,37 +716,22 @@ func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 			// struct A {
 			// 	int a, b;
 			// };
-			if subcsr.Kind == clang.CursorFieldDecl {
-				ct.logln("ProcessFieldList: CursorFieldDecl")
-			} else {
-				ct.logln("ProcessFieldList: CursorParmDecl")
-			}
-
+			ct.logln("ProcessFieldList: CursorFieldDecl")
 			field := ct.createBaseField(subcsr)
-			if subcsr.Kind == clang.CursorFieldDecl {
-				field.Access = ast.AccessSpecifier(subcsr.CXXAccessSpecifier())
-			}
-
-			params.List = append(params.List, field)
-
+			field.Access = ast.AccessSpecifier(subcsr.CXXAccessSpecifier())
+			flds.List = append(flds.List, field)
 		case clang.CursorVarDecl:
 			if subcsr.StorageClass() == clang.SCStatic {
 				// static member variable
 				field := ct.createBaseField(subcsr)
 				field.Access = ast.AccessSpecifier(subcsr.CXXAccessSpecifier())
 				field.IsStatic = true
-				params.List = append(params.List, field)
+				flds.List = append(flds.List, field)
 			}
 		}
 		return clang.ChildVisit_Continue
 	})
-
-	if (cursor.Kind == clang.CursorFunctionDecl || isMethod(cursor)) && cursor.IsVariadic() != 0 {
-		params.List = append(params.List, &ast.Field{
-			Type: &ast.Variadic{},
-		})
-	}
-	return params
+	return flds
 }
 
 // Note:Public Method is considered
