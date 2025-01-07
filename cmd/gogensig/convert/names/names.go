@@ -73,9 +73,18 @@ func removePrefixedName(name string, trimPrefixes []string) string {
 	return name
 }
 
-func PubName(name string) string {
-	if len(name) == 0 {
-		return name
+func PubName(cname string) string {
+	if len(cname) == 0 {
+		return cname
+	}
+	hasPrefix := strings.HasPrefix(cname, "_")
+	hasSuffix := strings.HasSuffix(cname, "_")
+	name := cname
+	if hasPrefix {
+		name = "x" + name
+	}
+	if hasSuffix {
+		name += "x"
 	}
 	toCamelCase := func(s string) string {
 		parts := strings.Split(s, "_")
@@ -86,15 +95,8 @@ func PubName(name string) string {
 		}
 		return strings.Join(parts, "")
 	}
-	if name[0] == '_' {
-		i := 0
-		for i < len(name) && name[i] == '_' {
-			i++
-		}
-		prefix := name[:i]
-		return "X" + prefix + toCamelCase(name[i:])
-	}
-	return toCamelCase(name)
+	name = toCamelCase(name)
+	return name
 }
 
 // /path/to/foo.h -> foo.go
