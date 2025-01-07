@@ -3,6 +3,7 @@ package convert
 import (
 	"errors"
 	"log"
+	"strings"
 
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
@@ -99,6 +100,12 @@ func (p *AstConvert) VisitMethod(className *ast.Ident, method *ast.FuncDecl, typ
 }*/
 
 func (p *AstConvert) VisitStruct(structName *ast.Ident, fields *ast.FieldList, typeDecl *ast.TypeDecl) {
+	if strings.ContainsAny(structName.Name, ":\\/") {
+		if dbg.GetDebugLog() {
+			log.Println("structName", structName.Name, "ignored to convert")
+		}
+		return
+	}
 	err := p.Pkg.NewTypeDecl(typeDecl)
 	if typeDecl.Name == nil {
 		log.Printf("NewTypeDecl anonymous struct skipped")
