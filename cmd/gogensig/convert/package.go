@@ -15,6 +15,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
+	ctoken "github.com/goplus/llcppg/token"
 	"github.com/goplus/mod/gopmod"
 )
 
@@ -537,6 +538,38 @@ func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type, en
 			if obj := p.p.Types.Scope().Lookup(name); obj != nil {
 				substObj(p.p.Types, p.p.Types.Scope(), item.Name.Name, obj)
 			}
+		}
+	}
+	return nil
+}
+
+func (p *Package) NewMacro(macro *ast.Macro) error {
+	if p.curFile.IsSys {
+		return nil
+	}
+	// simple const macro define (#define NAME value)
+	if len(macro.Tokens) == 2 && macro.Tokens[1].Token == ctoken.LITERAL {
+		value := macro.Tokens[1].Lit
+		constDefs := p.p.NewConstDefs(p.p.Types.Scope())
+		name, _, err := p.DeclName(macro.Name)
+		if err != nil {
+			return err
+		}
+		if str, err := litToString(value); err == nil {
+			constDefs.New(func(cb *gogen.CodeBuilder) int {
+				cb.Val(str)
+				return 1
+			}, 0, token.NoPos, types.Typ[types.String], name)
+		} else if val, err := litToInt(value); err == nil {
+			constDefs.New(func(cb *gogen.CodeBuilder) int {
+				cb.Val(int(val))
+				return 1
+			}, 0, token.NoPos, types.Typ[types.Int64], name)
+		} else if fval, err := litToFloat(value, 64); err == nil {
+			constDefs.New(func(cb *gogen.CodeBuilder) int {
+				cb.Val(fval)
+				return 1
+			}, 0, token.NoPos, types.Typ[types.Float64], name)
 		}
 	}
 	return nil

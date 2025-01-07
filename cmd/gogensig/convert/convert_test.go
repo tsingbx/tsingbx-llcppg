@@ -16,6 +16,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert/basic"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
+	ctoken "github.com/goplus/llcppg/token"
 	cppgtypes "github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/xtool/env"
 )
@@ -373,6 +374,14 @@ func TestVisitFail(t *testing.T) {
 					{Type: &ast.BuiltinType{Kind: ast.Int, Flags: ast.Double}},
 				},
 			},
+		},
+	})
+
+	converter.VisitMacro(&ast.Macro{
+		Name: "Foo",
+		Tokens: []*ast.Token{
+			{Token: ctoken.IDENT, Lit: "Foo"},
+			{Token: ctoken.LITERAL, Lit: "1"},
 		},
 	})
 	// not appear in output

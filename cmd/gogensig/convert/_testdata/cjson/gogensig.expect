@@ -6,6 +6,13 @@ import (
 	"unsafe"
 )
 
+const VERSIONMAJOR int64 = 1
+const VERSIONMINOR int64 = 7
+const VERSIONPATCH int64 = 18
+const IsReference int64 = 256
+const StringIsConst int64 = 512
+const NESTINGLIMIT int64 = 1000
+
 type JSON struct {
 	Next        *JSON
 	Prev        *JSON

@@ -26,6 +26,8 @@ import (
 	"unsafe"
 )
 
+const IDSIZE int64 = 60
+
 type Bar struct {
 	A *Foo
 }

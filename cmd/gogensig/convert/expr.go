@@ -19,7 +19,11 @@ func Expr(e ast.Expr) *ExprWrap {
 func (p *ExprWrap) ToInt() (int, error) {
 	v, ok := p.e.(*ast.BasicLit)
 	if ok && v.Kind == ast.IntLit {
-		return strconv.Atoi(v.Value)
+		v, err := litToInt(v.Value)
+		if err != nil {
+			return 0, err
+		}
+		return int(v), nil
 	}
 	return 0, errs.NewCantConvertError(p.e, "int")
 }
@@ -27,7 +31,7 @@ func (p *ExprWrap) ToInt() (int, error) {
 func (p *ExprWrap) ToFloat(bitSize int) (float64, error) {
 	v, ok := p.e.(*ast.BasicLit)
 	if ok && v.Kind == ast.FloatLit {
-		return strconv.ParseFloat(v.Value, bitSize)
+		return litToFloat(v.Value, bitSize)
 	}
 	return 0, errs.NewCantConvertError(v, "float")
 }
@@ -35,7 +39,7 @@ func (p *ExprWrap) ToFloat(bitSize int) (float64, error) {
 func (p *ExprWrap) ToString() (string, error) {
 	v, ok := p.e.(*ast.BasicLit)
 	if ok && v.Kind == ast.StringLit {
-		return v.Value, nil
+		return litToString(v.Value)
 	}
 	return "", errs.NewCantConvertError(v, "string")
 }
@@ -58,4 +62,16 @@ func (p *ExprWrap) IsVoid() bool {
 		return true
 	}
 	return false
+}
+
+func litToInt(lit string) (int64, error) {
+	return strconv.ParseInt(lit, 0, 64)
+}
+
+func litToFloat(lit string, bitSize int) (float64, error) {
+	return strconv.ParseFloat(lit, bitSize)
+}
+
+func litToString(lit string) (string, error) {
+	return strconv.Unquote(lit)
 }

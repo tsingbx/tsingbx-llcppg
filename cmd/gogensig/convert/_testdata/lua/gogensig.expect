@@ -6,6 +6,11 @@ import (
 	"unsafe"
 )
 
+const GNAME string = "_G"
+const LOADEDTABLE string = "_LOADED"
+const PRELOADTABLE string = "_PRELOAD"
+const FILEHANDLE string = "FILE*"
+
 type Buffer struct {
 	B    *int8
 	Size uintptr
@@ -123,6 +128,65 @@ import (
 	"github.com/goplus/llgo/c"
 	"unsafe"
 )
+
+const VERSIONMAJOR string = "5"
+const VERSIONMINOR string = "4"
+const VERSIONRELEASE string = "7"
+const VERSIONNUM int64 = 504
+const AUTHORS string = "R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
+const SIGNATURE string = "\x1bLua"
+const OK int64 = 0
+const YIELD int64 = 1
+const ERRRUN int64 = 2
+const ERRSYNTAX int64 = 3
+const ERRMEM int64 = 4
+const ERRERR int64 = 5
+const TNIL int64 = 0
+const TBOOLEAN int64 = 1
+const TLIGHTUSERDATA int64 = 2
+const TNUMBER int64 = 3
+const TSTRING int64 = 4
+const TTABLE int64 = 5
+const TFUNCTION int64 = 6
+const TUSERDATA int64 = 7
+const TTHREAD int64 = 8
+const NUMTYPES int64 = 9
+const MINSTACK int64 = 20
+const RIDXMAINTHREAD int64 = 1
+const RIDXGLOBALS int64 = 2
+const OPADD int64 = 0
+const OPSUB int64 = 1
+const OPMUL int64 = 2
+const OPMOD int64 = 3
+const OPPOW int64 = 4
+const OPDIV int64 = 5
+const OPIDIV int64 = 6
+const OPBAND int64 = 7
+const OPBOR int64 = 8
+const OPBXOR int64 = 9
+const OPSHL int64 = 10
+const OPSHR int64 = 11
+const OPUNM int64 = 12
+const OPBNOT int64 = 13
+const OPEQ int64 = 0
+const OPLT int64 = 1
+const OPLE int64 = 2
+const GCSTOP int64 = 0
+const GCRESTART int64 = 1
+const GCCOLLECT int64 = 2
+const GCCOUNT int64 = 3
+const GCCOUNTB int64 = 4
+const GCSTEP int64 = 5
+const GCSETPAUSE int64 = 6
+const GCSETSTEPMUL int64 = 7
+const GCISRUNNING int64 = 9
+const GCGEN int64 = 10
+const GCINC int64 = 11
+const HOOKCALL int64 = 0
+const HOOKRET int64 = 1
+const HOOKLINE int64 = 2
+const HOOKCOUNT int64 = 3
+const HOOKTAILCALL int64 = 4
 
 type State struct {
 	Unused [8]uint8
@@ -374,6 +438,26 @@ package lua
 
 import _ "unsafe"
 
+const INTINT int64 = 1
+const INTLONG int64 = 2
+const INTLONGLONG int64 = 3
+const FLOATFLOAT int64 = 1
+const FLOATDOUBLE int64 = 2
+const FLOATLONGDOUBLE int64 = 3
+const 32BITS int64 = 0
+const C89NUMBERS int64 = 0
+const PATHSEP string = ";"
+const PATHMARK string = "?"
+const EXECDIR string = "!"
+const ROOT string = "/opt/homebrew/"
+const DIRSEP string = "/"
+const IGMARK string = "-"
+const NUMBERFRMLEN string = ""
+const NUMBERFMT string = "%.14g"
+const INTEGERFRMLEN string = "ll"
+const LUAIMAXSTACK int64 = 1000000
+const IDSIZE int64 = 60
+
 ===== lualib.go =====
 package lua
 
@@ -381,6 +465,16 @@ import (
 	"github.com/goplus/llgo/c"
 	_ "unsafe"
 )
+
+const COLIBNAME string = "coroutine"
+const TABLIBNAME string = "table"
+const IOLIBNAME string = "io"
+const OSLIBNAME string = "os"
+const STRLIBNAME string = "string"
+const UTF8LIBNAME string = "utf8"
+const MATHLIBNAME string = "math"
+const DBLIBNAME string = "debug"
+const LOADLIBNAME string = "package"
 //go:linkname Base C.luaopen_base
 func Base(L *State) c.Int
 //go:linkname Coroutine C.luaopen_coroutine

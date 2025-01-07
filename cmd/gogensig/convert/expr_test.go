@@ -19,6 +19,11 @@ func TestBasicLitFail(t *testing.T) {
 	testCases := CaseTypeSlice[any]{
 		{
 			name: "ToInt",
+			expr: &ast.BasicLit{Kind: ast.IntLit, Value: "ABC"},
+			want: 123,
+		},
+		{
+			name: "ToInt",
 			expr: &ast.TagExpr{Tag: ast.Class, Name: &ast.Ident{Name: "Foo"}},
 			want: 123,
 		},
@@ -79,7 +84,7 @@ func TestBasicLitOK(t *testing.T) {
 		},
 		{
 			name: "ToString",
-			expr: &ast.BasicLit{Kind: ast.StringLit, Value: "abcd"},
+			expr: &ast.BasicLit{Kind: ast.StringLit, Value: "\"abcd\""},
 			want: "abcd",
 		},
 		{

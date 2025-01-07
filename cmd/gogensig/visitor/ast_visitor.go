@@ -17,6 +17,7 @@ type DocVisitor interface {
 	VisitUnion(unionName *ast.Ident, fields *ast.FieldList, typeDecl *ast.TypeDecl)
 	VisitEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl)
 	VisitTypedefDecl(typedefDecl *ast.TypedefDecl)
+	VisitMacro(macro *ast.Macro)
 }
 
 type BaseDocVisitor struct {
@@ -45,6 +46,9 @@ func (p *BaseDocVisitor) visitNode(decl ast.Node) {
 func (p *BaseDocVisitor) Visit(node ast.Node) {
 	switch v := node.(type) {
 	case *ast.File:
+		for _, e := range v.Macros {
+			p.visitMacro(e)
+		}
 		for _, decl := range v.Decls {
 			p.visitNode(decl)
 		}
@@ -104,4 +108,8 @@ func (p *BaseDocVisitor) visitTypedefDecl(typedefDecl *ast.TypedefDecl) {
 		return
 	}
 	p.VisitTypedefDecl(typedefDecl)
+}
+
+func (p *BaseDocVisitor) visitMacro(macro *ast.Macro) {
+	p.VisitMacro(macro)
 }
