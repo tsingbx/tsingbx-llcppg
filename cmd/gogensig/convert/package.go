@@ -564,12 +564,12 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 			constDefs.New(func(cb *gogen.CodeBuilder) int {
 				cb.Val(int(val))
 				return 1
-			}, 0, token.NoPos, types.Typ[types.Int64], name)
+			}, 0, token.NoPos, p.cvt.ToDefaultEnumType(), name)
 		} else if fval, err := litToFloat(value, 64); err == nil {
 			constDefs.New(func(cb *gogen.CodeBuilder) int {
 				cb.Val(fval)
 				return 1
-			}, 0, token.NoPos, types.Typ[types.Float64], name)
+			}, 0, token.NoPos, p.cvt.typeMap.CType("Float"), name)
 		}
 	}
 	return nil

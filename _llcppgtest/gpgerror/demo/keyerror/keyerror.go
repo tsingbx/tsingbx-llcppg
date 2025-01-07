@@ -8,14 +8,13 @@ import (
 
 var SOURCEMASK = gpgerror.SourceTSOURCEDIM - 1
 var CODEMASK = gpgerror.CodeTCODEDIM - 1
-var SOURCESHIFT = 24
 
 func ErrMake(source gpgerror.SourceT, code gpgerror.CodeT) gpgerror.ErrorT {
 	if code == gpgerror.CodeTNOERROR {
 		return gpgerror.ErrorT(gpgerror.CodeTNOERROR)
 	}
 
-	return gpgerror.ErrorT(((c.Int(source) & c.Int(SOURCEMASK)) << c.Int(SOURCESHIFT)) | (c.Int(code) & c.Int(CODEMASK)))
+	return gpgerror.ErrorT(((c.Int(source) & c.Int(SOURCEMASK)) << gpgerror.SOURCESHIFT) | (c.Int(code) & c.Int(CODEMASK)))
 }
 
 func main() {

@@ -1,12 +1,15 @@
 ===== macro.go =====
 package macro
 
-import _ "unsafe"
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
 
-const VALUE int64 = 123
+const VALUE c.Int = 123
 const STRING string = "hello"
-const FLOAT float64 = 1.23
-const X32BITS int64 = 0
+const FLOAT float32 = 1.23
+const X32BITS c.Int = 0
 
 ===== macro_autogen_link.go =====
 package macro
