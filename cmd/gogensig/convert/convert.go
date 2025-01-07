@@ -100,6 +100,8 @@ func (p *AstConvert) VisitMethod(className *ast.Ident, method *ast.FuncDecl, typ
 }*/
 
 func (p *AstConvert) VisitStruct(structName *ast.Ident, fields *ast.FieldList, typeDecl *ast.TypeDecl) {
+	// https://github.com/goplus/llcppg/issues/66 ignore unexpected struct name
+	// Union (unnamed at /usr/local/Cellar/msgpack/6.0.2/include/msgpack/object.h:75:9)
 	if strings.ContainsAny(structName.Name, ":\\/") {
 		if dbg.GetDebugLog() {
 			log.Println("structName", structName.Name, "ignored to convert")

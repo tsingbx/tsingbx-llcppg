@@ -345,6 +345,11 @@ func TestVisitFail(t *testing.T) {
 		Type: errRecordType,
 	})
 
+	converter.VisitStruct(&ast.Ident{Name: "Union (unnamed at /usr/local/Cellar/msgpack/6.0.2/include/msgpack/object.h:75:9)"}, nil, &ast.TypeDecl{
+		Name: &ast.Ident{Name: "Union (unnamed at /usr/local/Cellar/msgpack/6.0.2/include/msgpack/object.h:75:9)"},
+		Type: errRecordType,
+	})
+
 	converter.VisitEnumTypeDecl(&ast.EnumTypeDecl{
 		Name: &ast.Ident{Name: "NormalType"},
 		Type: &ast.EnumType{},
