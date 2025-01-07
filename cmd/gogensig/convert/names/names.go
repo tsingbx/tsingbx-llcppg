@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"unicode"
 )
 
 // NameMapper handles name mapping and uniqueness for Go symbols
@@ -93,6 +94,8 @@ func PubName(name string) string {
 		}
 		prefix := name[:i]
 		return "X" + prefix + toCamelCase(name[i:])
+	} else if unicode.IsDigit(rune(name[0])) {
+		return "X" + toCamelCase(name)
 	}
 	return toCamelCase(name)
 }
