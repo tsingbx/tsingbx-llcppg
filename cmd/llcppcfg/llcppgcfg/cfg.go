@@ -39,7 +39,7 @@ func NewObjFile(oFile, hFile string) *ObjFile {
 	}
 }
 
-func NewObjFileString(str string) *ObjFile {
+func NewObjFileString(str string, relPath string) *ObjFile {
 	fields := strings.Split(str, ":")
 	if len(fields) != 2 {
 		return nil
@@ -278,7 +278,7 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string, excludeS
 	outString = strings.ReplaceAll(outString, "\\\n", "\n")
 	fields := strings.Fields(outString)
 	lines, objFileStr := findDepSlice(fields)
-	objFile := NewObjFileString(objFileStr)
+	objFile := NewObjFileString(objFileStr, relPath)
 	objFile.Deps = append(objFile.Deps, lines...)
 	return objFile
 }
@@ -308,49 +308,6 @@ func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) (*CflagE
 	return &cflagEntry, err
 }
 
-type DepCtx struct {
-	include string
-	objMap  map[string]*ObjFile
-}
-
-func NewDepCtx(cflagEntry *CflagEntry) *DepCtx {
-	m := make(map[string]*ObjFile)
-	for _, objFile := range cflagEntry.ObjFiles {
-		m[objFile.HFile] = objFile
-	}
-	return &DepCtx{include: cflagEntry.Include, objMap: m}
-}
-
-/*
-func expandDeps(objFile *ObjFile, depCtx *DepCtx) []string {
-	deps := make([]string, 0)
-	for _, dep := range objFile.Deps {
-		deps = append(deps, dep)
-		dep2, _ := filepath.Rel(depCtx.include, dep)
-		if obj, ok := depCtx.objMap[dep2]; ok {
-			expandDeps(&obj, depCtx)
-			deps = append(deps, obj.Deps...)
-		}
-	}
-	fnRemoveDup := func(s []string) []string {
-		if len(s) < 1 {
-			return s
-		}
-		sort.Strings(s)
-		prev := 1
-		for curr := 1; curr < len(s); curr++ {
-			if s[curr-1] != s[curr] {
-				s[prev] = s[curr]
-				prev++
-			}
-		}
-		return s[:prev]
-	}
-	objFile.Deps = fnRemoveDup(deps)
-	return objFile.Deps
-}
-*/
-
 func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeSubdirs []string) {
 	list := strings.Fields(expandCflags)
 	cflagEntryList := make([]*CflagEntry, 0)
@@ -363,16 +320,22 @@ func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeS
 			cflagEntryList = append(cflagEntryList, pCflagEntry)
 		}
 	}
-	includeMap := make(map[string]struct{})
 	cfg.Include = make([]string, 0)
 	for _, cflagEntry := range cflagEntryList {
+		depCtx := NewDepCtx(cflagEntry)
 		for _, objFile := range cflagEntry.ObjFiles {
-			if _, ok := includeMap[objFile.HFile]; !ok {
-				includeMap[objFile.HFile] = struct{}{}
-				cfg.Include = append(cfg.Include, objFile.HFile)
+			depCtx.ExpandDeps(objFile)
+		}
+		for _, objFile := range cflagEntry.ObjFiles {
+			cfg.Include = append(cfg.Include, objFile.HFile)
+			expandDepIds := depCtx.depsMap[objFile]
+			for _, depId := range expandDepIds {
+				depObj := depCtx.GetObjFileById(depId)
+				cfg.Include = append(cfg.Include, depObj.HFile)
 			}
 		}
 	}
+	cfg.Include = removeDupFilePath(cfg.Include)
 }
 
 func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
