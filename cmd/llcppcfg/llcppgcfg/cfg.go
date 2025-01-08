@@ -284,7 +284,10 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string, excludeS
 	return objFile
 }
 
-func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) (*CflagEntry, error) {
+func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) *CflagEntry {
+	if !strings.HasPrefix(l, "-I") {
+		return nil
+	}
 	trimStr := strings.TrimPrefix(l, "-I")
 	trimStr += string(filepath.Separator)
 	var cflagEntry CflagEntry
@@ -292,7 +295,7 @@ func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) (*CflagE
 	cflagEntry.ObjFiles = make([]*ObjFile, 0)
 	err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return err
+			return nil
 		}
 		pObjFile := parseFileEntry(trimStr, path, d, exts, excludeSubdirs)
 		if pObjFile != nil {
@@ -303,17 +306,17 @@ func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) (*CflagE
 	sort.Slice(cflagEntry.ObjFiles, func(i, j int) bool {
 		return len(cflagEntry.ObjFiles[i].Deps) > len(cflagEntry.ObjFiles[j].Deps)
 	})
-	return &cflagEntry, err
+	if err != nil {
+		log.Println(err)
+	}
+	return &cflagEntry
 }
 
 func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeSubdirs []string) {
 	list := strings.Fields(expandCflags)
 	cflagEntryList := make([]*CflagEntry, 0)
 	for _, l := range list {
-		pCflagEntry, err := parseCFlagsEntry(l, exts, excludeSubdirs)
-		if err != nil {
-			log.Panic(err)
-		}
+		pCflagEntry := parseCFlagsEntry(l, exts, excludeSubdirs)
 		if pCflagEntry != nil {
 			cflagEntryList = append(cflagEntryList, pCflagEntry)
 		}
