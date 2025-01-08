@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/goplus/llcppg/types"
 )
@@ -162,7 +163,7 @@ func expandCFlagsAndLibs(name string, cfg *LLCppConfig) {
 
 func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
 	cfg := &LLCppConfig{
-		Name: name,
+		Name: NormalizePackageName(name),
 	}
 	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
@@ -170,6 +171,18 @@ func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
 	cfg.Cplusplus = isCpp
 	cfg.Include, _ = ExpandCFlagsName(name)
 	return cfg
+}
+
+func NormalizePackageName(name string) string {
+	fields := strings.FieldsFunc(name, func(r rune) bool {
+		return !unicode.IsLetter(r) && r != '_' && !unicode.IsDigit(r)
+	})
+	if len(fields) > 0 {
+		if len(fields[0]) > 0 && unicode.IsDigit(rune(fields[0][0])) {
+			fields[0] = "_" + fields[0]
+		}
+	}
+	return strings.Join(fields, "_")
 }
 
 func GenCfg(name string, cpp bool, expand CfgExpandMode) (*bytes.Buffer, error) {
