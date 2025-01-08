@@ -221,11 +221,7 @@ func findDepSlice(lines []string) ([]string, string) {
 	complete := false
 	for i := 0; i < numLines && !complete; i++ {
 		line := lines[i]
-		iFind := strings.Index(line, ":")
-		if iFind < 0 {
-			break
-		}
-		if iFind+1 < len(line) {
+		if strings.ContainsRune(line, rune(':')) && !strings.HasSuffix(line, ":") {
 			objFileString = line
 			iStart = i + 1
 			break
@@ -234,6 +230,7 @@ func findDepSlice(lines []string) ([]string, string) {
 		for j := i + 1; j < numLines; j++ {
 			line2 := lines[j]
 			if len(line2) > 0 {
+				iStart = j + 1
 				objFileString = line + line2
 				break
 			}
@@ -245,7 +242,7 @@ func findDepSlice(lines []string) ([]string, string) {
 	return []string{}, objFileString
 }
 
-func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string) *ObjFile {
+func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string, excludeSubdirs []string) *ObjFile {
 	if d.IsDir() || strings.HasPrefix(d.Name(), ".") {
 		return nil
 	}
@@ -263,25 +260,30 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string) *ObjFile
 	if err != nil {
 		return nil
 	}
+	index := strings.IndexRune(relPath, filepath.Separator)
+	if index >= 0 {
+		dir := relPath[:index]
+		for _, subdir := range excludeSubdirs {
+			if subdir == dir {
+				return nil
+			}
+		}
+	}
 	clangCmd := ExecCommand("clang", "-I"+trimStr, "-MM", relPath)
 	outString, err := CmdOutString(clangCmd, trimStr)
+	if err != nil || outString == "" {
+		objFile := NewObjFile(relPath, relPath)
+		return objFile
+	}
 	outString = strings.ReplaceAll(outString, "\\\n", "\n")
 	fields := strings.Fields(outString)
 	lines, objFileStr := findDepSlice(fields)
 	objFile := NewObjFileString(objFileStr)
-	if err != nil {
-		if objFile == nil {
-			objFile = NewObjFile("", relPath)
-		} else {
-			objFile.OFile = ""
-		}
-		return objFile
-	}
 	objFile.Deps = append(objFile.Deps, lines...)
 	return objFile
 }
 
-func parseCFlagsEntry(l string, exts []string) (*CflagEntry, error) {
+func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) (*CflagEntry, error) {
 	trimStr := strings.TrimPrefix(l, "-I")
 	trimStr += "/"
 	var cflagEntry CflagEntry
@@ -291,7 +293,7 @@ func parseCFlagsEntry(l string, exts []string) (*CflagEntry, error) {
 		if err != nil {
 			return err
 		}
-		pObjFile := parseFileEntry(trimStr, path, d, exts)
+		pObjFile := parseFileEntry(trimStr, path, d, exts, excludeSubdirs)
 		if pObjFile != nil {
 			cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, pObjFile)
 		}
@@ -349,11 +351,11 @@ func expandDeps(objFile *ObjFile, depCtx *DepCtx) []string {
 }
 */
 
-func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string) {
+func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeSubdirs []string) {
 	list := strings.Fields(expandCflags)
 	cflagEntryList := make([]*CflagEntry, 0)
 	for _, l := range list {
-		pCflagEntry, err := parseCFlagsEntry(l, exts)
+		pCflagEntry, err := parseCFlagsEntry(l, exts, excludeSubdirs)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -365,9 +367,6 @@ func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string) {
 	cfg.Include = make([]string, 0)
 	for _, cflagEntry := range cflagEntryList {
 		for _, objFile := range cflagEntry.ObjFiles {
-			if objFile.OFile == "" {
-				continue
-			}
 			if _, ok := includeMap[objFile.HFile]; !ok {
 				includeMap[objFile.HFile] = struct{}{}
 				cfg.Include = append(cfg.Include, objFile.HFile)
@@ -399,7 +398,7 @@ func NormalizePackageName(name string) string {
 	return strings.Join(fields, "_")
 }
 
-func GenCfg(name string, cpp bool, expand CfgMode, exts []string) (*bytes.Buffer, error) {
+func GenCfg(name string, cpp bool, expand CfgMode, exts []string, excludeSubdirs []string) (*bytes.Buffer, error) {
 	if len(name) == 0 {
 		return nil, NewEmptyStringError("name")
 	}
@@ -407,10 +406,10 @@ func GenCfg(name string, cpp bool, expand CfgMode, exts []string) (*bytes.Buffer
 	switch expand {
 	case ExpandMode:
 		expandCFlagsAndLibs(name, cfg, "")
-		sortIncludes(cfg.CFlags, cfg, exts)
+		sortIncludes(cfg.CFlags, cfg, exts, excludeSubdirs)
 	case SortMode:
 		expandCflags, _ := ExpandName(name, "", "cflags")
-		sortIncludes(expandCflags, cfg, exts)
+		sortIncludes(expandCflags, cfg, exts, excludeSubdirs)
 	case NormalMode:
 		cfg.Include, cfg.CFlags, _ = ExpandCFlagsName(name)
 	}
