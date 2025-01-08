@@ -67,7 +67,7 @@ func gogensig(in io.Reader, cfg string) error {
 func main() {
 	ags, _ := args.ParseArgs(os.Args[1:], args.LLCPPG_CFG, nil)
 	if ags.Help {
-		fmt.Fprintln(os.Stderr, "Usage: llcppg [config-file] [-v]")
+		fmt.Fprintln(os.Stderr, "Usage: llcppg [config-file] [-v] [-symbgen] [-codegen]")
 		return
 	}
 	verbose = ags.Verbose
@@ -84,14 +84,18 @@ func main() {
 	b, err := json.MarshalIndent(&conf, "", "  ")
 	check(err)
 
-	err = llcppsymg(b)
-	check(err)
+	if !ags.CodeGen {
+		err = llcppsymg(b)
+		check(err)
+	}
 
-	r, w := io.Pipe()
-	go llcppsigfetch(b, w)
+	if !ags.SymbGen {
+		r, w := io.Pipe()
+		go llcppsigfetch(b, w)
 
-	err = gogensig(r, ags.CfgFile)
-	check(err)
+		err = gogensig(r, ags.CfgFile)
+		check(err)
+	}
 }
 
 func check(err error) {
