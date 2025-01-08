@@ -24,7 +24,7 @@ func main() {
 	extsString := ""
 	flag.StringVar(&extsString, "exts", ".h", "extra include file extensions for example -exts=\".h .hpp .hh\"")
 	excludes := ""
-	flag.StringVar(&excludes, "excludes", "internal", "exclude all header files in subdir of include expamle -excludes=\"internal impl\"")
+	flag.StringVar(&excludes, "excludes", "", "exclude all header files in subdir of include expamle -excludes=\"internal impl\"")
 	flag.Usage = printHelp
 	flag.Parse()
 	if help || len(os.Args) <= 1 {
@@ -36,17 +36,25 @@ func main() {
 		name = flag.Arg(0)
 	}
 
-	fnToCfgExpandMode := func() llcppgcfg.CfgMode {
+	fnToCfgExpandMode := func() llcppgcfg.RunMode {
 		if expand {
 			return llcppgcfg.ExpandMode
-		} else if sortByDep {
-			return llcppgcfg.SortMode
 		}
 		return llcppgcfg.NormalMode
 	}
 	exts := strings.Fields(extsString)
-	excludeSubdirs := strings.Fields(excludes)
-	buf, err := llcppgcfg.GenCfg(name, cpp, fnToCfgExpandMode(), exts, excludeSubdirs)
+	excludeSubdirs := []string{}
+	if len(excludes) > 0 {
+		excludeSubdirs = strings.Fields(excludes)
+	}
+	var flag llcppgcfg.FlagMode
+	if cpp {
+		flag |= llcppgcfg.WithCpp
+	}
+	if sortByDep {
+		flag |= llcppgcfg.WithSort
+	}
+	buf, err := llcppgcfg.GenCfg(name, flag, fnToCfgExpandMode(), exts, excludeSubdirs)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -6,6 +6,8 @@ import (
 	"log"
 	"runtime"
 	"strings"
+
+	"github.com/goplus/llcppg/cmdout"
 )
 
 const LINUX = "linux"
@@ -14,8 +16,8 @@ func IsLibInDir(dir string, lib string) bool {
 	if runtime.GOOS != LINUX {
 		return false
 	}
-	cmd := ExecCommand("find", dir, "-name", lib+".so*")
-	out, err := CmdOutString(cmd, "")
+	cmd := cmdout.NewExecCommand("find", dir, "-name", lib+".so*")
+	out, err := cmdout.GetOut(cmd, "")
 	if err != nil {
 		return false
 	}
@@ -29,12 +31,12 @@ func SearchLib(lib string) (string, error) {
 	if runtime.GOOS != LINUX {
 		return "", fmt.Errorf("only support linux")
 	}
-	ldCmd := ExecCommand("ld", "--verbose")
-	ldRes, err := CmdOutString(ldCmd, "")
+	ldCmd := cmdout.NewExecCommand("ld", "--verbose")
+	ldRes, err := cmdout.GetOut(ldCmd, "")
 	if err != nil {
 		log.Fatal(err)
 	}
-	cmd := ExecCommand("grep", "SEARCH_DIR")
+	cmd := cmdout.NewExecCommand("grep", "SEARCH_DIR")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		log.Fatal(err)

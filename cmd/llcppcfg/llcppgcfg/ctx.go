@@ -1,9 +1,51 @@
 package llcppgcfg
 
 import (
+	"fmt"
 	"path/filepath"
-	"sort"
+	"strings"
 )
+
+type ObjFile struct {
+	parent *ObjFile
+	OFile  string
+	HFile  string
+	Deps   []string
+}
+
+func NewObjFile(oFile, hFile string) *ObjFile {
+	return &ObjFile{
+		OFile: oFile,
+		HFile: hFile,
+		Deps:  make([]string, 0),
+	}
+}
+
+func NewObjFileString(str string, relPath string) *ObjFile {
+	fields := strings.Split(str, ":")
+	if len(fields) != 2 {
+		return nil
+	}
+	objFile := &ObjFile{
+		OFile: fields[0],
+		HFile: fields[1],
+		Deps:  make([]string, 0),
+	}
+	return objFile
+}
+
+func (o *ObjFile) String() string {
+	return fmt.Sprintf("{OFile:%s, HFile:%s, Deps:%v}", o.OFile, o.HFile, o.Deps)
+}
+
+type CflagEntry struct {
+	Include  string
+	ObjFiles []*ObjFile
+}
+
+func (c *CflagEntry) String() string {
+	return fmt.Sprintf("{Include:%s, ObjFiles:%v}", c.Include, c.ObjFiles)
+}
 
 type DepCtx struct {
 	cflagEntry *CflagEntry
@@ -80,27 +122,11 @@ func (p *DepCtx) ExpandDeps(objFile *ObjFile) {
 			p.depsMap[objFile] = append(p.depsMap[objFile], p.depsMap[depObjFile]...)
 		}
 	}
-	p.depsMap[objFile] = removeDupObjID(p.depsMap[objFile])
 }
 
-func removeDupObjID(s []int) []int {
-	if len(s) < 1 {
-		return s
-	}
-	sort.Ints(s)
-	prev := 1
-	for curr := 1; curr < len(s); curr++ {
-		if s[curr-1] != s[curr] {
-			s[prev] = s[curr]
-			prev++
-		}
-	}
-	return s[:prev]
-}
-
-func removeDupFilePath(s []string) []string {
-	m := make(map[string]struct{})
-	r := make([]string, 0)
+func removeDups[T comparable](s []T) []T {
+	m := make(map[T]struct{})
+	r := make([]T, 0)
 	for _, ss := range s {
 		_, ok := m[ss]
 		if !ok {
