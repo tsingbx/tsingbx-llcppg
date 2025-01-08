@@ -21,21 +21,34 @@ func NewObjFile(oFile, hFile string) *ObjFile {
 	}
 }
 
-func NewObjFileString(str string, relPath string) *ObjFile {
+func NewObjFileString(str string) *ObjFile {
 	fields := strings.Split(str, ":")
 	if len(fields) != 2 {
 		return nil
 	}
-	objFile := &ObjFile{
-		OFile: fields[0],
-		HFile: fields[1],
-		Deps:  make([]string, 0),
-	}
-	return objFile
+	return NewObjFile(fields[0], fields[1])
 }
 
-func (o *ObjFile) String() string {
-	return fmt.Sprintf("{OFile:%s, HFile:%s, Deps:%v}", o.OFile, o.HFile, o.Deps)
+func (p *ObjFile) IsEqual(o *ObjFile) bool {
+	if p.HFile != o.HFile {
+		return false
+	}
+	if p.OFile != o.OFile {
+		return false
+	}
+	if len(p.Deps) != len(o.Deps) {
+		return false
+	}
+	for i := range p.Deps {
+		if p.Deps[i] != o.Deps[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (p *ObjFile) String() string {
+	return fmt.Sprintf("{OFile:%s, HFile:%s, Deps:%v}", p.OFile, p.HFile, p.Deps)
 }
 
 type CflagEntry struct {
@@ -103,7 +116,10 @@ func (p *DepCtx) ExpandDeps(objFile *ObjFile) {
 		return
 	}
 	for _, dep := range objFile.Deps {
-		relPath, _ := filepath.Rel(p.GetInclude(), dep)
+		relPath, err := filepath.Rel(p.GetInclude(), dep)
+		if err != nil {
+			relPath = dep
+		}
 		depObjFile, id := p.GetObjFileByRelPath(relPath)
 		if depObjFile != nil && id >= 0 {
 			depObjFile.parent = objFile
@@ -115,6 +131,9 @@ func (p *DepCtx) ExpandDeps(objFile *ObjFile) {
 				}
 			}
 			if isParentHFile {
+				if depObjFile.HFile != objFile.HFile {
+					p.depsMap[objFile] = append(p.depsMap[objFile], id)
+				}
 				continue
 			}
 			p.depsMap[objFile] = append(p.depsMap[objFile], id)

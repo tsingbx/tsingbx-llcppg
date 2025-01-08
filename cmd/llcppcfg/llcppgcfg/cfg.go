@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"log"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"unicode"
@@ -27,6 +26,7 @@ const (
 
 const (
 	WithSort FlagMode = 1 << iota
+	WithNoTab
 	WithCpp
 )
 
@@ -44,17 +44,22 @@ func newEmptyStringError(name string) *emptyStringError {
 
 type LLCppConfig types.Config
 
+func getDir(relPath string) string {
+	index := strings.IndexRune(relPath, filepath.Separator)
+	if index < 0 {
+		return relPath
+	}
+	return relPath[:index]
+}
+
 func isExcludeDir(relPath string, excludeSubdirs []string) bool {
 	if len(excludeSubdirs) == 0 {
 		return false
 	}
-	index := strings.IndexRune(relPath, filepath.Separator)
-	if index >= 0 {
-		dir := relPath[:index]
-		for _, subdir := range excludeSubdirs {
-			if subdir == dir {
-				return true
-			}
+	dir := getDir(relPath)
+	for _, subdir := range excludeSubdirs {
+		if subdir == dir {
+			return true
 		}
 	}
 	return false
@@ -194,7 +199,7 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string, excludeS
 	}
 	relPath, err := filepath.Rel(trimStr, path)
 	if err != nil {
-		return nil
+		relPath = path
 	}
 	if isExcludeDir(relPath, excludeSubdirs) {
 		return nil
@@ -208,7 +213,7 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string, excludeS
 	outString = strings.ReplaceAll(outString, "\\\n", "\n")
 	fields := strings.Fields(outString)
 	lines, objFileStr := findDepSlice(fields)
-	objFile := NewObjFileString(objFileStr, relPath)
+	objFile := NewObjFileString(objFileStr)
 	objFile.Deps = append(objFile.Deps, lines...)
 	return objFile
 }
@@ -218,13 +223,15 @@ func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) *CflagEn
 		return nil
 	}
 	trimStr := strings.TrimPrefix(l, "-I")
-	trimStr += string(filepath.Separator)
+	if !strings.HasSuffix(trimStr, string(filepath.Separator)) {
+		trimStr += string(filepath.Separator)
+	}
 	var cflagEntry CflagEntry
 	cflagEntry.Include = trimStr
 	cflagEntry.ObjFiles = make([]*ObjFile, 0)
 	err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return nil
+			return err
 		}
 		pObjFile := parseFileEntry(trimStr, path, d, exts, excludeSubdirs)
 		if pObjFile != nil {
@@ -236,7 +243,7 @@ func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) *CflagEn
 		return len(cflagEntry.ObjFiles[i].Deps) > len(cflagEntry.ObjFiles[j].Deps)
 	})
 	if err != nil {
-		log.Println(err)
+		return nil
 	}
 	return &cflagEntry
 }
@@ -307,28 +314,20 @@ func GenCfg(name string, flag FlagMode, expand RunMode, exts []string, excludeSu
 		}
 	case NormalMode:
 		if flag&WithSort != 0 {
-			cfg.CFlags, _ = ExpandName(name, "", "cflags")
-			sortIncludes(cfg.CFlags, cfg, exts, excludeSubdirs)
+			expandCFlags, _ := ExpandName(name, "", "cflags")
+			sortIncludes(expandCFlags, cfg, exts, excludeSubdirs)
 		} else {
-			cfg.Include, cfg.CFlags, _ = ExpandCFlagsName(name, exts, excludeSubdirs)
+			cfg.Include, _, cfg.CFlags = ExpandCFlagsName(name, exts, excludeSubdirs)
 		}
 	}
 
 	cfg.Name = NormalizePackageName(cfg.Name)
 
-	if runtime.GOOS == LINUX {
-		libpath, _ := SearchLib(name)
-		if len(libpath) > 0 {
-			libs, err := cmdout.GetOut(cmdout.NewExecCommand("pkg-config", "--libs", name), "")
-			if err == nil {
-				cfg.Libs = fmt.Sprintf("-L%s %s", libpath, strings.TrimSpace(libs))
-			}
-		}
-	}
-
 	buf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(buf)
-	jsonEncoder.SetIndent("", "\t")
+	if flag&WithNoTab == 0 {
+		jsonEncoder.SetIndent("", "\t")
+	}
 	err := jsonEncoder.Encode(cfg)
 	if err != nil {
 		return nil, err
