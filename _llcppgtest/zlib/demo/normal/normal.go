@@ -17,8 +17,7 @@ func main() {
 	txtData := (*zlib.Bytef)(unsafe.Pointer(unsafe.SliceData(txt)))
 
 	res := zlib.Compress(data, &cmpSize, txtData, txtLen)
-	// zlib.ok -> 0
-	if res != 0 {
+	if res != zlib.OK {
 		c.Printf(c.Str("\nCompression failed: %d\n"), res)
 		return
 	}
@@ -32,8 +31,7 @@ func main() {
 	unRes := zlib.Uncompress(ucmpPtr, &ucmpSize, data, zlib.ULong(cmpSize))
 	c.Printf(c.Str("Decompression result = %d, Decompressed size %d\n"), unRes, ucmpSize)
 
-	// zlib.OK -> 0
-	if unRes != 0 {
+	if unRes != zlib.OK {
 		c.Printf(c.Str("\nDecompression failed: %d\n"), unRes)
 		return
 	}

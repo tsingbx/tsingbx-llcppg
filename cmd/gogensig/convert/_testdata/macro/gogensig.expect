@@ -1,0 +1,18 @@
+===== macro.go =====
+package macro
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+const VALUE c.Int = 123
+const STRING string = "hello"
+const FLOAT float32 = 1.23
+const X32BITS c.Int = 0
+
+===== macro_autogen_link.go =====
+package macro
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
+

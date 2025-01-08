@@ -88,6 +88,13 @@ func (p *AstConvert) VisitFuncDecl(funcDecl *ast.FuncDecl) {
 	}
 }
 
+func (p *AstConvert) VisitMacro(macro *ast.Macro) {
+	err := p.Pkg.NewMacro(macro)
+	if err != nil {
+		log.Printf("NewMacro %s Fail: %s\n", macro.Name, err.Error())
+	}
+}
+
 /*
 //TODO
 func (p *AstConvert) VisitClass(className *ast.Ident, fields *ast.FieldList, typeDecl *ast.TypeDecl) {

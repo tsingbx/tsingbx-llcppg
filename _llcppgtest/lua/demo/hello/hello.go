@@ -10,8 +10,7 @@ func main() {
 	L := lua.Newstate__1()
 	defer L.Close()
 	L.Openlibs()
-	// 0 -> lua.OK
-	if res := L.Loadstring(c.Str("print('hello world')")); res != 0 {
+	if res := L.Loadstring(c.Str("print('hello world')")); res != lua.OK {
 		panic("error")
 	}
 	// MULTRET -> -1

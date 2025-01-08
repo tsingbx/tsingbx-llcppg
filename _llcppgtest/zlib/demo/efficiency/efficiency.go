@@ -17,8 +17,7 @@ func main() {
 		data := (*zlib.Bytef)(unsafe.Pointer(unsafe.SliceData(cmpData)))
 		source := (*zlib.Bytef)(unsafe.Pointer(unsafe.SliceData(txt)))
 		res := zlib.Compress2(data, &cmpSize, source, txtLen, c.Int(level))
-		// zlib.OK -> 0
-		if res != 0 {
+		if res != zlib.OK {
 			c.Printf(c.Str("\nCompression failed at level %d: %d\n"), level, res)
 			continue
 		}
@@ -31,8 +30,7 @@ func main() {
 		cmpSource := (*zlib.Bytef)(unsafe.Pointer(unsafe.SliceData(cmpData)))
 
 		unRes := zlib.Uncompress(ucmpData, &ucmpSize, cmpSource, zlib.ULong(cmpSize))
-		// zlib.OK -> 0
-		if unRes != 0 {
+		if unRes != zlib.OK {
 			c.Printf(c.Str("\nDecompression failed at level %d: %d\n"), level, unRes)
 			continue
 		}

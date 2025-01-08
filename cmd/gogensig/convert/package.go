@@ -15,6 +15,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
+	ctoken "github.com/goplus/llcppg/token"
 	"github.com/goplus/mod/gopmod"
 )
 
@@ -514,7 +515,7 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, string, error
 }
 
 func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type, enumTypeName string) error {
-	constDefs := p.p.NewConstDefs(p.p.Types.Scope())
+	defs := p.NewConstGroup()
 	for _, item := range items {
 		// maybe get a new name,because the after executed name,have some situation will found same name
 		constName := p.nameMapper.GetGoName(item.Name.Name, p.trimPrefixes())
@@ -529,10 +530,7 @@ func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type, en
 		if err != nil {
 			return err
 		}
-		constDefs.New(func(cb *gogen.CodeBuilder) int {
-			cb.Val(val)
-			return 1
-		}, 0, token.NoPos, enumType, name)
+		defs.New(val, enumType, name)
 		if changed {
 			if obj := p.p.Types.Scope().Lookup(name); obj != nil {
 				substObj(p.p.Types, p.p.Types.Scope(), item.Name.Name, obj)
@@ -540,6 +538,50 @@ func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type, en
 		}
 	}
 	return nil
+}
+
+func (p *Package) NewMacro(macro *ast.Macro) error {
+	if p.curFile.IsSys {
+		return nil
+	}
+	// simple const macro define (#define NAME value)
+	if len(macro.Tokens) == 2 && macro.Tokens[1].Token == ctoken.LITERAL {
+		value := macro.Tokens[1].Lit
+		defs := p.NewConstGroup()
+		name, _, err := p.DeclName(macro.Name)
+		if err != nil {
+			return err
+		}
+		if str, err := litToString(value); err == nil {
+			defs.New(str, types.Typ[types.String], name)
+		} else if val, err := litToInt(value); err == nil {
+			defs.New(int(val), p.cvt.typeMap.CType("Int"), name)
+		} else if fval, err := litToFloat(value, 64); err == nil {
+			defs.New(fval, p.cvt.typeMap.CType("Float"), name)
+		}
+	}
+	return nil
+}
+
+func (p *Package) NewConstGroup() *ConstGroup {
+	return NewConstGroup(p.p, p.p.Types.Scope())
+}
+
+type ConstGroup struct {
+	defs *gogen.ConstDefs
+}
+
+func NewConstGroup(pkg *gogen.Package, scope *types.Scope) *ConstGroup {
+	return &ConstGroup{
+		defs: pkg.NewConstDefs(scope),
+	}
+}
+
+func (p *ConstGroup) New(val any, typ types.Type, name string) {
+	p.defs.New(func(cb *gogen.CodeBuilder) int {
+		cb.Val(val)
+		return 1
+	}, 0, token.NoPos, typ, name)
 }
 
 // WritePkgFiles writes all converted header files to Go files.

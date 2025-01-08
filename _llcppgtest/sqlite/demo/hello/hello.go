@@ -42,8 +42,7 @@ func main() {
 	check(err, db, "sqlite: PrepareV3 SELECT")
 
 	for {
-		// HasRow -> 100
-		if err = stmt.Step(); err != 100 {
+		if err = stmt.Step(); err != sqlite.ROW {
 			break
 		}
 		c.Printf(c.Str("==> id=%d, name=%s\n"), stmt.ColumnInt(0), stmt.ColumnText(1))
@@ -55,16 +54,14 @@ func main() {
 }
 
 func check(err c.Int, db *sqlite.Sqlite3, at string) {
-	// sqlite.OK -> 0
-	if err != 0 {
+	if err != sqlite.OK {
 		c.Printf(c.Str("==> %s Error: (%d) %s\n"), c.AllocaCStr(at), err, db.Errmsg())
 		c.Exit(1)
 	}
 }
 
 func checkDone(err c.Int, db *sqlite.Sqlite3, at string) {
-	// sqlite.Done -> 101
-	if err != 101 {
+	if err != sqlite.DONE {
 		check(err, db, at)
 	}
 }
