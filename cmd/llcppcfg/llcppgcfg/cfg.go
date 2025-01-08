@@ -26,9 +26,10 @@ const (
 )
 
 type ObjFile struct {
-	OFile string
-	HFile string
-	Deps  []string
+	parent *ObjFile
+	OFile  string
+	HFile  string
+	Deps   []string
 }
 
 func NewObjFile(oFile, hFile string) *ObjFile {
@@ -137,7 +138,7 @@ func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
 	contains := make(map[string]string, 0)
 	for _, l := range list {
 		trimStr := strings.TrimPrefix(l, "-I")
-		trimStr += "/"
+		trimStr += string(filepath.Separator)
 		err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -285,7 +286,7 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string, excludeS
 
 func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) (*CflagEntry, error) {
 	trimStr := strings.TrimPrefix(l, "-I")
-	trimStr += "/"
+	trimStr += string(filepath.Separator)
 	var cflagEntry CflagEntry
 	cflagEntry.Include = trimStr
 	cflagEntry.ObjFiles = make([]*ObjFile, 0)
@@ -300,9 +301,6 @@ func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) (*CflagE
 		return nil
 	})
 	sort.Slice(cflagEntry.ObjFiles, func(i, j int) bool {
-		if cflagEntry.ObjFiles[i].OFile == "" {
-			return false
-		}
 		return len(cflagEntry.ObjFiles[i].Deps) > len(cflagEntry.ObjFiles[j].Deps)
 	})
 	return &cflagEntry, err
@@ -328,9 +326,9 @@ func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeS
 		}
 		for _, objFile := range cflagEntry.ObjFiles {
 			cfg.Include = append(cfg.Include, objFile.HFile)
-			expandDepIds := depCtx.depsMap[objFile]
-			for _, depId := range expandDepIds {
-				depObj := depCtx.GetObjFileById(depId)
+			expandDepIDs := depCtx.depsMap[objFile]
+			for _, depID := range expandDepIDs {
+				depObj := depCtx.GetObjFileByID(depID)
 				cfg.Include = append(cfg.Include, depObj.HFile)
 			}
 		}
