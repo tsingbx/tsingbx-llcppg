@@ -92,7 +92,7 @@ jobs:
       if: startsWith(matrix.os, 'macos')
       run: |
         # install demo's lib
-        brew install lua zlib isl libgpg-error raylib z3 sqlite3
+        brew install lua zlib isl libgpg-error raylib z3 sqlite3 gmp
 
         export PKG_CONFIG_PATH="/opt/homebrew/opt/zlib/lib/pkgconfig"
         export PKG_CONFIG_PATH="/opt/homebrew/opt/sqlite/lib/pkgconfig:/opt/homebrew/opt/zlib/lib/pkgconfig:$PKG_CONFIG_PATH"
