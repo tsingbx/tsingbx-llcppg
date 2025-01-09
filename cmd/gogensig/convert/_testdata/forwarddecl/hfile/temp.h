@@ -84,3 +84,9 @@ struct Fts5PhraseIter {
     const unsigned char *a;
     const unsigned char *b;
 };
+
+struct _xmlParserCtxt;
+
+typedef struct _xmlParserCtxt xmlParserCtxt;
+
+typedef xmlParserCtxt htmlParserCtxt;

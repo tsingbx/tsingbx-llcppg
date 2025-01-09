@@ -53,7 +53,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 		Name: &ast.ScopingExpr{
 			X: &ast.Ident{Name: "Bar"},
 		},
-	}, nil)
+	}, nil, "NewBar")
 }
 
 func TestPubMethodName(t *testing.T) {

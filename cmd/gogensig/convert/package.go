@@ -19,6 +19,12 @@ import (
 	"github.com/goplus/mod/gopmod"
 )
 
+// DeferType stores type declarations that need to be resolved later.
+type DeferType struct {
+	decl    *gogen.TypeDecl            // the need to resolved later type declaration
+	getType func() (types.Type, error) // will be executed after all incomplete types are initialized.
+}
+
 // In Processing Package
 type Package struct {
 	*PkgInfo
@@ -32,17 +38,15 @@ type Package struct {
 	// This is used to handle forward declarations and self-referential types in C/C++.
 	incomplete map[string]*Incomplete
 
-	// deferTypes stores type declarations that need to be resolved later.
-	// The key is the Go type declaration, and the value is a function that will return
-	// the actual type when called.
-	// These functions will be executed after all incomplete types are initialized.
-	//
 	// This is particularly important when handling typedef of incomplete types in Go.
 	// In Go, when creating a new type via "type xxx xxx", the underlying type must exist.
 	// However, when typedef-ing an incomplete type, its underlying type doesn't exist yet.
 	// For such cases, we defer the type initialization until after all incomplete types
 	// are properly initialized, at which point we can correctly reference the underlying type.
-	deferTypes map[*gogen.TypeDecl]func() (types.Type, error)
+	deferTypes []*DeferType
+
+	// origin name -> defer type note witch type is defer type
+	deferTypesMap map[string]*DeferType
 
 	nameMapper *names.NameMapper // handles name mapping and uniqueness
 }
@@ -64,11 +68,12 @@ type PackageConfig struct {
 // If SetCurFile is not called, all type conversions will be written to this default Go file.
 func NewPackage(config *PackageConfig) *Package {
 	p := &Package{
-		p:          gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
-		conf:       config,
-		incomplete: make(map[string]*Incomplete),
-		deferTypes: make(map[*gogen.TypeDecl]func() (types.Type, error)),
-		nameMapper: names.NewNameMapper(),
+		p:             gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
+		conf:          config,
+		incomplete:    make(map[string]*Incomplete),
+		deferTypes:    make([]*DeferType, 0),
+		deferTypesMap: make(map[string]*DeferType),
+		nameMapper:    names.NewNameMapper(),
 	}
 
 	mod, err := gopmod.Load(config.OutputDir)
@@ -409,11 +414,12 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 		substObj(p.p.Types, p.p.Types.Scope(), typedefDecl.Name.Name, typeSpecdecl.Type().Obj())
 	}
 
-	if tagRef, ok := typedefDecl.Type.(*ast.TagExpr); ok {
-		inc := p.handleTyperefIncomplete(tagRef, typeSpecdecl)
-		if inc {
-			return nil
+	deferInit := p.handleTyperefIncomplete(typedefDecl.Type, typeSpecdecl, typedefDecl.Name.Name)
+	if deferInit {
+		if dbg.GetDebugLog() {
+			log.Printf("NewTypedefDecl: %s defer init\n", name)
 		}
+		return nil
 	}
 
 	typ, err := p.ToType(typedefDecl.Type)
@@ -430,28 +436,48 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 	return nil
 }
 
-func (p *Package) handleTyperefIncomplete(tagRef *ast.TagExpr, typeSpecdecl *gogen.TypeDecl) bool {
+func (p *Package) handleTyperefIncomplete(typeRef ast.Expr, typeSpecdecl *gogen.TypeDecl, oname string) bool {
 	var name string
-	switch n := tagRef.Name.(type) {
+	switch expr := typeRef.(type) {
+	case *ast.TagExpr:
+		if n, ok := expr.Name.(*ast.Ident); ok {
+			name = n.Name
+		} else {
+			panic("todo:scoping expr not supported")
+		}
 	case *ast.Ident:
-		name = n.Name
-	case *ast.ScopingExpr:
-		// todo(zzy):scoping
-		panic("todo:scoping expr not supported")
-	}
-	_, inc := p.incomplete[name]
-	if !inc {
+		name = expr.Name
+	default:
 		return false
 	}
-	p.deferTypes[typeSpecdecl] = func() (types.Type, error) {
-		typ, err := p.ToType(tagRef)
-		if err != nil {
-			return nil, err
-		}
-		// a function type will not be a incomplete type,so we not need to check signature and add comments
-		return typ, nil
+
+	_, incomplete := p.incomplete[name]
+
+	deferType := &DeferType{
+		decl: typeSpecdecl,
+		getType: func() (types.Type, error) {
+			typ, err := p.ToType(typeRef)
+			if err != nil {
+				return nil, err
+			}
+			return typ, nil
+		},
 	}
-	return true
+
+	if incomplete {
+		p.deferTypes = append(p.deferTypes, deferType)
+		p.deferTypesMap[oname] = deferType
+		return true
+	}
+
+	// if the type is already in deferTypes, just append the new deferType
+	if _, ok := p.deferTypesMap[name]; ok {
+		p.deferTypes = append(p.deferTypes, deferType)
+		p.deferTypesMap[oname] = deferType
+		return true
+	}
+
+	return false
 }
 
 // Convert ast.Expr to types.Type
@@ -672,17 +698,18 @@ func (p *Package) deferTypeBuild() error {
 		p.SetCurFile(inc.file)
 		inc.decl.InitType(p.p, types.NewStruct(p.cvt.defaultRecordField(), nil))
 	}
-	for decl, getTyp := range p.deferTypes {
-		typ, err := getTyp()
+	for _, dt := range p.deferTypes {
+		typ, err := dt.getType()
 		if typ != nil {
-			decl.InitType(p.p, typ)
+			dt.decl.InitType(p.p, typ)
 		}
 		if err != nil {
 			return err
 		}
 	}
 	p.incomplete = make(map[string]*Incomplete, 0)
-	p.deferTypes = make(map[*gogen.TypeDecl]func() (types.Type, error), 0)
+	p.deferTypes = make([]*DeferType, 0)
+	p.deferTypesMap = make(map[string]*DeferType, 0)
 	return nil
 }
 
