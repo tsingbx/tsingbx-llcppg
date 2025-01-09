@@ -28,7 +28,7 @@ import (
 //
 // Parameters:
 //   - demoRoot: Path to the root directory of a single demo case
-func runSingleDemo(demoRoot string) {
+func RunGenPkgDemo(demoRoot string) {
 	fmt.Printf("Testing demo: %s\n", demoRoot)
 
 	absPath, err := filepath.Abs(demoRoot)
@@ -138,24 +138,24 @@ func getFirstLevelDemos(baseDir string) []string {
 	return demos
 }
 
-func TestDemos(path string) {
-	fmt.Printf("Starting tests in directory: %s\n", path)
+func RunAllGenPkgDemos(baseDir string) {
+	fmt.Printf("Starting generated package tests in directory: %s\n", baseDir)
 
-	stat, err := os.Stat(path)
+	stat, err := os.Stat(baseDir)
 	if err != nil || !stat.IsDir() {
-		panic(fmt.Sprintf("specified path is not a directory or does not exist: %s", path))
+		panic(fmt.Sprintf("specified path is not a directory or does not exist: %s", baseDir))
 	}
 
-	demos := getFirstLevelDemos(path)
+	demos := getFirstLevelDemos(baseDir)
 	if len(demos) == 0 {
-		panic(fmt.Sprintf("no directories containing llcppg.cfg found in %s", path))
+		panic(fmt.Sprintf("no directories containing llcppg.cfg found in %s", baseDir))
 	}
 
 	// Test each demo
 	for _, demo := range demos {
-		runSingleDemo(demo)
+		RunGenPkgDemo(demo)
 	}
-	fmt.Println("All demos passed", strings.Join(demos, ","))
+	fmt.Println("All generated package demos passed:", strings.Join(demos, ","))
 }
 
 func runCommand(dir, command string, args ...string) error {
