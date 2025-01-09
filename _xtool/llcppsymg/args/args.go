@@ -15,8 +15,6 @@ type Args struct {
 	Verbose              bool
 	VerboseSigfetchParse bool //-vsp llcppsigfetch parse.go
 	VerboseParseIsMethod bool //-vpim
-	SymbGen              bool //-symbgen only use llcppsymg to generate llcppg.symb.json
-	CodeGen              bool //-codegen only use (llcppsigfetch & gogensig) to gen go code binding
 	UseStdin             bool
 	CfgFile              string
 }
@@ -30,12 +28,6 @@ func ParseArgs(args []string, defaultCfgFile string, swflags map[string]bool) (*
 			switch arg {
 			case "-h", "--help":
 				result.Help = true
-				continue
-			case "-symbgen":
-				result.SymbGen = true
-				continue
-			case "-codegen":
-				result.CodeGen = true
 				continue
 			case "-v":
 				result.Verbose = true

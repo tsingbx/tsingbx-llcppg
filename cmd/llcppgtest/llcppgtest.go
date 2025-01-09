@@ -179,14 +179,8 @@ func runPkg(cfg *RunConfig) {
 }
 
 func printHelp() {
-	helpString := fmt.Sprintf(`
-	llcppgtest is used to test llcppg
-usage: llcppgtest [-%s|-%s|-%s|-%s] [-%s|-%s|-%s] [-%s|-%s|-%s] [-%s|-%s] pkgname
-	   llcppgtest -%s <path>    # test all first-level demo directories
-       llcppgtest -%s <path>     # test specific demo directory
-`, RFlagName, RandFlagName, AFlagName, AllFlagName, VFlagName,
-		VfetchFlagName, VsymgFlagName, CppFlagName, ExtsFlagName,
-		ExcludesFlagName, HFlagName, HelpFlagName, DemosFlagName, DemoFlagName)
+	helpString := `llcppgtest is used to test llcppg
+usage: llcppgtest [-r|-rand|-a|-all] [-v|-vfetch|-vsym] [-cpp] [-h|-help] pkgname`
 	fmt.Println(helpString)
 	flag.PrintDefaults()
 }
@@ -204,6 +198,8 @@ func main() {
 	flag.BoolVar(&vSig, string(VfetchFlagName), false, "enable verbose of llcppsigfetch")
 	vSym := false
 	flag.BoolVar(&vSym, string(VsymgFlagName), false, "enable verbose of llcppsymg")
+	vGogen := false
+	flag.BoolVar(&vGogen, "vgogen", false, "enable verbose of gogensig")
 	cpp := false
 	flag.BoolVar(&cpp, string(CppFlagName), false, "if it is a cpp library")
 	exts := ""
