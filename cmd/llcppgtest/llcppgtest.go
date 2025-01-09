@@ -93,6 +93,7 @@ const (
 	runRand
 	runAll
 	runDemos
+	runDemo
 )
 
 func runPkgs(pkgs []string, runMode runPkgMode) {
@@ -142,7 +143,9 @@ func runPkg(runMode runPkgMode) {
 
 func printHelp() {
 	helpString := `llcppgtest is used to test llcppg
-usage: llcppgtest [-r|-rand|-a|-all] [-v|-vfetch|-vsym] [-cpp] [-h|-help] pkgname`
+usage: llcppgtest [-r|-rand|-a|-all] [-v|-vfetch|-vsym] [-cpp] [-h|-help] pkgname
+       llcppgtest -demos <path>    # test all first-level demo directories
+       llcppgtest -demo <path>     # test specific demo directory`
 	fmt.Println(helpString)
 	flag.PrintDefaults()
 }
@@ -165,7 +168,8 @@ func main() {
 	help := false
 	flag.BoolVar(&help, "h", false, "print help message")
 	flag.BoolVar(&help, "help", false, "print help message")
-	demoPath := flag.String("demos", "", "test all first-level demo directories in the specified path")
+	demosPath := flag.String("demos", "", "test all first-level demo directories in the specified path")
+	demoPath := flag.String("demo", "", "test the specified demo directory")
 	flag.Parse()
 
 	if help || len(os.Args) == 1 {
@@ -196,9 +200,13 @@ func main() {
 		appMode = runAll
 	}
 
-	if *demoPath != "" {
+	if *demosPath != "" {
 		appMode = runDemos
 	}
+	if *demoPath != "" {
+		appMode = runDemo
+	}
+
 	switch {
 	case appMode == runRand:
 		runPkg(runPkgMode(runMode))
@@ -206,7 +214,9 @@ func main() {
 		pkgs := getPkgs()
 		runPkgs(pkgs, runPkgMode(runMode))
 	case appMode == runDemos:
-		demo.TestDemos(*demoPath)
+		demo.RunAllGenPkgDemos(*demosPath)
+	case appMode == runDemo:
+		demo.RunGenPkgDemo(*demoPath)
 	default:
 		if len(flag.Args()) > 0 {
 			arg := flag.Arg(0)
