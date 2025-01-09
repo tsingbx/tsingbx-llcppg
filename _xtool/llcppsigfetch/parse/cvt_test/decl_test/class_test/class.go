@@ -18,6 +18,7 @@ func TestClassDecl() {
 			static int a;
 			int b;
 			float foo(int a,double b);
+			void vafoo(int a,...);
 		private:
 			static void bar();
 		protected:

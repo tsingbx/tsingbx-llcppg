@@ -179,6 +179,67 @@ TestClassDecl Case 2:
 							"IsDestructor":	false,
 							"IsVirtual":	false,
 							"IsOverride":	false
+						}, {
+							"_Type":	"FuncDecl",
+							"Loc":	{
+								"_Type":	"Location",
+								"File":	"temp.h"
+							},
+							"Doc":	null,
+							"Parent":	{
+								"_Type":	"Ident",
+								"Name":	"A"
+							},
+							"Name":	{
+								"_Type":	"Ident",
+								"Name":	"vafoo"
+							},
+							"MangledName":	"_ZN1A5vafooEiz",
+							"Type":	{
+								"_Type":	"FuncType",
+								"Params":	{
+									"_Type":	"FieldList",
+									"List":	[{
+											"_Type":	"Field",
+											"Type":	{
+												"_Type":	"BuiltinType",
+												"Kind":	6,
+												"Flags":	0
+											},
+											"Doc":	null,
+											"Comment":	null,
+											"IsStatic":	false,
+											"Access":	0,
+											"Names":	[{
+													"_Type":	"Ident",
+													"Name":	"a"
+												}]
+										}, {
+											"_Type":	"Field",
+											"Type":	{
+												"_Type":	"Variadic"
+											},
+											"Doc":	null,
+											"Comment":	null,
+											"IsStatic":	false,
+											"Access":	0,
+											"Names":	null
+										}]
+								},
+								"Ret":	{
+									"_Type":	"BuiltinType",
+									"Kind":	0,
+									"Flags":	0
+								}
+							},
+							"IsInline":	false,
+							"IsStatic":	false,
+							"IsConst":	false,
+							"IsExplicit":	false,
+							"IsConstructor":	false,
+							"IsDestructor":	false,
+							"IsVirtual":	false,
+							"IsOverride":	false
 						}]
 				}
 			}],
