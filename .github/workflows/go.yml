@@ -5,11 +5,12 @@ name: Go
 
 on:
   push:
-    branches: ["**"]
+    branches: [ "**" ]
   pull_request:
-    branches: ["**"]
+    branches: [ "**" ]
 
 jobs:
+
   test:
     strategy:
       matrix:
@@ -19,89 +20,91 @@ jobs:
         llvm: [18]
     runs-on: ${{matrix.os}}
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.20"
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
 
-      - name: Install dependencies
-        if: startsWith(matrix.os, 'macos')
-        run: |
-          brew update
-          brew install llvm@${{matrix.llvm}} bdw-gc openssl libffi
-          brew link --force libffi
-          echo "$(brew --prefix llvm@${{matrix.llvm}})/bin" >> $GITHUB_PATH
+    - name: Install dependencies
+      if: startsWith(matrix.os, 'macos')
+      run: |
+        brew update
+        brew install llvm@${{matrix.llvm}} bdw-gc openssl libffi
+        brew link --force libffi
+        echo "$(brew --prefix llvm@${{matrix.llvm}})/bin" >> $GITHUB_PATH
 
-          # llcppg dependencies
-          brew install cjson
+        # llcppg dependencies
+        brew install cjson
 
-      - name: Install dependencies
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{matrix.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo apt-get update
-          sudo apt-get install -y llvm-${{matrix.llvm}}-dev clang-${{matrix.llvm}} libclang-${{matrix.llvm}}-dev lld-${{matrix.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev
-          echo "/usr/lib/llvm-${{matrix.llvm}}/bin" >> $GITHUB_PATH
+    - name: Install dependencies
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{matrix.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo apt-get update
+        sudo apt-get install -y llvm-${{matrix.llvm}}-dev clang-${{matrix.llvm}} libclang-${{matrix.llvm}}-dev lld-${{matrix.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev
+        echo "/usr/lib/llvm-${{matrix.llvm}}/bin" >> $GITHUB_PATH
 
-      - name: Install LLGO
-        run: |
-          go install github.com/goplus/llgo/cmd/llgo@main
+    - name: Install LLGO
+      run: |
+        go install github.com/goplus/llgo/cmd/llgo@main
 
-      - name: Build
-        run: go build -v ./...
+    - name: Build
+      run: go build -v ./...
 
-      - name: Install llcppg modules
-        run: bash ./install.sh
+    - name: Install llcppg modules
+      run: bash ./install.sh
 
-      - name: Test llcppsymg & llcppsigfetch
-        run: |
-          llgo cmptest ./_xtool/llcppsigfetch/parse/cvt_test/...
+    - name: Test llcppsymg & llcppsigfetch
+      run: |
+        llgo cmptest ./_xtool/llcppsigfetch/parse/cvt_test/...
 
-          # llgo cmptest ./_xtool/llcppsymg/_cmptest/... causes 
-          # panic: runtime error: index out of range [0] with length 0
-          cd _xtool/llcppsymg/_cmptest
-          llgo cmptest ./...
-          cd ../../../
+        # llgo cmptest ./_xtool/llcppsymg/_cmptest/... causes 
+        # panic: runtime error: index out of range [0] with length 0
+        cd _xtool/llcppsymg/_cmptest
+        llgo cmptest ./...
+        cd ../../../
 
-      - name: Test
-        if: ${{!startsWith(matrix.os, 'macos')}}
-        run: go test -v ./...
+    - name: Test
+      if: ${{!startsWith(matrix.os, 'macos')}}
+      run: go test -v ./...
 
-      - name: Test with coverage
-        if: startsWith(matrix.os, 'macos')
-        run: go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
+    - name: Test with coverage
+      if: startsWith(matrix.os, 'macos')
+      run: go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
 
-      - name: Test demos
-        run: |
-          # TODO(lijie): force python3-embed to be linked with python-3.12-embed
-          # Currently, python3-embed is python-3.13-embed, doesn't work with pytorch
-          # Will remove this after pytorch is fixed.
-          pcdir=$HOME/pc
-          mkdir -p $pcdir
-          libdir=$(pkg-config --variable=libdir python-3.12-embed)
-          echo "libdir: $libdir"
-          ln -s $libdir/pkgconfig/python-3.12-embed.pc $pcdir/python3-embed.pc
-          export PKG_CONFIG_PATH=$pcdir
-          bash .github/workflows/test_demo.sh
+    - name: Test demos
+      run: |
+        # TODO(lijie): force python3-embed to be linked with python-3.12-embed
+        # Currently, python3-embed is python-3.13-embed, doesn't work with pytorch
+        # Will remove this after pytorch is fixed.
+        pcdir=$HOME/pc
+        mkdir -p $pcdir
+        libdir=$(pkg-config --variable=libdir python-3.12-embed)
+        echo "libdir: $libdir"
+        ln -s $libdir/pkgconfig/python-3.12-embed.pc $pcdir/python3-embed.pc
+        export PKG_CONFIG_PATH=$pcdir
+        bash .github/workflows/test_demo.sh
 
-      - name: Test demos with generated pkgs
-        if: startsWith(matrix.os, 'macos')
-        run: |
-          # install demo's lib
-          brew install lua zlib isl libgpg-error raylib z3 sqlite3 gmp
+    - name: Test demos with generated pkgs
+      if: startsWith(matrix.os, 'macos')
+      run: |
+        # install demo's lib
+        brew install lua zlib isl libgpg-error raylib z3 sqlite3 gmp
 
-          export PKG_CONFIG_PATH="/opt/homebrew/opt/zlib/lib/pkgconfig"
-          export PKG_CONFIG_PATH="/opt/homebrew/opt/sqlite/lib/pkgconfig:/opt/homebrew/opt/zlib/lib/pkgconfig:$PKG_CONFIG_PATH"
+        export PKG_CONFIG_PATH="/opt/homebrew/opt/zlib/lib/pkgconfig"
+        export PKG_CONFIG_PATH="/opt/homebrew/opt/sqlite/lib/pkgconfig:/opt/homebrew/opt/zlib/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-          pkg-config --cflags --libs sqlite3
+        pkg-config --cflags --libs sqlite3
 
-          llcppgtest -demos ./_llcppgtest
+        llcppgtest -demos ./_llcppgtest
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
-          slug: goplus/llcppg
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
+        slug: goplus/llcppg
+
+
