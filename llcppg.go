@@ -92,7 +92,7 @@ func gogensig(in io.Reader, cfg string) error {
 func main() {
 	var symbGen, codeGen, help bool
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Usage: llcppg [config-file] [-v|-vfetch|-vsymg|-vgogen] [-symbgen] [-codegen] [-h|--help]")
+		fmt.Fprintln(os.Stderr, "Usage: llcppg [-v|-vfetch|-vsymg|-vgogen] [-symbgen] [-codegen] [-h|--help] [config-file]")
 		fmt.Fprintln(os.Stderr, "Options:")
 		flag.PrintDefaults()
 	}

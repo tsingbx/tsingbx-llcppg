@@ -101,12 +101,12 @@ func main() {
 
 func printUsage() {
 	fmt.Println("Usage:")
-	fmt.Println("  llcppsigfetch [<config_file>] [-out=<bool>]")
+	fmt.Println("  llcppsigfetch [-v] [-out=<bool>] [config_file]")
 	fmt.Println("  OR")
-	fmt.Println("  llcppsigfetch --extract <file> [-out=<bool>] [-temp=<bool>] [-cpp=<bool>] [args...]")
+	fmt.Println("  llcppsigfetch --extract <file> [-out=<bool>] [-temp=<bool>] [-cpp=<bool>] [-v] [args...]")
 	fmt.Println("")
 	fmt.Println("Options:")
-	fmt.Println("  [<config_file>]: Path to the configuration file (use '-' for stdin)")
+	fmt.Println("  [config_file]: Path to the configuration file (use '-' for stdin)")
 	fmt.Println("                   If not provided, uses default 'llcppg.cfg'")
 	fmt.Println("  -out=<bool>:     Optional. Set to 'true' to output results to a file,")
 	fmt.Println("                   'false' (default) to output to stdout")

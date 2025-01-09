@@ -35,7 +35,7 @@ func main() {
 	ags, remainArgs := args.ParseArgs(os.Args[1:], args.LLCPPG_SIGFETCH, nil)
 
 	if ags.Help {
-		fmt.Fprintln(os.Stderr, "Usage: gogensig [sigfetch-file]")
+		printUsage()
 		return
 	}
 
@@ -114,4 +114,8 @@ func runGoCmds(wd, pkg string) error {
 	}
 
 	return config.RunCommand(dir, "go", "get", "github.com/goplus/llgo@latest")
+}
+
+func printUsage() {
+	fmt.Fprintln(os.Stderr, "Usage: gogensig [-v] [sigfetch-file]")
 }
