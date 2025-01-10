@@ -49,7 +49,7 @@ jobs:
 
     - name: Install LLGO
       run: |
-        go install github.com/goplus/llgo/cmd/llgo@main
+        go install github.com/goplus/llgo/cmd/llgo@latest
 
     - name: Build
       run: go build -v ./...
