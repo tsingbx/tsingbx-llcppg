@@ -1,0 +1,885 @@
+[{
+		"mangle":	"GC_abort_on_oom",
+		"c++":	"GC_abort_on_oom()",
+		"go":	"GCAbortOnOom"
+	}, {
+		"mangle":	"GC_add_roots",
+		"c++":	"GC_add_roots(void *, void *)",
+		"go":	"GCAddRoots"
+	}, {
+		"mangle":	"GC_atfork_child",
+		"c++":	"GC_atfork_child()",
+		"go":	"GCAtforkChild"
+	}, {
+		"mangle":	"GC_atfork_parent",
+		"c++":	"GC_atfork_parent()",
+		"go":	"GCAtforkParent"
+	}, {
+		"mangle":	"GC_atfork_prepare",
+		"c++":	"GC_atfork_prepare()",
+		"go":	"GCAtforkPrepare"
+	}, {
+		"mangle":	"GC_base",
+		"c++":	"GC_base(void *)",
+		"go":	"GCBase"
+	}, {
+		"mangle":	"GC_call_with_alloc_lock",
+		"c++":	"GC_call_with_alloc_lock(GC_fn_type, void *)",
+		"go":	"GCCallWithAllocLock"
+	}, {
+		"mangle":	"GC_call_with_gc_active",
+		"c++":	"GC_call_with_gc_active(GC_fn_type, void *)",
+		"go":	"GCCallWithGcActive"
+	}, {
+		"mangle":	"GC_call_with_stack_base",
+		"c++":	"GC_call_with_stack_base(GC_stack_base_func, void *)",
+		"go":	"GCCallWithStackBase"
+	}, {
+		"mangle":	"GC_calloc_explicitly_typed",
+		"c++":	"GC_calloc_explicitly_typed(size_t, size_t, GC_descr)",
+		"go":	"GCCallocExplicitlyTyped"
+	}, {
+		"mangle":	"GC_change_stubborn",
+		"c++":	"GC_change_stubborn(const void *)",
+		"go":	"GCChangeStubborn"
+	}, {
+		"mangle":	"GC_clear_exclusion_table",
+		"c++":	"GC_clear_exclusion_table()",
+		"go":	"GCClearExclusionTable"
+	}, {
+		"mangle":	"GC_clear_mark_bit",
+		"c++":	"GC_clear_mark_bit(const void *)",
+		"go":	"GCClearMarkBit"
+	}, {
+		"mangle":	"GC_clear_roots",
+		"c++":	"GC_clear_roots()",
+		"go":	"GCClearRoots"
+	}, {
+		"mangle":	"GC_clear_stack",
+		"c++":	"GC_clear_stack(void *)",
+		"go":	"GCClearStack"
+	}, {
+		"mangle":	"GC_collect_a_little",
+		"c++":	"GC_collect_a_little()",
+		"go":	"GCCollectALittle"
+	}, {
+		"mangle":	"GC_debug_change_stubborn",
+		"c++":	"GC_debug_change_stubborn(const void *)",
+		"go":	"GCDebugChangeStubborn"
+	}, {
+		"mangle":	"GC_debug_end_stubborn_change",
+		"c++":	"GC_debug_end_stubborn_change(const void *)",
+		"go":	"GCDebugEndStubbornChange"
+	}, {
+		"mangle":	"GC_debug_free",
+		"c++":	"GC_debug_free(void *)",
+		"go":	"GCDebugFree"
+	}, {
+		"mangle":	"GC_debug_gcj_malloc",
+		"c++":	"GC_debug_gcj_malloc(size_t, void *, const char *, int)",
+		"go":	"GCDebugGcjMalloc"
+	}, {
+		"mangle":	"GC_debug_generic_or_special_malloc",
+		"c++":	"GC_debug_generic_or_special_malloc(size_t, int, const char *, int)",
+		"go":	"GCDebugGenericOrSpecialMalloc"
+	}, {
+		"mangle":	"GC_debug_malloc",
+		"c++":	"GC_debug_malloc(size_t, const char *, int)",
+		"go":	"GCDebugMalloc"
+	}, {
+		"mangle":	"GC_debug_malloc_atomic",
+		"c++":	"GC_debug_malloc_atomic(size_t, const char *, int)",
+		"go":	"GCDebugMallocAtomic"
+	}, {
+		"mangle":	"GC_debug_malloc_atomic_ignore_off_page",
+		"c++":	"GC_debug_malloc_atomic_ignore_off_page(size_t, const char *, int)",
+		"go":	"GCDebugMallocAtomicIgnoreOffPage"
+	}, {
+		"mangle":	"GC_debug_malloc_atomic_uncollectable",
+		"c++":	"GC_debug_malloc_atomic_uncollectable(size_t, const char *, int)",
+		"go":	"GCDebugMallocAtomicUncollectable"
+	}, {
+		"mangle":	"GC_debug_malloc_ignore_off_page",
+		"c++":	"GC_debug_malloc_ignore_off_page(size_t, const char *, int)",
+		"go":	"GCDebugMallocIgnoreOffPage"
+	}, {
+		"mangle":	"GC_debug_malloc_replacement",
+		"c++":	"GC_debug_malloc_replacement(size_t)",
+		"go":	"GCDebugMallocReplacement"
+	}, {
+		"mangle":	"GC_debug_malloc_stubborn",
+		"c++":	"GC_debug_malloc_stubborn(size_t, const char *, int)",
+		"go":	"GCDebugMallocStubborn"
+	}, {
+		"mangle":	"GC_debug_malloc_uncollectable",
+		"c++":	"GC_debug_malloc_uncollectable(size_t, const char *, int)",
+		"go":	"GCDebugMallocUncollectable"
+	}, {
+		"mangle":	"GC_debug_ptr_store_and_dirty",
+		"c++":	"GC_debug_ptr_store_and_dirty(void *, const void *)",
+		"go":	"GCDebugPtrStoreAndDirty"
+	}, {
+		"mangle":	"GC_debug_realloc",
+		"c++":	"GC_debug_realloc(void *, size_t, const char *, int)",
+		"go":	"GCDebugRealloc"
+	}, {
+		"mangle":	"GC_debug_realloc_replacement",
+		"c++":	"GC_debug_realloc_replacement(void *, size_t)",
+		"go":	"GCDebugReallocReplacement"
+	}, {
+		"mangle":	"GC_debug_register_displacement",
+		"c++":	"GC_debug_register_displacement(size_t)",
+		"go":	"GCDebugRegisterDisplacement"
+	}, {
+		"mangle":	"GC_debug_register_finalizer",
+		"c++":	"GC_debug_register_finalizer(void *, GC_finalization_proc, void *, GC_finalization_proc *, void **)",
+		"go":	"GCDebugRegisterFinalizer"
+	}, {
+		"mangle":	"GC_debug_register_finalizer_ignore_self",
+		"c++":	"GC_debug_register_finalizer_ignore_self(void *, GC_finalization_proc, void *, GC_finalization_proc *, void **)",
+		"go":	"GCDebugRegisterFinalizerIgnoreSelf"
+	}, {
+		"mangle":	"GC_debug_register_finalizer_no_order",
+		"c++":	"GC_debug_register_finalizer_no_order(void *, GC_finalization_proc, void *, GC_finalization_proc *, void **)",
+		"go":	"GCDebugRegisterFinalizerNoOrder"
+	}, {
+		"mangle":	"GC_debug_register_finalizer_unreachable",
+		"c++":	"GC_debug_register_finalizer_unreachable(void *, GC_finalization_proc, void *, GC_finalization_proc *, void **)",
+		"go":	"GCDebugRegisterFinalizerUnreachable"
+	}, {
+		"mangle":	"GC_debug_strdup",
+		"c++":	"GC_debug_strdup(const char *, const char *, int)",
+		"go":	"GCDebugStrdup"
+	}, {
+		"mangle":	"GC_debug_strndup",
+		"c++":	"GC_debug_strndup(const char *, size_t, const char *, int)",
+		"go":	"GCDebugStrndup"
+	}, {
+		"mangle":	"GC_deinit",
+		"c++":	"GC_deinit()",
+		"go":	"GCDeinit"
+	}, {
+		"mangle":	"GC_disable",
+		"c++":	"GC_disable()",
+		"go":	"GCDisable"
+	}, {
+		"mangle":	"GC_do_blocking",
+		"c++":	"GC_do_blocking(GC_fn_type, void *)",
+		"go":	"GCDoBlocking"
+	}, {
+		"mangle":	"GC_dump",
+		"c++":	"GC_dump()",
+		"go":	"GCDump"
+	}, {
+		"mangle":	"GC_dump_finalization",
+		"c++":	"GC_dump_finalization()",
+		"go":	"GCDumpFinalization"
+	}, {
+		"mangle":	"GC_dump_named",
+		"c++":	"GC_dump_named(const char *)",
+		"go":	"GCDumpNamed"
+	}, {
+		"mangle":	"GC_dump_regions",
+		"c++":	"GC_dump_regions()",
+		"go":	"GCDumpRegions"
+	}, {
+		"mangle":	"GC_enable",
+		"c++":	"GC_enable()",
+		"go":	"GCEnable"
+	}, {
+		"mangle":	"GC_enable_incremental",
+		"c++":	"GC_enable_incremental()",
+		"go":	"GCEnableIncremental"
+	}, {
+		"mangle":	"GC_end_stubborn_change",
+		"c++":	"GC_end_stubborn_change(const void *)",
+		"go":	"GCEndStubbornChange"
+	}, {
+		"mangle":	"GC_enumerate_reachable_objects_inner",
+		"c++":	"GC_enumerate_reachable_objects_inner(GC_reachable_object_proc, void *)",
+		"go":	"GCEnumerateReachableObjectsInner"
+	}, {
+		"mangle":	"GC_exclude_static_roots",
+		"c++":	"GC_exclude_static_roots(void *, void *)",
+		"go":	"GCExcludeStaticRoots"
+	}, {
+		"mangle":	"GC_expand_hp",
+		"c++":	"GC_expand_hp(size_t)",
+		"go":	"GCExpandHp"
+	}, {
+		"mangle":	"GC_finalize_all",
+		"c++":	"GC_finalize_all()",
+		"go":	"GCFinalizeAll"
+	}, {
+		"mangle":	"GC_finalized_malloc",
+		"c++":	"GC_finalized_malloc(size_t, const struct GC_finalizer_closure *)",
+		"go":	"GCFinalizedMalloc"
+	}, {
+		"mangle":	"GC_free",
+		"c++":	"GC_free(void *)",
+		"go":	"GCFree"
+	}, {
+		"mangle":	"GC_gcj_malloc",
+		"c++":	"GC_gcj_malloc(size_t, void *)",
+		"go":	"GCGcjMalloc"
+	}, {
+		"mangle":	"GC_gcj_malloc_ignore_off_page",
+		"c++":	"GC_gcj_malloc_ignore_off_page(size_t, void *)",
+		"go":	"GCGcjMallocIgnoreOffPage"
+	}, {
+		"mangle":	"GC_gcollect",
+		"c++":	"GC_gcollect()",
+		"go":	"GCGcollect"
+	}, {
+		"mangle":	"GC_gcollect_and_unmap",
+		"c++":	"GC_gcollect_and_unmap()",
+		"go":	"GCGcollectAndUnmap"
+	}, {
+		"mangle":	"GC_general_register_disappearing_link",
+		"c++":	"GC_general_register_disappearing_link(void **, const void *)",
+		"go":	"GCGeneralRegisterDisappearingLink"
+	}, {
+		"mangle":	"GC_generic_malloc",
+		"c++":	"GC_generic_malloc(size_t, int)",
+		"go":	"GCGenericMalloc"
+	}, {
+		"mangle":	"GC_generic_malloc_ignore_off_page",
+		"c++":	"GC_generic_malloc_ignore_off_page(size_t, int)",
+		"go":	"GCGenericMallocIgnoreOffPage"
+	}, {
+		"mangle":	"GC_generic_malloc_many",
+		"c++":	"GC_generic_malloc_many(size_t, int, void **)",
+		"go":	"GCGenericMallocMany"
+	}, {
+		"mangle":	"GC_generic_malloc_uncollectable",
+		"c++":	"GC_generic_malloc_uncollectable(size_t, int)",
+		"go":	"GCGenericMallocUncollectable"
+	}, {
+		"mangle":	"GC_generic_or_special_malloc",
+		"c++":	"GC_generic_or_special_malloc(size_t, int)",
+		"go":	"GCGenericOrSpecialMalloc"
+	}, {
+		"mangle":	"GC_get_abort_func",
+		"c++":	"GC_get_abort_func()",
+		"go":	"GCGetAbortFunc"
+	}, {
+		"mangle":	"GC_get_all_interior_pointers",
+		"c++":	"GC_get_all_interior_pointers()",
+		"go":	"GCGetAllInteriorPointers"
+	}, {
+		"mangle":	"GC_get_allocd_bytes_per_finalizer",
+		"c++":	"GC_get_allocd_bytes_per_finalizer()",
+		"go":	"GCGetAllocdBytesPerFinalizer"
+	}, {
+		"mangle":	"GC_get_await_finalize_proc",
+		"c++":	"GC_get_await_finalize_proc()",
+		"go":	"GCGetAwaitFinalizeProc"
+	}, {
+		"mangle":	"GC_get_bytes_since_gc",
+		"c++":	"GC_get_bytes_since_gc()",
+		"go":	"GCGetBytesSinceGc"
+	}, {
+		"mangle":	"GC_get_debug_header_size",
+		"c++":	"GC_get_debug_header_size()",
+		"go":	"GCGetDebugHeaderSize"
+	}, {
+		"mangle":	"GC_get_disable_automatic_collection",
+		"c++":	"GC_get_disable_automatic_collection()",
+		"go":	"GCGetDisableAutomaticCollection"
+	}, {
+		"mangle":	"GC_get_dont_expand",
+		"c++":	"GC_get_dont_expand()",
+		"go":	"GCGetDontExpand"
+	}, {
+		"mangle":	"GC_get_dont_precollect",
+		"c++":	"GC_get_dont_precollect()",
+		"go":	"GCGetDontPrecollect"
+	}, {
+		"mangle":	"GC_get_expl_freed_bytes_since_gc",
+		"c++":	"GC_get_expl_freed_bytes_since_gc()",
+		"go":	"GCGetExplFreedBytesSinceGc"
+	}, {
+		"mangle":	"GC_get_finalize_on_demand",
+		"c++":	"GC_get_finalize_on_demand()",
+		"go":	"GCGetFinalizeOnDemand"
+	}, {
+		"mangle":	"GC_get_finalizer_notifier",
+		"c++":	"GC_get_finalizer_notifier()",
+		"go":	"GCGetFinalizerNotifier"
+	}, {
+		"mangle":	"GC_get_find_leak",
+		"c++":	"GC_get_find_leak()",
+		"go":	"GCGetFindLeak"
+	}, {
+		"mangle":	"GC_get_force_unmap_on_gcollect",
+		"c++":	"GC_get_force_unmap_on_gcollect()",
+		"go":	"GCGetForceUnmapOnGcollect"
+	}, {
+		"mangle":	"GC_get_free_bytes",
+		"c++":	"GC_get_free_bytes()",
+		"go":	"GCGetFreeBytes"
+	}, {
+		"mangle":	"GC_get_free_space_divisor",
+		"c++":	"GC_get_free_space_divisor()",
+		"go":	"GCGetFreeSpaceDivisor"
+	}, {
+		"mangle":	"GC_get_full_freq",
+		"c++":	"GC_get_full_freq()",
+		"go":	"GCGetFullFreq"
+	}, {
+		"mangle":	"GC_get_full_gc_total_time",
+		"c++":	"GC_get_full_gc_total_time()",
+		"go":	"GCGetFullGcTotalTime"
+	}, {
+		"mangle":	"GC_get_gc_no",
+		"c++":	"GC_get_gc_no()",
+		"go":	"GCGetGcNo"
+	}, {
+		"mangle":	"GC_get_heap_size",
+		"c++":	"GC_get_heap_size()",
+		"go":	"GCGetHeapSize"
+	}, {
+		"mangle":	"GC_get_heap_usage_safe",
+		"c++":	"GC_get_heap_usage_safe(GC_word *, GC_word *, GC_word *, GC_word *, GC_word *)",
+		"go":	"(*GCWord).GCGetHeapUsageSafe"
+	}, {
+		"mangle":	"GC_get_java_finalization",
+		"c++":	"GC_get_java_finalization()",
+		"go":	"GCGetJavaFinalization"
+	}, {
+		"mangle":	"GC_get_kind_and_size",
+		"c++":	"GC_get_kind_and_size(const void *, size_t *)",
+		"go":	"GCGetKindAndSize"
+	}, {
+		"mangle":	"GC_get_manual_vdb_allowed",
+		"c++":	"GC_get_manual_vdb_allowed()",
+		"go":	"GCGetManualVdbAllowed"
+	}, {
+		"mangle":	"GC_get_max_prior_attempts",
+		"c++":	"GC_get_max_prior_attempts()",
+		"go":	"GCGetMaxPriorAttempts"
+	}, {
+		"mangle":	"GC_get_max_retries",
+		"c++":	"GC_get_max_retries()",
+		"go":	"GCGetMaxRetries"
+	}, {
+		"mangle":	"GC_get_memory_use",
+		"c++":	"GC_get_memory_use()",
+		"go":	"GCGetMemoryUse"
+	}, {
+		"mangle":	"GC_get_min_bytes_allocd",
+		"c++":	"GC_get_min_bytes_allocd()",
+		"go":	"GCGetMinBytesAllocd"
+	}, {
+		"mangle":	"GC_get_my_stackbottom",
+		"c++":	"GC_get_my_stackbottom(struct GC_stack_base *)",
+		"go":	"(*Struct GCStackBase).GCGetMyStackbottom"
+	}, {
+		"mangle":	"GC_get_no_dls",
+		"c++":	"GC_get_no_dls()",
+		"go":	"GCGetNoDls"
+	}, {
+		"mangle":	"GC_get_non_gc_bytes",
+		"c++":	"GC_get_non_gc_bytes()",
+		"go":	"GCGetNonGcBytes"
+	}, {
+		"mangle":	"GC_get_obtained_from_os_bytes",
+		"c++":	"GC_get_obtained_from_os_bytes()",
+		"go":	"GCGetObtainedFromOsBytes"
+	}, {
+		"mangle":	"GC_get_on_collection_event",
+		"c++":	"GC_get_on_collection_event()",
+		"go":	"GCGetOnCollectionEvent"
+	}, {
+		"mangle":	"GC_get_on_heap_resize",
+		"c++":	"GC_get_on_heap_resize()",
+		"go":	"GCGetOnHeapResize"
+	}, {
+		"mangle":	"GC_get_oom_fn",
+		"c++":	"GC_get_oom_fn()",
+		"go":	"GCGetOomFn"
+	}, {
+		"mangle":	"GC_get_pages_executable",
+		"c++":	"GC_get_pages_executable()",
+		"go":	"GCGetPagesExecutable"
+	}, {
+		"mangle":	"GC_get_prof_stats",
+		"c++":	"GC_get_prof_stats(struct GC_prof_stats_s *, size_t)",
+		"go":	"(*Struct GCProfStatsS).GCGetProfStats"
+	}, {
+		"mangle":	"GC_get_push_other_roots",
+		"c++":	"GC_get_push_other_roots()",
+		"go":	"GCGetPushOtherRoots"
+	}, {
+		"mangle":	"GC_get_rate",
+		"c++":	"GC_get_rate()",
+		"go":	"GCGetRate"
+	}, {
+		"mangle":	"GC_get_size_map_at",
+		"c++":	"GC_get_size_map_at(int)",
+		"go":	"GCGetSizeMapAt"
+	}, {
+		"mangle":	"GC_get_stack_base",
+		"c++":	"GC_get_stack_base(struct GC_stack_base *)",
+		"go":	"(*Struct GCStackBase).GCGetStackBase"
+	}, {
+		"mangle":	"GC_get_start_callback",
+		"c++":	"GC_get_start_callback()",
+		"go":	"GCGetStartCallback"
+	}, {
+		"mangle":	"GC_get_stop_func",
+		"c++":	"GC_get_stop_func()",
+		"go":	"GCGetStopFunc"
+	}, {
+		"mangle":	"GC_get_time_limit",
+		"c++":	"GC_get_time_limit()",
+		"go":	"GCGetTimeLimit"
+	}, {
+		"mangle":	"GC_get_time_limit_tv",
+		"c++":	"GC_get_time_limit_tv()",
+		"go":	"GCGetTimeLimitTv"
+	}, {
+		"mangle":	"GC_get_toggleref_func",
+		"c++":	"GC_get_toggleref_func()",
+		"go":	"GCGetTogglerefFunc"
+	}, {
+		"mangle":	"GC_get_total_bytes",
+		"c++":	"GC_get_total_bytes()",
+		"go":	"GCGetTotalBytes"
+	}, {
+		"mangle":	"GC_get_unmapped_bytes",
+		"c++":	"GC_get_unmapped_bytes()",
+		"go":	"GCGetUnmappedBytes"
+	}, {
+		"mangle":	"GC_get_version",
+		"c++":	"GC_get_version()",
+		"go":	"GCGetVersion"
+	}, {
+		"mangle":	"GC_get_warn_proc",
+		"c++":	"GC_get_warn_proc()",
+		"go":	"GCGetWarnProc"
+	}, {
+		"mangle":	"GC_ignore_warn_proc",
+		"c++":	"GC_ignore_warn_proc(char *, GC_word)",
+		"go":	"GCIgnoreWarnProc"
+	}, {
+		"mangle":	"GC_incremental_protection_needs",
+		"c++":	"GC_incremental_protection_needs()",
+		"go":	"GCIncrementalProtectionNeeds"
+	}, {
+		"mangle":	"GC_init",
+		"c++":	"GC_init()",
+		"go":	"GCInit"
+	}, {
+		"mangle":	"GC_init_finalized_malloc",
+		"c++":	"GC_init_finalized_malloc()",
+		"go":	"GCInitFinalizedMalloc"
+	}, {
+		"mangle":	"GC_init_gcj_malloc",
+		"c++":	"GC_init_gcj_malloc(int, void *)",
+		"go":	"GCInitGcjMalloc"
+	}, {
+		"mangle":	"GC_invoke_finalizers",
+		"c++":	"GC_invoke_finalizers()",
+		"go":	"GCInvokeFinalizers"
+	}, {
+		"mangle":	"GC_is_disabled",
+		"c++":	"GC_is_disabled()",
+		"go":	"GCIsDisabled"
+	}, {
+		"mangle":	"GC_is_heap_ptr",
+		"c++":	"GC_is_heap_ptr(const void *)",
+		"go":	"GCIsHeapPtr"
+	}, {
+		"mangle":	"GC_is_incremental_mode",
+		"c++":	"GC_is_incremental_mode()",
+		"go":	"GCIsIncrementalMode"
+	}, {
+		"mangle":	"GC_is_init_called",
+		"c++":	"GC_is_init_called()",
+		"go":	"GCIsInitCalled"
+	}, {
+		"mangle":	"GC_is_marked",
+		"c++":	"GC_is_marked(const void *)",
+		"go":	"GCIsMarked"
+	}, {
+		"mangle":	"GC_is_tmp_root",
+		"c++":	"GC_is_tmp_root(void *)",
+		"go":	"GCIsTmpRoot"
+	}, {
+		"mangle":	"GC_is_valid_displacement",
+		"c++":	"GC_is_valid_displacement(void *)",
+		"go":	"GCIsValidDisplacement"
+	}, {
+		"mangle":	"GC_is_visible",
+		"c++":	"GC_is_visible(void *)",
+		"go":	"GCIsVisible"
+	}, {
+		"mangle":	"GC_make_descriptor",
+		"c++":	"GC_make_descriptor(const GC_word *, size_t)",
+		"go":	"(*GCWord).GCMakeDescriptor"
+	}, {
+		"mangle":	"GC_malloc",
+		"c++":	"GC_malloc(size_t)",
+		"go":	"GCMalloc"
+	}, {
+		"mangle":	"GC_malloc_atomic",
+		"c++":	"GC_malloc_atomic(size_t)",
+		"go":	"GCMallocAtomic"
+	}, {
+		"mangle":	"GC_malloc_atomic_ignore_off_page",
+		"c++":	"GC_malloc_atomic_ignore_off_page(size_t)",
+		"go":	"GCMallocAtomicIgnoreOffPage"
+	}, {
+		"mangle":	"GC_malloc_atomic_uncollectable",
+		"c++":	"GC_malloc_atomic_uncollectable(size_t)",
+		"go":	"GCMallocAtomicUncollectable"
+	}, {
+		"mangle":	"GC_malloc_explicitly_typed",
+		"c++":	"GC_malloc_explicitly_typed(size_t, GC_descr)",
+		"go":	"GCMallocExplicitlyTyped"
+	}, {
+		"mangle":	"GC_malloc_explicitly_typed_ignore_off_page",
+		"c++":	"GC_malloc_explicitly_typed_ignore_off_page(size_t, GC_descr)",
+		"go":	"GCMallocExplicitlyTypedIgnoreOffPage"
+	}, {
+		"mangle":	"GC_malloc_ignore_off_page",
+		"c++":	"GC_malloc_ignore_off_page(size_t)",
+		"go":	"GCMallocIgnoreOffPage"
+	}, {
+		"mangle":	"GC_malloc_kind",
+		"c++":	"GC_malloc_kind(size_t, int)",
+		"go":	"GCMallocKind"
+	}, {
+		"mangle":	"GC_malloc_many",
+		"c++":	"GC_malloc_many(size_t)",
+		"go":	"GCMallocMany"
+	}, {
+		"mangle":	"GC_malloc_stubborn",
+		"c++":	"GC_malloc_stubborn(size_t)",
+		"go":	"GCMallocStubborn"
+	}, {
+		"mangle":	"GC_malloc_uncollectable",
+		"c++":	"GC_malloc_uncollectable(size_t)",
+		"go":	"GCMallocUncollectable"
+	}, {
+		"mangle":	"GC_mark_and_push",
+		"c++":	"GC_mark_and_push(void *, struct GC_ms_entry *, struct GC_ms_entry *, void **)",
+		"go":	"GCMarkAndPush"
+	}, {
+		"mangle":	"GC_memalign",
+		"c++":	"GC_memalign(size_t, size_t)",
+		"go":	"GCMemalign"
+	}, {
+		"mangle":	"GC_move_disappearing_link",
+		"c++":	"GC_move_disappearing_link(void **, void **)",
+		"go":	"GCMoveDisappearingLink"
+	}, {
+		"mangle":	"GC_move_long_link",
+		"c++":	"GC_move_long_link(void **, void **)",
+		"go":	"GCMoveLongLink"
+	}, {
+		"mangle":	"GC_new_free_list",
+		"c++":	"GC_new_free_list()",
+		"go":	"GCNewFreeList"
+	}, {
+		"mangle":	"GC_new_free_list_inner",
+		"c++":	"GC_new_free_list_inner()",
+		"go":	"GCNewFreeListInner"
+	}, {
+		"mangle":	"GC_new_kind",
+		"c++":	"GC_new_kind(void **, GC_word, int, int)",
+		"go":	"GCNewKind"
+	}, {
+		"mangle":	"GC_new_kind_inner",
+		"c++":	"GC_new_kind_inner(void **, GC_word, int, int)",
+		"go":	"GCNewKindInner"
+	}, {
+		"mangle":	"GC_new_proc",
+		"c++":	"GC_new_proc(GC_mark_proc)",
+		"go":	"GCNewProc"
+	}, {
+		"mangle":	"GC_new_proc_inner",
+		"c++":	"GC_new_proc_inner(GC_mark_proc)",
+		"go":	"GCNewProcInner"
+	}, {
+		"mangle":	"GC_posix_memalign",
+		"c++":	"GC_posix_memalign(void **, size_t, size_t)",
+		"go":	"GCPosixMemalign"
+	}, {
+		"mangle":	"GC_post_incr",
+		"c++":	"GC_post_incr(void **, ptrdiff_t)",
+		"go":	"GCPostIncr"
+	}, {
+		"mangle":	"GC_pre_incr",
+		"c++":	"GC_pre_incr(void **, ptrdiff_t)",
+		"go":	"GCPreIncr"
+	}, {
+		"mangle":	"GC_print_free_list",
+		"c++":	"GC_print_free_list(int, size_t)",
+		"go":	"GCPrintFreeList"
+	}, {
+		"mangle":	"GC_ptr_store_and_dirty",
+		"c++":	"GC_ptr_store_and_dirty(void *, const void *)",
+		"go":	"GCPtrStoreAndDirty"
+	}, {
+		"mangle":	"GC_push_all",
+		"c++":	"GC_push_all(void *, void *)",
+		"go":	"GCPushAll"
+	}, {
+		"mangle":	"GC_push_all_eager",
+		"c++":	"GC_push_all_eager(void *, void *)",
+		"go":	"GCPushAllEager"
+	}, {
+		"mangle":	"GC_push_conditional",
+		"c++":	"GC_push_conditional(void *, void *, int)",
+		"go":	"GCPushConditional"
+	}, {
+		"mangle":	"GC_push_finalizer_structures",
+		"c++":	"GC_push_finalizer_structures()",
+		"go":	"GCPushFinalizerStructures"
+	}, {
+		"mangle":	"GC_realloc",
+		"c++":	"GC_realloc(void *, size_t)",
+		"go":	"GCRealloc"
+	}, {
+		"mangle":	"GC_register_describe_type_fn",
+		"c++":	"GC_register_describe_type_fn(int, GC_describe_type_fn)",
+		"go":	"GCRegisterDescribeTypeFn"
+	}, {
+		"mangle":	"GC_register_disappearing_link",
+		"c++":	"GC_register_disappearing_link(void **)",
+		"go":	"GCRegisterDisappearingLink"
+	}, {
+		"mangle":	"GC_register_disclaim_proc",
+		"c++":	"GC_register_disclaim_proc(int, GC_disclaim_proc, int)",
+		"go":	"GCRegisterDisclaimProc"
+	}, {
+		"mangle":	"GC_register_displacement",
+		"c++":	"GC_register_displacement(size_t)",
+		"go":	"GCRegisterDisplacement"
+	}, {
+		"mangle":	"GC_register_finalizer",
+		"c++":	"GC_register_finalizer(void *, GC_finalization_proc, void *, GC_finalization_proc *, void **)",
+		"go":	"GCRegisterFinalizer"
+	}, {
+		"mangle":	"GC_register_finalizer_ignore_self",
+		"c++":	"GC_register_finalizer_ignore_self(void *, GC_finalization_proc, void *, GC_finalization_proc *, void **)",
+		"go":	"GCRegisterFinalizerIgnoreSelf"
+	}, {
+		"mangle":	"GC_register_finalizer_no_order",
+		"c++":	"GC_register_finalizer_no_order(void *, GC_finalization_proc, void *, GC_finalization_proc *, void **)",
+		"go":	"GCRegisterFinalizerNoOrder"
+	}, {
+		"mangle":	"GC_register_finalizer_unreachable",
+		"c++":	"GC_register_finalizer_unreachable(void *, GC_finalization_proc, void *, GC_finalization_proc *, void **)",
+		"go":	"GCRegisterFinalizerUnreachable"
+	}, {
+		"mangle":	"GC_register_has_static_roots_callback",
+		"c++":	"GC_register_has_static_roots_callback(GC_has_static_roots_func)",
+		"go":	"GCRegisterHasStaticRootsCallback"
+	}, {
+		"mangle":	"GC_register_long_link",
+		"c++":	"GC_register_long_link(void **, const void *)",
+		"go":	"GCRegisterLongLink"
+	}, {
+		"mangle":	"GC_remove_roots",
+		"c++":	"GC_remove_roots(void *, void *)",
+		"go":	"GCRemoveRoots"
+	}, {
+		"mangle":	"GC_same_obj",
+		"c++":	"GC_same_obj(void *, void *)",
+		"go":	"GCSameObj"
+	}, {
+		"mangle":	"GC_set_abort_func",
+		"c++":	"GC_set_abort_func(GC_abort_func)",
+		"go":	"GCSetAbortFunc"
+	}, {
+		"mangle":	"GC_set_all_interior_pointers",
+		"c++":	"GC_set_all_interior_pointers(int)",
+		"go":	"GCSetAllInteriorPointers"
+	}, {
+		"mangle":	"GC_set_allocd_bytes_per_finalizer",
+		"c++":	"GC_set_allocd_bytes_per_finalizer(GC_word)",
+		"go":	"GCWord.GCSetAllocdBytesPerFinalizer"
+	}, {
+		"mangle":	"GC_set_await_finalize_proc",
+		"c++":	"GC_set_await_finalize_proc(GC_await_finalize_proc)",
+		"go":	"GCSetAwaitFinalizeProc"
+	}, {
+		"mangle":	"GC_set_disable_automatic_collection",
+		"c++":	"GC_set_disable_automatic_collection(int)",
+		"go":	"GCSetDisableAutomaticCollection"
+	}, {
+		"mangle":	"GC_set_dont_expand",
+		"c++":	"GC_set_dont_expand(int)",
+		"go":	"GCSetDontExpand"
+	}, {
+		"mangle":	"GC_set_dont_precollect",
+		"c++":	"GC_set_dont_precollect(int)",
+		"go":	"GCSetDontPrecollect"
+	}, {
+		"mangle":	"GC_set_finalize_on_demand",
+		"c++":	"GC_set_finalize_on_demand(int)",
+		"go":	"GCSetFinalizeOnDemand"
+	}, {
+		"mangle":	"GC_set_finalizer_notifier",
+		"c++":	"GC_set_finalizer_notifier(GC_finalizer_notifier_proc)",
+		"go":	"GCSetFinalizerNotifier"
+	}, {
+		"mangle":	"GC_set_find_leak",
+		"c++":	"GC_set_find_leak(int)",
+		"go":	"GCSetFindLeak"
+	}, {
+		"mangle":	"GC_set_force_unmap_on_gcollect",
+		"c++":	"GC_set_force_unmap_on_gcollect(int)",
+		"go":	"GCSetForceUnmapOnGcollect"
+	}, {
+		"mangle":	"GC_set_free_space_divisor",
+		"c++":	"GC_set_free_space_divisor(GC_word)",
+		"go":	"GCWord.GCSetFreeSpaceDivisor"
+	}, {
+		"mangle":	"GC_set_full_freq",
+		"c++":	"GC_set_full_freq(int)",
+		"go":	"GCSetFullFreq"
+	}, {
+		"mangle":	"GC_set_handle_fork",
+		"c++":	"GC_set_handle_fork(int)",
+		"go":	"GCSetHandleFork"
+	}, {
+		"mangle":	"GC_set_java_finalization",
+		"c++":	"GC_set_java_finalization(int)",
+		"go":	"GCSetJavaFinalization"
+	}, {
+		"mangle":	"GC_set_log_fd",
+		"c++":	"GC_set_log_fd(int)",
+		"go":	"GCSetLogFd"
+	}, {
+		"mangle":	"GC_set_manual_vdb_allowed",
+		"c++":	"GC_set_manual_vdb_allowed(int)",
+		"go":	"GCSetManualVdbAllowed"
+	}, {
+		"mangle":	"GC_set_mark_bit",
+		"c++":	"GC_set_mark_bit(const void *)",
+		"go":	"GCSetMarkBit"
+	}, {
+		"mangle":	"GC_set_max_heap_size",
+		"c++":	"GC_set_max_heap_size(GC_word)",
+		"go":	"GCWord.GCSetMaxHeapSize"
+	}, {
+		"mangle":	"GC_set_max_prior_attempts",
+		"c++":	"GC_set_max_prior_attempts(int)",
+		"go":	"GCSetMaxPriorAttempts"
+	}, {
+		"mangle":	"GC_set_max_retries",
+		"c++":	"GC_set_max_retries(GC_word)",
+		"go":	"GCWord.GCSetMaxRetries"
+	}, {
+		"mangle":	"GC_set_min_bytes_allocd",
+		"c++":	"GC_set_min_bytes_allocd(size_t)",
+		"go":	"GCSetMinBytesAllocd"
+	}, {
+		"mangle":	"GC_set_no_dls",
+		"c++":	"GC_set_no_dls(int)",
+		"go":	"GCSetNoDls"
+	}, {
+		"mangle":	"GC_set_non_gc_bytes",
+		"c++":	"GC_set_non_gc_bytes(GC_word)",
+		"go":	"GCWord.GCSetNonGcBytes"
+	}, {
+		"mangle":	"GC_set_on_collection_event",
+		"c++":	"GC_set_on_collection_event(GC_on_collection_event_proc)",
+		"go":	"GCSetOnCollectionEvent"
+	}, {
+		"mangle":	"GC_set_on_heap_resize",
+		"c++":	"GC_set_on_heap_resize(GC_on_heap_resize_proc)",
+		"go":	"GCSetOnHeapResize"
+	}, {
+		"mangle":	"GC_set_oom_fn",
+		"c++":	"GC_set_oom_fn(GC_oom_func)",
+		"go":	"GCSetOomFn"
+	}, {
+		"mangle":	"GC_set_pages_executable",
+		"c++":	"GC_set_pages_executable(int)",
+		"go":	"GCSetPagesExecutable"
+	}, {
+		"mangle":	"GC_set_push_other_roots",
+		"c++":	"GC_set_push_other_roots(GC_push_other_roots_proc)",
+		"go":	"GCSetPushOtherRoots"
+	}, {
+		"mangle":	"GC_set_rate",
+		"c++":	"GC_set_rate(int)",
+		"go":	"GCSetRate"
+	}, {
+		"mangle":	"GC_set_stackbottom",
+		"c++":	"GC_set_stackbottom(void *, const struct GC_stack_base *)",
+		"go":	"GCSetStackbottom"
+	}, {
+		"mangle":	"GC_set_start_callback",
+		"c++":	"GC_set_start_callback(GC_start_callback_proc)",
+		"go":	"GCSetStartCallback"
+	}, {
+		"mangle":	"GC_set_stop_func",
+		"c++":	"GC_set_stop_func(GC_stop_func)",
+		"go":	"GCSetStopFunc"
+	}, {
+		"mangle":	"GC_set_time_limit",
+		"c++":	"GC_set_time_limit(unsigned long)",
+		"go":	"GCSetTimeLimit"
+	}, {
+		"mangle":	"GC_set_time_limit_tv",
+		"c++":	"GC_set_time_limit_tv(struct GC_timeval_s)",
+		"go":	"Struct GCTimevalS.GCSetTimeLimitTv"
+	}, {
+		"mangle":	"GC_set_toggleref_func",
+		"c++":	"GC_set_toggleref_func(GC_toggleref_func)",
+		"go":	"GCSetTogglerefFunc"
+	}, {
+		"mangle":	"GC_set_warn_proc",
+		"c++":	"GC_set_warn_proc(GC_warn_proc)",
+		"go":	"GCSetWarnProc"
+	}, {
+		"mangle":	"GC_should_invoke_finalizers",
+		"c++":	"GC_should_invoke_finalizers()",
+		"go":	"GCShouldInvokeFinalizers"
+	}, {
+		"mangle":	"GC_size",
+		"c++":	"GC_size(const void *)",
+		"go":	"GCSize"
+	}, {
+		"mangle":	"GC_start_incremental_collection",
+		"c++":	"GC_start_incremental_collection()",
+		"go":	"GCStartIncrementalCollection"
+	}, {
+		"mangle":	"GC_start_mark_threads",
+		"c++":	"GC_start_mark_threads()",
+		"go":	"GCStartMarkThreads"
+	}, {
+		"mangle":	"GC_start_performance_measurement",
+		"c++":	"GC_start_performance_measurement()",
+		"go":	"GCStartPerformanceMeasurement"
+	}, {
+		"mangle":	"GC_strdup",
+		"c++":	"GC_strdup(const char *)",
+		"go":	"GCStrdup"
+	}, {
+		"mangle":	"GC_strndup",
+		"c++":	"GC_strndup(const char *, size_t)",
+		"go":	"GCStrndup"
+	}, {
+		"mangle":	"GC_toggleref_add",
+		"c++":	"GC_toggleref_add(void *, int)",
+		"go":	"GCTogglerefAdd"
+	}, {
+		"mangle":	"GC_try_to_collect",
+		"c++":	"GC_try_to_collect(GC_stop_func)",
+		"go":	"GCTryToCollect"
+	}, {
+		"mangle":	"GC_unregister_disappearing_link",
+		"c++":	"GC_unregister_disappearing_link(void **)",
+		"go":	"GCUnregisterDisappearingLink"
+	}, {
+		"mangle":	"GC_unregister_long_link",
+		"c++":	"GC_unregister_long_link(void **)",
+		"go":	"GCUnregisterLongLink"
+	}]

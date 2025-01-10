@@ -1,0 +1,834 @@
+===== bdw-gc_autogen_link.go =====
+package bdw-gc
+
+const LLGoPackage string = "link: $(pkg-config --libs bdw-gc);"
+
+===== cord.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+
+const CORDEMPTY c.Int = 0
+// llgo:type C
+type CORDFn func(uintptr, unsafe.Pointer) int8
+// llgo:type C
+type CORDIterFn func(int8, unsafe.Pointer) c.Int
+// llgo:type C
+type CORDBatchedIterFn func(*int8, unsafe.Pointer) c.Int
+
+===== cord_pos.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+const MAXDEPTH c.Int = 48
+const FUNCTIONBUFSZ c.Int = 8
+
+type CORDPe struct {
+	PeCord     CORD
+	PeStartPos uintptr
+}
+type CORD *int8
+type CORDPos struct {
+	CurPos      uintptr
+	PathLen     c.Int
+	CurLeaf     *int8
+	CurStart    uintptr
+	CurEnd      uintptr
+	Path        [49]CORDPe
+	FunctionBuf [8]int8
+}
+type CORDPos__1 [1]CORDPos
+
+===== ec.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+const CORDBUFSZ c.Int = 128
+
+type CORDEcStruct struct {
+	EcCord   CORD
+	EcBufptr *int8
+	EcBuf    [129]int8
+}
+type CORDEc [1]CORDEcStruct
+
+===== gc.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+
+const GCTIMEUNLIMITED c.Int = 999999
+const GCPROTECTSPOINTERHEAP c.Int = 1
+const GCPROTECTSPTRFREEHEAP c.Int = 2
+const GCPROTECTSSTATICDATA c.Int = 4
+const GCPROTECTSSTACK c.Int = 8
+const GCPROTECTSNONE c.Int = 0
+const GCNOMEMORY c.Int = 2
+const GCSUCCESS c.Int = 0
+const GCDUPLICATE c.Int = 1
+const GCNOTHREADS c.Int = 2
+const GCUNIMPLEMENTED c.Int = 3
+const GCNOTFOUND c.Int = 4
+
+type GCPTR unsafe.Pointer
+type GCWord c.Ulong
+type GCSignedWord c.Long
+//go:linkname GCGetVersion C.GC_get_version
+func GCGetVersion() c.Uint
+//go:linkname GCGetGcNo C.GC_get_gc_no
+func GCGetGcNo() GCWord
+// llgo:type C
+type GCOomFunc func(uintptr) unsafe.Pointer
+//go:linkname GCSetOomFn C.GC_set_oom_fn
+func GCSetOomFn(GCOomFunc)
+//go:linkname GCGetOomFn C.GC_get_oom_fn
+func GCGetOomFn() GCOomFunc
+// llgo:type C
+type GCOnHeapResizeProc func(GCWord)
+//go:linkname GCSetOnHeapResize C.GC_set_on_heap_resize
+func GCSetOnHeapResize(GCOnHeapResizeProc)
+//go:linkname GCGetOnHeapResize C.GC_get_on_heap_resize
+func GCGetOnHeapResize() GCOnHeapResizeProc
+
+type GCEventType c.Int
+
+const (
+	GCEventTypeGCEVENTSTART             GCEventType = 0
+	GCEventTypeGCEVENTMARKSTART         GCEventType = 1
+	GCEventTypeGCEVENTMARKEND           GCEventType = 2
+	GCEventTypeGCEVENTRECLAIMSTART      GCEventType = 3
+	GCEventTypeGCEVENTRECLAIMEND        GCEventType = 4
+	GCEventTypeGCEVENTEND               GCEventType = 5
+	GCEventTypeGCEVENTPRESTOPWORLD      GCEventType = 6
+	GCEventTypeGCEVENTPOSTSTOPWORLD     GCEventType = 7
+	GCEventTypeGCEVENTPRESTARTWORLD     GCEventType = 8
+	GCEventTypeGCEVENTPOSTSTARTWORLD    GCEventType = 9
+	GCEventTypeGCEVENTTHREADSUSPENDED   GCEventType = 10
+	GCEventTypeGCEVENTTHREADUNSUSPENDED GCEventType = 11
+)
+// llgo:type C
+type GCOnCollectionEventProc func(GCEventType)
+//go:linkname GCSetOnCollectionEvent C.GC_set_on_collection_event
+func GCSetOnCollectionEvent(GCOnCollectionEventProc)
+//go:linkname GCGetOnCollectionEvent C.GC_get_on_collection_event
+func GCGetOnCollectionEvent() GCOnCollectionEventProc
+//go:linkname GCSetFindLeak C.GC_set_find_leak
+func GCSetFindLeak(c.Int)
+//go:linkname GCGetFindLeak C.GC_get_find_leak
+func GCGetFindLeak() c.Int
+//go:linkname GCSetAllInteriorPointers C.GC_set_all_interior_pointers
+func GCSetAllInteriorPointers(c.Int)
+//go:linkname GCGetAllInteriorPointers C.GC_get_all_interior_pointers
+func GCGetAllInteriorPointers() c.Int
+//go:linkname GCSetFinalizeOnDemand C.GC_set_finalize_on_demand
+func GCSetFinalizeOnDemand(c.Int)
+//go:linkname GCGetFinalizeOnDemand C.GC_get_finalize_on_demand
+func GCGetFinalizeOnDemand() c.Int
+//go:linkname GCSetJavaFinalization C.GC_set_java_finalization
+func GCSetJavaFinalization(c.Int)
+//go:linkname GCGetJavaFinalization C.GC_get_java_finalization
+func GCGetJavaFinalization() c.Int
+// llgo:type C
+type GCFinalizerNotifierProc func()
+//go:linkname GCSetFinalizerNotifier C.GC_set_finalizer_notifier
+func GCSetFinalizerNotifier(GCFinalizerNotifierProc)
+//go:linkname GCGetFinalizerNotifier C.GC_get_finalizer_notifier
+func GCGetFinalizerNotifier() GCFinalizerNotifierProc
+//go:linkname GCSetDontExpand C.GC_set_dont_expand
+func GCSetDontExpand(c.Int)
+//go:linkname GCGetDontExpand C.GC_get_dont_expand
+func GCGetDontExpand() c.Int
+//go:linkname GCSetFullFreq C.GC_set_full_freq
+func GCSetFullFreq(c.Int)
+//go:linkname GCGetFullFreq C.GC_get_full_freq
+func GCGetFullFreq() c.Int
+// llgo:link GCWord.GCSetNonGcBytes C.GC_set_non_gc_bytes
+func (recv_ GCWord) GCSetNonGcBytes() {
+}
+//go:linkname GCGetNonGcBytes C.GC_get_non_gc_bytes
+func GCGetNonGcBytes() GCWord
+//go:linkname GCSetNoDls C.GC_set_no_dls
+func GCSetNoDls(c.Int)
+//go:linkname GCGetNoDls C.GC_get_no_dls
+func GCGetNoDls() c.Int
+// llgo:link GCWord.GCSetFreeSpaceDivisor C.GC_set_free_space_divisor
+func (recv_ GCWord) GCSetFreeSpaceDivisor() {
+}
+//go:linkname GCGetFreeSpaceDivisor C.GC_get_free_space_divisor
+func GCGetFreeSpaceDivisor() GCWord
+// llgo:link GCWord.GCSetMaxRetries C.GC_set_max_retries
+func (recv_ GCWord) GCSetMaxRetries() {
+}
+//go:linkname GCGetMaxRetries C.GC_get_max_retries
+func GCGetMaxRetries() GCWord
+//go:linkname GCSetDontPrecollect C.GC_set_dont_precollect
+func GCSetDontPrecollect(c.Int)
+//go:linkname GCGetDontPrecollect C.GC_get_dont_precollect
+func GCGetDontPrecollect() c.Int
+//go:linkname GCSetTimeLimit C.GC_set_time_limit
+func GCSetTimeLimit(c.Ulong)
+//go:linkname GCGetTimeLimit C.GC_get_time_limit
+func GCGetTimeLimit() c.Ulong
+
+type GCTimevalS struct {
+	TvMs   c.Ulong
+	TvNsec c.Ulong
+}
+// llgo:link GCTimevalS.GCSetTimeLimitTv C.GC_set_time_limit_tv
+func (recv_ GCTimevalS) GCSetTimeLimitTv() {
+}
+//go:linkname GCGetTimeLimitTv C.GC_get_time_limit_tv
+func GCGetTimeLimitTv() GCTimevalS
+// llgo:link GCWord.GCSetAllocdBytesPerFinalizer C.GC_set_allocd_bytes_per_finalizer
+func (recv_ GCWord) GCSetAllocdBytesPerFinalizer() {
+}
+//go:linkname GCGetAllocdBytesPerFinalizer C.GC_get_allocd_bytes_per_finalizer
+func GCGetAllocdBytesPerFinalizer() GCWord
+//go:linkname GCStartPerformanceMeasurement C.GC_start_performance_measurement
+func GCStartPerformanceMeasurement()
+//go:linkname GCGetFullGcTotalTime C.GC_get_full_gc_total_time
+func GCGetFullGcTotalTime() c.Ulong
+//go:linkname GCSetPagesExecutable C.GC_set_pages_executable
+func GCSetPagesExecutable(c.Int)
+//go:linkname GCGetPagesExecutable C.GC_get_pages_executable
+func GCGetPagesExecutable() c.Int
+//go:linkname GCSetMinBytesAllocd C.GC_set_min_bytes_allocd
+func GCSetMinBytesAllocd(uintptr)
+//go:linkname GCGetMinBytesAllocd C.GC_get_min_bytes_allocd
+func GCGetMinBytesAllocd() uintptr
+//go:linkname GCSetRate C.GC_set_rate
+func GCSetRate(c.Int)
+//go:linkname GCGetRate C.GC_get_rate
+func GCGetRate() c.Int
+//go:linkname GCSetMaxPriorAttempts C.GC_set_max_prior_attempts
+func GCSetMaxPriorAttempts(c.Int)
+//go:linkname GCGetMaxPriorAttempts C.GC_get_max_prior_attempts
+func GCGetMaxPriorAttempts() c.Int
+//go:linkname GCSetDisableAutomaticCollection C.GC_set_disable_automatic_collection
+func GCSetDisableAutomaticCollection(c.Int)
+//go:linkname GCGetDisableAutomaticCollection C.GC_get_disable_automatic_collection
+func GCGetDisableAutomaticCollection() c.Int
+//go:linkname GCSetHandleFork C.GC_set_handle_fork
+func GCSetHandleFork(c.Int)
+//go:linkname GCAtforkPrepare C.GC_atfork_prepare
+func GCAtforkPrepare()
+//go:linkname GCAtforkParent C.GC_atfork_parent
+func GCAtforkParent()
+//go:linkname GCAtforkChild C.GC_atfork_child
+func GCAtforkChild()
+//go:linkname GCInit C.GC_init
+func GCInit()
+//go:linkname GCIsInitCalled C.GC_is_init_called
+func GCIsInitCalled() c.Int
+//go:linkname GCDeinit C.GC_deinit
+func GCDeinit()
+//go:linkname GCMalloc C.GC_malloc
+func GCMalloc(uintptr) unsafe.Pointer
+//go:linkname GCMallocAtomic C.GC_malloc_atomic
+func GCMallocAtomic(uintptr) unsafe.Pointer
+//go:linkname GCStrdup C.GC_strdup
+func GCStrdup(*int8) *int8
+//go:linkname GCStrndup C.GC_strndup
+func GCStrndup(*int8, uintptr) *int8
+//go:linkname GCMallocUncollectable C.GC_malloc_uncollectable
+func GCMallocUncollectable(uintptr) unsafe.Pointer
+//go:linkname GCMallocStubborn C.GC_malloc_stubborn
+func GCMallocStubborn(uintptr) unsafe.Pointer
+//go:linkname GCMemalign C.GC_memalign
+func GCMemalign(uintptr, uintptr) unsafe.Pointer
+//go:linkname GCPosixMemalign C.GC_posix_memalign
+func GCPosixMemalign(*unsafe.Pointer, uintptr, uintptr) c.Int
+//go:linkname GCFree C.GC_free
+func GCFree(unsafe.Pointer)
+//go:linkname GCChangeStubborn C.GC_change_stubborn
+func GCChangeStubborn(unsafe.Pointer)
+//go:linkname GCEndStubbornChange C.GC_end_stubborn_change
+func GCEndStubbornChange(unsafe.Pointer)
+//go:linkname GCBase C.GC_base
+func GCBase(unsafe.Pointer) unsafe.Pointer
+//go:linkname GCIsHeapPtr C.GC_is_heap_ptr
+func GCIsHeapPtr(unsafe.Pointer) c.Int
+//go:linkname GCSize C.GC_size
+func GCSize(unsafe.Pointer) uintptr
+//go:linkname GCRealloc C.GC_realloc
+func GCRealloc(unsafe.Pointer, uintptr) unsafe.Pointer
+//go:linkname GCExpandHp C.GC_expand_hp
+func GCExpandHp(uintptr) c.Int
+// llgo:link GCWord.GCSetMaxHeapSize C.GC_set_max_heap_size
+func (recv_ GCWord) GCSetMaxHeapSize() {
+}
+//go:linkname GCExcludeStaticRoots C.GC_exclude_static_roots
+func GCExcludeStaticRoots(unsafe.Pointer, unsafe.Pointer)
+//go:linkname GCClearExclusionTable C.GC_clear_exclusion_table
+func GCClearExclusionTable()
+//go:linkname GCClearRoots C.GC_clear_roots
+func GCClearRoots()
+//go:linkname GCAddRoots C.GC_add_roots
+func GCAddRoots(unsafe.Pointer, unsafe.Pointer)
+//go:linkname GCRemoveRoots C.GC_remove_roots
+func GCRemoveRoots(unsafe.Pointer, unsafe.Pointer)
+//go:linkname GCRegisterDisplacement C.GC_register_displacement
+func GCRegisterDisplacement(uintptr)
+//go:linkname GCDebugRegisterDisplacement C.GC_debug_register_displacement
+func GCDebugRegisterDisplacement(uintptr)
+//go:linkname GCGcollect C.GC_gcollect
+func GCGcollect()
+//go:linkname GCGcollectAndUnmap C.GC_gcollect_and_unmap
+func GCGcollectAndUnmap()
+// llgo:type C
+type GCStopFunc func() c.Int
+//go:linkname GCTryToCollect C.GC_try_to_collect
+func GCTryToCollect(GCStopFunc) c.Int
+//go:linkname GCSetStopFunc C.GC_set_stop_func
+func GCSetStopFunc(GCStopFunc)
+//go:linkname GCGetStopFunc C.GC_get_stop_func
+func GCGetStopFunc() GCStopFunc
+//go:linkname GCGetHeapSize C.GC_get_heap_size
+func GCGetHeapSize() uintptr
+//go:linkname GCGetFreeBytes C.GC_get_free_bytes
+func GCGetFreeBytes() uintptr
+//go:linkname GCGetUnmappedBytes C.GC_get_unmapped_bytes
+func GCGetUnmappedBytes() uintptr
+//go:linkname GCGetBytesSinceGc C.GC_get_bytes_since_gc
+func GCGetBytesSinceGc() uintptr
+//go:linkname GCGetExplFreedBytesSinceGc C.GC_get_expl_freed_bytes_since_gc
+func GCGetExplFreedBytesSinceGc() uintptr
+//go:linkname GCGetTotalBytes C.GC_get_total_bytes
+func GCGetTotalBytes() uintptr
+//go:linkname GCGetObtainedFromOsBytes C.GC_get_obtained_from_os_bytes
+func GCGetObtainedFromOsBytes() uintptr
+// llgo:link (*GCWord).GCGetHeapUsageSafe C.GC_get_heap_usage_safe
+func (recv_ *GCWord) GCGetHeapUsageSafe(*GCWord, *GCWord, *GCWord, *GCWord) {
+}
+
+type GCProfStatsS struct {
+	HeapsizeFull           GCWord
+	FreeBytesFull          GCWord
+	UnmappedBytes          GCWord
+	BytesAllocdSinceGc     GCWord
+	AllocdBytesBeforeGc    GCWord
+	NonGcBytes             GCWord
+	GcNo                   GCWord
+	MarkersM1              GCWord
+	BytesReclaimedSinceGc  GCWord
+	ReclaimedBytesBeforeGc GCWord
+	ExplFreedBytesSinceGc  GCWord
+	ObtainedFromOsBytes    GCWord
+}
+// llgo:link (*GCProfStatsS).GCGetProfStats C.GC_get_prof_stats
+func (recv_ *GCProfStatsS) GCGetProfStats(uintptr) uintptr {
+	return 0
+}
+//go:linkname GCGetSizeMapAt C.GC_get_size_map_at
+func GCGetSizeMapAt(i c.Int) uintptr
+//go:linkname GCGetMemoryUse C.GC_get_memory_use
+func GCGetMemoryUse() uintptr
+//go:linkname GCDisable C.GC_disable
+func GCDisable()
+//go:linkname GCIsDisabled C.GC_is_disabled
+func GCIsDisabled() c.Int
+//go:linkname GCEnable C.GC_enable
+func GCEnable()
+//go:linkname GCSetManualVdbAllowed C.GC_set_manual_vdb_allowed
+func GCSetManualVdbAllowed(c.Int)
+//go:linkname GCGetManualVdbAllowed C.GC_get_manual_vdb_allowed
+func GCGetManualVdbAllowed() c.Int
+//go:linkname GCEnableIncremental C.GC_enable_incremental
+func GCEnableIncremental()
+//go:linkname GCIsIncrementalMode C.GC_is_incremental_mode
+func GCIsIncrementalMode() c.Int
+//go:linkname GCIncrementalProtectionNeeds C.GC_incremental_protection_needs
+func GCIncrementalProtectionNeeds() c.Int
+//go:linkname GCStartIncrementalCollection C.GC_start_incremental_collection
+func GCStartIncrementalCollection()
+//go:linkname GCCollectALittle C.GC_collect_a_little
+func GCCollectALittle() c.Int
+//go:linkname GCMallocIgnoreOffPage C.GC_malloc_ignore_off_page
+func GCMallocIgnoreOffPage(uintptr) unsafe.Pointer
+//go:linkname GCMallocAtomicIgnoreOffPage C.GC_malloc_atomic_ignore_off_page
+func GCMallocAtomicIgnoreOffPage(uintptr) unsafe.Pointer
+//go:linkname GCMallocAtomicUncollectable C.GC_malloc_atomic_uncollectable
+func GCMallocAtomicUncollectable(uintptr) unsafe.Pointer
+//go:linkname GCDebugMallocAtomicUncollectable C.GC_debug_malloc_atomic_uncollectable
+func GCDebugMallocAtomicUncollectable(__llgo_arg_0 uintptr, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCDebugMalloc C.GC_debug_malloc
+func GCDebugMalloc(__llgo_arg_0 uintptr, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCDebugMallocAtomic C.GC_debug_malloc_atomic
+func GCDebugMallocAtomic(__llgo_arg_0 uintptr, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCDebugStrdup C.GC_debug_strdup
+func GCDebugStrdup(__llgo_arg_0 *int8, s *int8, i c.Int) *int8
+//go:linkname GCDebugStrndup C.GC_debug_strndup
+func GCDebugStrndup(__llgo_arg_0 *int8, __llgo_arg_1 uintptr, s *int8, i c.Int) *int8
+//go:linkname GCDebugMallocUncollectable C.GC_debug_malloc_uncollectable
+func GCDebugMallocUncollectable(__llgo_arg_0 uintptr, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCDebugMallocStubborn C.GC_debug_malloc_stubborn
+func GCDebugMallocStubborn(__llgo_arg_0 uintptr, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCDebugMallocIgnoreOffPage C.GC_debug_malloc_ignore_off_page
+func GCDebugMallocIgnoreOffPage(__llgo_arg_0 uintptr, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCDebugMallocAtomicIgnoreOffPage C.GC_debug_malloc_atomic_ignore_off_page
+func GCDebugMallocAtomicIgnoreOffPage(__llgo_arg_0 uintptr, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCDebugFree C.GC_debug_free
+func GCDebugFree(unsafe.Pointer)
+//go:linkname GCDebugRealloc C.GC_debug_realloc
+func GCDebugRealloc(__llgo_arg_0 unsafe.Pointer, __llgo_arg_1 uintptr, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCDebugChangeStubborn C.GC_debug_change_stubborn
+func GCDebugChangeStubborn(unsafe.Pointer)
+//go:linkname GCDebugEndStubbornChange C.GC_debug_end_stubborn_change
+func GCDebugEndStubbornChange(unsafe.Pointer)
+//go:linkname GCDebugMallocReplacement C.GC_debug_malloc_replacement
+func GCDebugMallocReplacement(uintptr) unsafe.Pointer
+//go:linkname GCDebugReallocReplacement C.GC_debug_realloc_replacement
+func GCDebugReallocReplacement(unsafe.Pointer, uintptr) unsafe.Pointer
+// llgo:type C
+type GCFinalizationProc func(unsafe.Pointer, unsafe.Pointer)
+//go:linkname GCRegisterFinalizer C.GC_register_finalizer
+func GCRegisterFinalizer(unsafe.Pointer, GCFinalizationProc, unsafe.Pointer, GCFinalizationProc, *unsafe.Pointer)
+//go:linkname GCDebugRegisterFinalizer C.GC_debug_register_finalizer
+func GCDebugRegisterFinalizer(unsafe.Pointer, GCFinalizationProc, unsafe.Pointer, GCFinalizationProc, *unsafe.Pointer)
+//go:linkname GCRegisterFinalizerIgnoreSelf C.GC_register_finalizer_ignore_self
+func GCRegisterFinalizerIgnoreSelf(unsafe.Pointer, GCFinalizationProc, unsafe.Pointer, GCFinalizationProc, *unsafe.Pointer)
+//go:linkname GCDebugRegisterFinalizerIgnoreSelf C.GC_debug_register_finalizer_ignore_self
+func GCDebugRegisterFinalizerIgnoreSelf(unsafe.Pointer, GCFinalizationProc, unsafe.Pointer, GCFinalizationProc, *unsafe.Pointer)
+//go:linkname GCRegisterFinalizerNoOrder C.GC_register_finalizer_no_order
+func GCRegisterFinalizerNoOrder(unsafe.Pointer, GCFinalizationProc, unsafe.Pointer, GCFinalizationProc, *unsafe.Pointer)
+//go:linkname GCDebugRegisterFinalizerNoOrder C.GC_debug_register_finalizer_no_order
+func GCDebugRegisterFinalizerNoOrder(unsafe.Pointer, GCFinalizationProc, unsafe.Pointer, GCFinalizationProc, *unsafe.Pointer)
+//go:linkname GCRegisterFinalizerUnreachable C.GC_register_finalizer_unreachable
+func GCRegisterFinalizerUnreachable(unsafe.Pointer, GCFinalizationProc, unsafe.Pointer, GCFinalizationProc, *unsafe.Pointer)
+//go:linkname GCDebugRegisterFinalizerUnreachable C.GC_debug_register_finalizer_unreachable
+func GCDebugRegisterFinalizerUnreachable(unsafe.Pointer, GCFinalizationProc, unsafe.Pointer, GCFinalizationProc, *unsafe.Pointer)
+//go:linkname GCRegisterDisappearingLink C.GC_register_disappearing_link
+func GCRegisterDisappearingLink(*unsafe.Pointer) c.Int
+//go:linkname GCGeneralRegisterDisappearingLink C.GC_general_register_disappearing_link
+func GCGeneralRegisterDisappearingLink(*unsafe.Pointer, unsafe.Pointer) c.Int
+//go:linkname GCMoveDisappearingLink C.GC_move_disappearing_link
+func GCMoveDisappearingLink(*unsafe.Pointer, *unsafe.Pointer) c.Int
+//go:linkname GCUnregisterDisappearingLink C.GC_unregister_disappearing_link
+func GCUnregisterDisappearingLink(*unsafe.Pointer) c.Int
+//go:linkname GCRegisterLongLink C.GC_register_long_link
+func GCRegisterLongLink(*unsafe.Pointer, unsafe.Pointer) c.Int
+//go:linkname GCMoveLongLink C.GC_move_long_link
+func GCMoveLongLink(*unsafe.Pointer, *unsafe.Pointer) c.Int
+//go:linkname GCUnregisterLongLink C.GC_unregister_long_link
+func GCUnregisterLongLink(*unsafe.Pointer) c.Int
+
+type GCToggleRefStatus c.Int
+
+const (
+	GCToggleRefStatusGCTOGGLEREFDROP   GCToggleRefStatus = 0
+	GCToggleRefStatusGCTOGGLEREFSTRONG GCToggleRefStatus = 1
+	GCToggleRefStatusGCTOGGLEREFWEAK   GCToggleRefStatus = 2
+)
+// llgo:type C
+type GCTogglerefFunc func(unsafe.Pointer) GCToggleRefStatus
+//go:linkname GCSetTogglerefFunc C.GC_set_toggleref_func
+func GCSetTogglerefFunc(GCTogglerefFunc)
+//go:linkname GCGetTogglerefFunc C.GC_get_toggleref_func
+func GCGetTogglerefFunc() GCTogglerefFunc
+//go:linkname GCTogglerefAdd C.GC_toggleref_add
+func GCTogglerefAdd(unsafe.Pointer, c.Int) c.Int
+// llgo:type C
+type GCAwaitFinalizeProc func(unsafe.Pointer)
+//go:linkname GCSetAwaitFinalizeProc C.GC_set_await_finalize_proc
+func GCSetAwaitFinalizeProc(GCAwaitFinalizeProc)
+//go:linkname GCGetAwaitFinalizeProc C.GC_get_await_finalize_proc
+func GCGetAwaitFinalizeProc() GCAwaitFinalizeProc
+//go:linkname GCShouldInvokeFinalizers C.GC_should_invoke_finalizers
+func GCShouldInvokeFinalizers() c.Int
+//go:linkname GCInvokeFinalizers C.GC_invoke_finalizers
+func GCInvokeFinalizers() c.Int
+// llgo:type C
+type GCWarnProc func(*int8, GCWord)
+//go:linkname GCSetWarnProc C.GC_set_warn_proc
+func GCSetWarnProc(GCWarnProc)
+//go:linkname GCGetWarnProc C.GC_get_warn_proc
+func GCGetWarnProc() GCWarnProc
+//go:linkname GCIgnoreWarnProc C.GC_ignore_warn_proc
+func GCIgnoreWarnProc(*int8, GCWord)
+//go:linkname GCSetLogFd C.GC_set_log_fd
+func GCSetLogFd(c.Int)
+// llgo:type C
+type GCAbortFunc func(*int8)
+//go:linkname GCSetAbortFunc C.GC_set_abort_func
+func GCSetAbortFunc(GCAbortFunc)
+//go:linkname GCGetAbortFunc C.GC_get_abort_func
+func GCGetAbortFunc() GCAbortFunc
+//go:linkname GCAbortOnOom C.GC_abort_on_oom
+func GCAbortOnOom()
+
+type GCHiddenPointer GCWord
+// llgo:type C
+type GCFnType func(unsafe.Pointer) unsafe.Pointer
+//go:linkname GCCallWithAllocLock C.GC_call_with_alloc_lock
+func GCCallWithAllocLock(GCFnType, unsafe.Pointer) unsafe.Pointer
+
+type GCStackBase struct {
+	MemBase unsafe.Pointer
+}
+// llgo:type C
+type GCStackBaseFunc func(*GCStackBase, unsafe.Pointer) unsafe.Pointer
+//go:linkname GCCallWithStackBase C.GC_call_with_stack_base
+func GCCallWithStackBase(GCStackBaseFunc, unsafe.Pointer) unsafe.Pointer
+//go:linkname GCStartMarkThreads C.GC_start_mark_threads
+func GCStartMarkThreads()
+//go:linkname GCDoBlocking C.GC_do_blocking
+func GCDoBlocking(GCFnType, unsafe.Pointer) unsafe.Pointer
+//go:linkname GCCallWithGcActive C.GC_call_with_gc_active
+func GCCallWithGcActive(GCFnType, unsafe.Pointer) unsafe.Pointer
+// llgo:link (*GCStackBase).GCGetStackBase C.GC_get_stack_base
+func (recv_ *GCStackBase) GCGetStackBase() c.Int {
+	return 0
+}
+// llgo:link (*GCStackBase).GCGetMyStackbottom C.GC_get_my_stackbottom
+func (recv_ *GCStackBase) GCGetMyStackbottom() unsafe.Pointer {
+	return nil
+}
+//go:linkname GCSetStackbottom C.GC_set_stackbottom
+func GCSetStackbottom(unsafe.Pointer, *GCStackBase)
+//go:linkname GCSameObj C.GC_same_obj
+func GCSameObj(unsafe.Pointer, unsafe.Pointer) unsafe.Pointer
+//go:linkname GCIsVisible C.GC_is_visible
+func GCIsVisible(unsafe.Pointer) unsafe.Pointer
+//go:linkname GCIsValidDisplacement C.GC_is_valid_displacement
+func GCIsValidDisplacement(unsafe.Pointer) unsafe.Pointer
+//go:linkname GCDump C.GC_dump
+func GCDump()
+//go:linkname GCDumpNamed C.GC_dump_named
+func GCDumpNamed(*int8)
+//go:linkname GCDumpRegions C.GC_dump_regions
+func GCDumpRegions()
+//go:linkname GCDumpFinalization C.GC_dump_finalization
+func GCDumpFinalization()
+//go:linkname GCPtrStoreAndDirty C.GC_ptr_store_and_dirty
+func GCPtrStoreAndDirty(unsafe.Pointer, unsafe.Pointer)
+//go:linkname GCDebugPtrStoreAndDirty C.GC_debug_ptr_store_and_dirty
+func GCDebugPtrStoreAndDirty(unsafe.Pointer, unsafe.Pointer)
+//go:linkname GCMallocMany C.GC_malloc_many
+func GCMallocMany(uintptr) unsafe.Pointer
+// llgo:type C
+type GCHasStaticRootsFunc func(*int8, unsafe.Pointer, uintptr) c.Int
+//go:linkname GCRegisterHasStaticRootsCallback C.GC_register_has_static_roots_callback
+func GCRegisterHasStaticRootsCallback(GCHasStaticRootsFunc)
+//go:linkname GCSetForceUnmapOnGcollect C.GC_set_force_unmap_on_gcollect
+func GCSetForceUnmapOnGcollect(c.Int)
+//go:linkname GCGetForceUnmapOnGcollect C.GC_get_force_unmap_on_gcollect
+func GCGetForceUnmapOnGcollect() c.Int
+
+===== gc_allocator.go =====
+package bdw-gc
+
+import _ "unsafe"
+
+type GCTrueType struct {
+	Unused [8]uint8
+}
+type GCFalseType struct {
+	Unused [8]uint8
+}
+
+===== gc_backptr.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+type GCRefKind c.Int
+
+const (
+	GCRefKindGCUNREFERENCED  GCRefKind = 0
+	GCRefKindGCNOSPACE       GCRefKind = 1
+	GCRefKindGCREFDFROMROOT  GCRefKind = 2
+	GCRefKindGCREFDFROMREG   GCRefKind = 3
+	GCRefKindGCREFDFROMHEAP  GCRefKind = 4
+	GCRefKindGCFINALIZERREFD GCRefKind = 5
+)
+
+===== gc_config_macros.go =====
+package bdw-gc
+
+import _ "unsafe"
+
+===== gc_cpp.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+type GCPlacement c.Int
+
+const (
+	GCPlacementUseGC         GCPlacement = 0
+	GCPlacementGC            GCPlacement = 0
+	GCPlacementNoGC          GCPlacement = 1
+	GCPlacementPointerFreeGC GCPlacement = 2
+)
+
+===== gc_disclaim.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+//go:linkname GCInitFinalizedMalloc C.GC_init_finalized_malloc
+func GCInitFinalizedMalloc()
+// llgo:type C
+type GCDisclaimProc func(unsafe.Pointer) c.Int
+//go:linkname GCRegisterDisclaimProc C.GC_register_disclaim_proc
+func GCRegisterDisclaimProc(c.Int, GCDisclaimProc, c.Int)
+
+type GCFinalizerClosure struct {
+	Proc unsafe.Pointer
+	Cd   unsafe.Pointer
+}
+//go:linkname GCFinalizedMalloc C.GC_finalized_malloc
+func GCFinalizedMalloc(uintptr, *GCFinalizerClosure) unsafe.Pointer
+
+===== gc_gcj.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+//go:linkname GCInitGcjMalloc C.GC_init_gcj_malloc
+func GCInitGcjMalloc(c.Int, unsafe.Pointer)
+//go:linkname GCGcjMalloc C.GC_gcj_malloc
+func GCGcjMalloc(uintptr, unsafe.Pointer) unsafe.Pointer
+//go:linkname GCDebugGcjMalloc C.GC_debug_gcj_malloc
+func GCDebugGcjMalloc(__llgo_arg_0 uintptr, __llgo_arg_1 unsafe.Pointer, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCGcjMallocIgnoreOffPage C.GC_gcj_malloc_ignore_off_page
+func GCGcjMallocIgnoreOffPage(uintptr, unsafe.Pointer) unsafe.Pointer
+
+===== gc_inline.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+
+const GCIPTRFREE c.Int = 0
+const GCINORMAL c.Int = 1
+//go:linkname GCGenericMallocMany C.GC_generic_malloc_many
+func GCGenericMallocMany(uintptr, c.Int, *unsafe.Pointer)
+//go:linkname GCMallocKind C.GC_malloc_kind
+func GCMallocKind(uintptr, c.Int) unsafe.Pointer
+//go:linkname GCPrintFreeList C.GC_print_free_list
+func GCPrintFreeList(c.Int, uintptr)
+
+===== gc_mark.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+
+const GCPROCBYTES c.Int = 100
+const GCLOGMAXMARKPROCS c.Int = 6
+const GCRESERVEDMARKPROCS c.Int = 8
+const GCGCJRESERVEDMARKPROCINDEX c.Int = 0
+const GCDSTAGBITS c.Int = 2
+const GCDSLENGTH c.Int = 0
+const GCDSBITMAP c.Int = 1
+const GCDSPROC c.Int = 2
+const GCDSPEROBJECT c.Int = 3
+const GCINDIRPEROBJBIAS c.Int = 16
+const GCTYPEDESCRLEN c.Int = 40
+
+type GCMsEntry struct {
+	Opaque unsafe.Pointer
+}
+// llgo:type C
+type GCMarkProc func(*GCWord, *GCMsEntry, *GCMsEntry, GCWord) *GCMsEntry
+//go:linkname GCMarkAndPush C.GC_mark_and_push
+func GCMarkAndPush(unsafe.Pointer, *GCMsEntry, *GCMsEntry, *unsafe.Pointer) *GCMsEntry
+//go:linkname GCGetDebugHeaderSize C.GC_get_debug_header_size
+func GCGetDebugHeaderSize() uintptr
+//go:linkname GCNewFreeList C.GC_new_free_list
+func GCNewFreeList() *unsafe.Pointer
+//go:linkname GCNewFreeListInner C.GC_new_free_list_inner
+func GCNewFreeListInner() *unsafe.Pointer
+//go:linkname GCNewKind C.GC_new_kind
+func GCNewKind(*unsafe.Pointer, GCWord, c.Int, c.Int) c.Uint
+//go:linkname GCNewKindInner C.GC_new_kind_inner
+func GCNewKindInner(*unsafe.Pointer, GCWord, c.Int, c.Int) c.Uint
+//go:linkname GCNewProc C.GC_new_proc
+func GCNewProc(GCMarkProc) c.Uint
+//go:linkname GCNewProcInner C.GC_new_proc_inner
+func GCNewProcInner(GCMarkProc) c.Uint
+//go:linkname GCGenericMalloc C.GC_generic_malloc
+func GCGenericMalloc(uintptr, c.Int) unsafe.Pointer
+//go:linkname GCGenericMallocIgnoreOffPage C.GC_generic_malloc_ignore_off_page
+func GCGenericMallocIgnoreOffPage(uintptr, c.Int) unsafe.Pointer
+//go:linkname GCGenericMallocUncollectable C.GC_generic_malloc_uncollectable
+func GCGenericMallocUncollectable(uintptr, c.Int) unsafe.Pointer
+//go:linkname GCGenericOrSpecialMalloc C.GC_generic_or_special_malloc
+func GCGenericOrSpecialMalloc(uintptr, c.Int) unsafe.Pointer
+//go:linkname GCDebugGenericOrSpecialMalloc C.GC_debug_generic_or_special_malloc
+func GCDebugGenericOrSpecialMalloc(__llgo_arg_0 uintptr, __llgo_arg_1 c.Int, s *int8, i c.Int) unsafe.Pointer
+//go:linkname GCGetKindAndSize C.GC_get_kind_and_size
+func GCGetKindAndSize(unsafe.Pointer, *uintptr) c.Int
+// llgo:type C
+type GCDescribeTypeFn func(unsafe.Pointer, *int8)
+//go:linkname GCRegisterDescribeTypeFn C.GC_register_describe_type_fn
+func GCRegisterDescribeTypeFn(c.Int, GCDescribeTypeFn)
+//go:linkname GCClearStack C.GC_clear_stack
+func GCClearStack(unsafe.Pointer) unsafe.Pointer
+// llgo:type C
+type GCStartCallbackProc func()
+//go:linkname GCSetStartCallback C.GC_set_start_callback
+func GCSetStartCallback(GCStartCallbackProc)
+//go:linkname GCGetStartCallback C.GC_get_start_callback
+func GCGetStartCallback() GCStartCallbackProc
+//go:linkname GCIsMarked C.GC_is_marked
+func GCIsMarked(unsafe.Pointer) c.Int
+//go:linkname GCClearMarkBit C.GC_clear_mark_bit
+func GCClearMarkBit(unsafe.Pointer)
+//go:linkname GCSetMarkBit C.GC_set_mark_bit
+func GCSetMarkBit(unsafe.Pointer)
+//go:linkname GCPushAll C.GC_push_all
+func GCPushAll(unsafe.Pointer, unsafe.Pointer)
+//go:linkname GCPushAllEager C.GC_push_all_eager
+func GCPushAllEager(unsafe.Pointer, unsafe.Pointer)
+//go:linkname GCPushConditional C.GC_push_conditional
+func GCPushConditional(unsafe.Pointer, unsafe.Pointer, c.Int)
+//go:linkname GCPushFinalizerStructures C.GC_push_finalizer_structures
+func GCPushFinalizerStructures()
+// llgo:type C
+type GCPushOtherRootsProc func()
+//go:linkname GCSetPushOtherRoots C.GC_set_push_other_roots
+func GCSetPushOtherRoots(GCPushOtherRootsProc)
+//go:linkname GCGetPushOtherRoots C.GC_get_push_other_roots
+func GCGetPushOtherRoots() GCPushOtherRootsProc
+// llgo:type C
+type GCReachableObjectProc func(unsafe.Pointer, uintptr, unsafe.Pointer)
+//go:linkname GCEnumerateReachableObjectsInner C.GC_enumerate_reachable_objects_inner
+func GCEnumerateReachableObjectsInner(GCReachableObjectProc, unsafe.Pointer)
+//go:linkname GCIsTmpRoot C.GC_is_tmp_root
+func GCIsTmpRoot(unsafe.Pointer) c.Int
+
+===== gc_pthread_redirects.go =====
+package bdw-gc
+
+import _ "unsafe"
+
+===== gc_tiny_fl.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+const GCGRANULEBYTES c.Int = 16
+const GCGRANULEWORDS c.Int = 2
+const GCTINYFREELISTS c.Int = 25
+
+===== gc_typed.go =====
+package bdw-gc
+
+import "unsafe"
+
+type GCBitmap *GCWord
+type GCDescr GCWord
+// llgo:link (*GCWord).GCMakeDescriptor C.GC_make_descriptor
+func (recv_ *GCWord) GCMakeDescriptor(uintptr) GCDescr {
+	return 0
+}
+//go:linkname GCMallocExplicitlyTyped C.GC_malloc_explicitly_typed
+func GCMallocExplicitlyTyped(uintptr, GCDescr) unsafe.Pointer
+//go:linkname GCMallocExplicitlyTypedIgnoreOffPage C.GC_malloc_explicitly_typed_ignore_off_page
+func GCMallocExplicitlyTypedIgnoreOffPage(uintptr, GCDescr) unsafe.Pointer
+//go:linkname GCCallocExplicitlyTyped C.GC_calloc_explicitly_typed
+func GCCallocExplicitlyTyped(uintptr, uintptr, GCDescr) unsafe.Pointer
+
+===== gc_version.go =====
+package bdw-gc
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+const GCTMPVERSIONMAJOR c.Int = 8
+const GCTMPVERSIONMINOR c.Int = 2
+const GCTMPVERSIONMICRO c.Int = 8
+
+===== javaxfc.go =====
+package bdw-gc
+
+import _ "unsafe"
+//go:linkname GCFinalizeAll C.GC_finalize_all
+func GCFinalizeAll()
+
+===== leak_detector.go =====
+package bdw-gc
+
+import _ "unsafe"
+
+===== llcppg.pub =====
+CORD
+CORD_Pos CORDPos
+CORD_batched_iter_fn CORDBatchedIterFn
+CORD_ec CORDEc
+CORD_ec_struct CORDEcStruct
+CORD_fn CORDFn
+CORD_iter_fn CORDIterFn
+CORD_pe CORDPe
+CORD_pos CORDPos__1
+GCPlacement
+GC_EventType GCEventType
+GC_PTR GCPTR
+GC_ToggleRefStatus GCToggleRefStatus
+GC_abort_func GCAbortFunc
+GC_await_finalize_proc GCAwaitFinalizeProc
+GC_bitmap GCBitmap
+GC_descr GCDescr
+GC_describe_type_fn GCDescribeTypeFn
+GC_disclaim_proc GCDisclaimProc
+GC_false_type GCFalseType
+GC_finalization_proc GCFinalizationProc
+GC_finalizer_closure GCFinalizerClosure
+GC_finalizer_notifier_proc GCFinalizerNotifierProc
+GC_fn_type GCFnType
+GC_has_static_roots_func GCHasStaticRootsFunc
+GC_hidden_pointer GCHiddenPointer
+GC_mark_proc GCMarkProc
+GC_ms_entry GCMsEntry
+GC_on_collection_event_proc GCOnCollectionEventProc
+GC_on_heap_resize_proc GCOnHeapResizeProc
+GC_oom_func GCOomFunc
+GC_prof_stats_s GCProfStatsS
+GC_push_other_roots_proc GCPushOtherRootsProc
+GC_reachable_object_proc GCReachableObjectProc
+GC_ref_kind GCRefKind
+GC_signed_word GCSignedWord
+GC_stack_base GCStackBase
+GC_stack_base_func GCStackBaseFunc
+GC_start_callback_proc GCStartCallbackProc
+GC_stop_func GCStopFunc
+GC_timeval_s GCTimevalS
+GC_toggleref_func GCTogglerefFunc
+GC_true_type GCTrueType
+GC_warn_proc GCWarnProc
+GC_word GCWord
