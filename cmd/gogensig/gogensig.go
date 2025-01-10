@@ -113,7 +113,7 @@ func runGoCmds(wd, pkg string) error {
 		return err
 	}
 
-	return config.RunCommand(dir, "go", "get", "github.com/goplus/llgo@latest")
+	return config.RunCommand(dir, "go", "get", "github.com/goplus/llgo@main")
 }
 
 func printUsage() {

@@ -483,7 +483,7 @@ func ModInit(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	err = config.RunCommand(outputDir, "go", "get", "github.com/goplus/llgo@latest")
+	err = config.RunCommand(outputDir, "go", "get", "github.com/goplus/llgo@main")
 	if err != nil {
 		return "", err
 	}
