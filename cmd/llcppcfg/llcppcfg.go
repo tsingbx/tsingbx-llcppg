@@ -11,16 +11,15 @@ import (
 
 func printHelp() {
 	log.Println(`llcppcfg is to generate llcppg.cfg file.
-usage: llcppcfg [-cpp|-help|-expand|-sort|-excludes] libname`)
+usage: llcppcfg [-cpp|-tab|-excludes|-exts|-help] libname`)
 	flag.PrintDefaults()
 }
 
 func main() {
-	var cpp, help, expand, sortByDep bool
+	var cpp, help, tab bool
 	flag.BoolVar(&cpp, "cpp", false, "if it is c++ lib")
 	flag.BoolVar(&help, "help", false, "print help message")
-	flag.BoolVar(&expand, "expand", false, "expand pkg-config command to result")
-	flag.BoolVar(&sortByDep, "sort", true, "expand every cflag and list it's include files and sort include files by dependency")
+	flag.BoolVar(&tab, "tab", true, "generate .cfg config file with tab indent")
 	extsString := ""
 	flag.StringVar(&extsString, "exts", ".h", "extra include file extensions for example -exts=\".h .hpp .hh\"")
 	excludes := ""
@@ -45,8 +44,8 @@ func main() {
 	if cpp {
 		flag |= llcppgcfg.WithCpp
 	}
-	if sortByDep {
-		flag |= llcppgcfg.WithSort
+	if tab {
+		flag |= llcppgcfg.WithTab
 	}
 	buf, err := llcppgcfg.GenCfg(name, flag, exts, excludeSubdirs)
 	if err != nil {

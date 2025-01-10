@@ -30,8 +30,7 @@ func NewExecCommand(cmdStr string, args ...string) *exec.Cmd {
 	return exec.Command(cmdStr, args...)
 }
 
-func ExpandString(str string, dir string) (expand string, org string) {
-	org = str
+func ExpandString(str string, dir string) string {
 	str = strings.ReplaceAll(str, "(", "{")
 	str = strings.ReplaceAll(str, ")", "}")
 	expandStr := os.Expand(str, func(s string) string {
@@ -45,8 +44,7 @@ func ExpandString(str string, dir string) (expand string, org string) {
 		}
 		return outString
 	})
-	expand = strings.TrimSpace(expandStr)
-	return expand, org
+	return strings.TrimSpace(expandStr)
 }
 
 type nilError struct {

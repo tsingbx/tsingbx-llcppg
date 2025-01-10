@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"log"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -15,13 +14,18 @@ import (
 	"github.com/goplus/llcppg/types"
 )
 
+type llcppCfgKey string
+
+const (
+	cfgLibsKey   llcppCfgKey = "libs"
+	cfgCflagsKey llcppCfgKey = "cflags"
+)
+
 type FlagMode int
 
 const (
-	WithSort FlagMode = 1 << iota
-	WithNoTab
+	WithTab FlagMode = 1 << iota
 	WithCpp
-	WithExpand
 )
 
 type emptyStringError struct {
@@ -59,94 +63,9 @@ func isExcludeDir(relPath string, excludeSubdirs []string) bool {
 	return false
 }
 
-func doExpandCflags(str string, excludeSubdirs []string, fn func(s string) bool) ([]string, string) {
-	list := strings.Fields(str)
-	contains := make(map[string]string, 0)
-	for _, l := range list {
-		trimStr := strings.TrimPrefix(l, "-I")
-		trimStr += string(filepath.Separator)
-		err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			if d.IsDir() {
-				return nil
-			}
-			if !fn(d.Name()) {
-				return nil
-			}
-			_, ok := contains[path]
-			if !ok {
-				relPath, errRel := filepath.Rel(trimStr, path)
-				if errRel != nil {
-					return errRel
-				}
-				if isExcludeDir(relPath, excludeSubdirs) {
-					return nil
-				}
-				contains[path] = relPath
-			}
-			return nil
-		})
-		if err != nil {
-			log.Println(err)
-		}
-	}
-
-	includes := make([]string, 0)
-	includeMap := make(map[string]struct{})
-	for path, relPath := range contains {
-		includeDir, found := strings.CutSuffix(path, relPath)
-		if found {
-			includeMap[includeDir] = struct{}{}
-		}
-		includes = append(includes, relPath)
-	}
-	var flagsBuilder strings.Builder
-	for include := range includeMap {
-		if flagsBuilder.Len() > 0 {
-			flagsBuilder.WriteRune(' ')
-		}
-		flagsBuilder.WriteString("-I" + include)
-	}
-	flags := flagsBuilder.String()
-	return includes, flags
-}
-
-func ExpandName(name string, dir string, libsOrCflags string) (expand string, org string) {
-	originString := fmt.Sprintf("$(pkg-config --%s %s)", libsOrCflags, name)
+func ExpandName(name string, dir string, cfgKey llcppCfgKey) string {
+	originString := fmt.Sprintf("$(pkg-config --%s %s)", cfgKey, name)
 	return cmdout.ExpandString(originString, dir)
-}
-
-func ExpandLibsName(name string, dir string) (expand string, org string) {
-	return ExpandName(name, dir, "libs")
-}
-
-func ExpandCflags(originCFlags string, exts []string, excludeDirs []string) (includes []string, expand string, org string) {
-	cflags, orgCflags := cmdout.ExpandString(originCFlags, "")
-	expandIncludes, expandCflags := doExpandCflags(cflags, excludeDirs, func(s string) bool {
-		ext := filepath.Ext(s)
-		for _, e := range exts {
-			if e == ext {
-				return true
-			}
-		}
-		return false
-	})
-	if len(expandCflags) > 0 {
-		cflags = expandCflags
-	}
-	return expandIncludes, cflags, orgCflags
-}
-
-func ExpandCFlagsName(name string, exts []string, excludeDirs []string) (includes []string, expand string, org string) {
-	originCFlags := fmt.Sprintf("$(pkg-config --cflags %s)", name)
-	return ExpandCflags(originCFlags, exts, excludeDirs)
-}
-
-func expandCFlagsAndLibs(name string, cfg *LLCppConfig, dir string, exts []string, excludeDirs []string) {
-	cfg.Include, cfg.CFlags, _ = ExpandCFlagsName(name, exts, excludeDirs)
-	cfg.Libs, _ = ExpandLibsName(name, dir)
 }
 
 func findDepSlice(lines []string) ([]string, string) {
@@ -297,28 +216,14 @@ func GenCfg(name string, flag FlagMode, exts []string, excludeSubdirs []string) 
 		return nil, newEmptyStringError("name")
 	}
 	cfg := NewLLCppConfig(name, flag)
-	if flag&WithExpand != 0 {
-		if flag&WithSort != 0 {
-			cfg.CFlags, _ = ExpandName(name, "", "cflags")
-			cfg.Libs, _ = ExpandName(name, "", "libs")
-			sortIncludes(cfg.CFlags, cfg, exts, excludeSubdirs)
-		} else {
-			expandCFlagsAndLibs(name, cfg, "", exts, excludeSubdirs)
-		}
-	} else {
-		if flag&WithSort != 0 {
-			expandCFlags, _ := ExpandName(name, "", "cflags")
-			sortIncludes(expandCFlags, cfg, exts, excludeSubdirs)
-		} else {
-			cfg.Include, _, cfg.CFlags = ExpandCFlagsName(name, exts, excludeSubdirs)
-		}
-	}
+	expandCFlags := ExpandName(name, "", cfgCflagsKey)
+	sortIncludes(expandCFlags, cfg, exts, excludeSubdirs)
 
 	cfg.Name = NormalizePackageName(cfg.Name)
 
 	buf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(buf)
-	if flag&WithNoTab == 0 {
+	if flag&WithTab != 0 {
 		jsonEncoder.SetIndent("", "\t")
 	}
 	err := jsonEncoder.Encode(cfg)

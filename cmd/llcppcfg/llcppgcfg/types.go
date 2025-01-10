@@ -57,16 +57,3 @@ type CflagEntry struct {
 func (c *CflagEntry) String() string {
 	return fmt.Sprintf("{Include:%s, ObjFiles:%v}", c.Include, c.ObjFiles)
 }
-
-func removeDups[T comparable](s []T) []T {
-	m := make(map[T]struct{})
-	r := make([]T, 0)
-	for _, ss := range s {
-		_, ok := m[ss]
-		if !ok {
-			m[ss] = struct{}{}
-			r = append(r, ss)
-		}
-	}
-	return r
-}

@@ -1,7 +1,6 @@
 package llcppgcfg
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -129,33 +128,6 @@ func TestCflagEntry_String(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.String(); got != tt.want {
 				t.Errorf("CflagEntry.String() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_removeDups(t *testing.T) {
-	type args[TT comparable] struct {
-		s []TT
-	}
-	type CaseType[TT comparable] struct {
-		name string
-		args args[TT]
-		want []TT
-	}
-	tests := []CaseType[int]{
-		{
-			"ints",
-			args[int]{
-				[]int{1, 1, 7, 7, 7, 2, 3, 5, 6, 6},
-			},
-			[]int{1, 7, 2, 3, 5, 6},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := removeDups(tt.args.s); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("removeDups() = %v, want %v", got, tt.want)
 			}
 		})
 	}

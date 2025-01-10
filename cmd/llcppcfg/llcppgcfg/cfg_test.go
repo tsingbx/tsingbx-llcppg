@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
-	"sort"
 	"strings"
 	"testing"
 )
@@ -119,295 +118,41 @@ func Test_isExcludeDir(t *testing.T) {
 	}
 }
 
-func Test_doExpandCflags(t *testing.T) {
-	cflags, _ := newCflags("cfg_test_data/libtasn1/include/")
-	type args struct {
-		str            string
-		excludeSubdirs []string
-		fn             func(s string) bool
-	}
-	tests := []struct {
-		name  string
-		args  args
-		want  []string
-		want1 string
-	}{
-		{
-			"h",
-			args{
-				cflags,
-				[]string{"internal"},
-				func(s string) bool {
-					ext := filepath.Ext(s)
-					return ext == ".h"
-				},
-			},
-			[]string{
-				"libtasn1.h",
-			},
-			cflags,
-		},
-		{
-			"hh",
-			args{
-				cflags,
-				[]string{"internal"},
-				func(s string) bool {
-					ext := filepath.Ext(s)
-					return ext == ".hh"
-				},
-			},
-			[]string{
-				"b.hh",
-			},
-			cflags,
-		},
-		{
-			"hh&h",
-			args{
-				cflags,
-				[]string{"internal"},
-				func(s string) bool {
-					ext := filepath.Ext(s)
-					return ext == ".hh" || ext == ".h"
-				},
-			},
-			[]string{
-				"b.hh",
-				"libtasn1.h",
-			},
-			cflags,
-		},
-		{
-			"hh&h-no-excludes",
-			args{
-				cflags,
-				[]string{},
-				func(s string) bool {
-					ext := filepath.Ext(s)
-					return ext == ".hh" || ext == ".h"
-				},
-			},
-			[]string{
-				"b.hh",
-				"internal/a.h",
-				"libtasn1.h",
-			},
-			cflags,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := doExpandCflags(tt.args.str, tt.args.excludeSubdirs, tt.args.fn)
-			sort.Strings(got)
-			sort.Strings(tt.want)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("doExpandCflags() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("doExpandCflags() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
 func TestExpandName(t *testing.T) {
 	type args struct {
-		name         string
-		dir          string
-		libsOrCflags string
+		name   string
+		dir    string
+		cfgKey llcppCfgKey
 	}
 	tests := []struct {
 		name             string
 		args             args
 		wantExpandPrefix string
-		wantOrg          string
 	}{
 		{
 			"cflags",
 			args{
 				"libcjson",
 				"",
-				"cflags",
+				cfgCflagsKey,
 			},
 			"-I/",
-			"$(pkg-config --cflags libcjson)",
 		},
 		{
 			"libs",
 			args{
 				"libcjson",
 				"",
-				"libs",
+				cfgLibsKey,
 			},
 			"-",
-			"$(pkg-config --libs libcjson)",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotExpand, gotOrg := ExpandName(tt.args.name, tt.args.dir, tt.args.libsOrCflags)
+			gotExpand := ExpandName(tt.args.name, tt.args.dir, tt.args.cfgKey)
 			if !strings.HasPrefix(gotExpand, tt.wantExpandPrefix) {
 				t.Errorf("ExpandName() gotExpand = %v, want %v", gotExpand, tt.wantExpandPrefix)
-			}
-			if gotOrg != tt.wantOrg {
-				t.Errorf("ExpandName() gotOrg = %v, want %v", gotOrg, tt.wantOrg)
-			}
-		})
-	}
-}
-
-func TestExpandLibsName(t *testing.T) {
-	type args struct {
-		name string
-		dir  string
-	}
-	tests := []struct {
-		name             string
-		args             args
-		wantExpandPrefix string
-		wantOrg          string
-	}{
-		{
-			"",
-			args{
-				"libcjson",
-				"",
-			},
-			"-",
-			"$(pkg-config --libs libcjson)",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.args.name, func(t *testing.T) {
-			gotExpand, gotOrg := ExpandLibsName(tt.args.name, tt.args.dir)
-			if !strings.HasPrefix(gotExpand, tt.wantExpandPrefix) {
-				t.Errorf("ExpandLibsName() gotExpand = %v, want %v", gotExpand, tt.wantExpandPrefix)
-			}
-			if gotOrg != tt.wantOrg {
-				t.Errorf("ExpandLibsName() gotOrg = %v, want %v", gotOrg, tt.wantOrg)
-			}
-		})
-	}
-}
-
-func TestExpandCflags(t *testing.T) {
-	type args struct {
-		originCFlags string
-		exts         []string
-		excludeDirs  []string
-	}
-	tests := []struct {
-		name             string
-		args             args
-		wantIncludes     []string
-		wantExpandPrefix string
-		wantOrg          string
-	}{
-		{
-			"libcjson",
-			args{
-				"$(pkg-config --cflags libcjson)",
-				[]string{".h"},
-				[]string{""},
-			},
-			[]string{"cJSON_Utils.h", "cJSON.h"},
-			"-I/",
-			"$(pkg-config --cflags libcjson)",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotIncludes, gotExpand, gotOrg := ExpandCflags(tt.args.originCFlags, tt.args.exts, tt.args.excludeDirs)
-			sort.Strings(gotIncludes)
-			sort.Strings(tt.wantIncludes)
-			if !equalIncludes(gotIncludes, tt.wantIncludes) {
-				t.Errorf("ExpandCflags() gotIncludes = %v, want %v", gotIncludes, tt.wantIncludes)
-
-			}
-			if !strings.HasPrefix(gotExpand, tt.wantExpandPrefix) {
-				t.Errorf("ExpandCflags() gotExpand = %v, want %v", gotExpand, tt.wantExpandPrefix)
-			}
-			if gotOrg != tt.wantOrg {
-				t.Errorf("ExpandCflags() gotOrg = %v, want %v", gotOrg, tt.wantOrg)
-			}
-		})
-	}
-}
-
-func TestExpandCFlagsName(t *testing.T) {
-	type args struct {
-		name        string
-		exts        []string
-		excludeDirs []string
-	}
-	tests := []struct {
-		name             string
-		args             args
-		wantIncludes     []string
-		wantExpandPrefix string
-		wantOrg          string
-	}{
-		{
-			"libcjson",
-			args{
-				"libcjson",
-				[]string{".h"},
-				[]string{},
-			},
-			[]string{"cjson/cJSON_Utils.h", "cjson/cJSON.h"},
-			"-I/",
-			"$(pkg-config --cflags libcjson)",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotIncludes, gotExpand, gotOrg := ExpandCFlagsName(tt.args.name, tt.args.exts, tt.args.excludeDirs)
-			sort.Strings(gotIncludes)
-			sort.Strings(tt.wantIncludes)
-			if !equalIncludes(gotIncludes, tt.wantIncludes) {
-				t.Errorf("ExpandCFlagsName() gotIncludes = %v, want %v", gotIncludes, tt.wantIncludes)
-			}
-			if !strings.HasPrefix(gotExpand, tt.wantExpandPrefix) {
-				t.Errorf("ExpandCFlagsName() gotExpand = %v, want %v", gotExpand, tt.wantExpandPrefix)
-			}
-			if gotOrg != tt.wantOrg {
-				t.Errorf("ExpandCFlagsName() gotOrg = %v, want %v", gotOrg, tt.wantOrg)
-			}
-		})
-	}
-}
-
-func Test_expandCFlagsAndLibs(t *testing.T) {
-	config := NewLLCppConfig("libcjson", WithSort)
-	type args struct {
-		name        string
-		cfg         *LLCppConfig
-		dir         string
-		exts        []string
-		excludeDirs []string
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			"libcjson",
-			args{
-				"libcjson",
-				config,
-				"",
-				[]string{},
-				[]string{},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			expandCFlagsAndLibs(tt.args.name, tt.args.cfg, tt.args.dir, tt.args.exts, tt.args.excludeDirs)
-			if !strings.HasPrefix(config.CFlags, "-I") ||
-				!strings.HasPrefix(config.Libs, "-") {
-				t.Errorf("%s expand cflags and libs fail", tt.args.name)
 			}
 		})
 	}
@@ -742,7 +487,7 @@ func TestNewLLCppConfig(t *testing.T) {
 			"libcjson",
 			args{
 				"libcjson",
-				WithSort,
+				WithTab,
 			},
 			&LLCppConfig{
 				Name:         "libcjson",
@@ -822,6 +567,7 @@ func TestGenCfg(t *testing.T) {
 	if runtime.GOOS == "linux" {
 		return
 	}
+	_, cjsonCfgFilePath := newCflags("cfg_test_data/cjson/llcppg.cfg")
 	_, bdwgcCfgFilePath := newCflags("cfg_test_data/bdw-gc/llcppg.cfg")
 	_, libffiCfgFilePath := newCflags("cfg_test_data/libffi/llcppg.cfg")
 
@@ -841,18 +587,18 @@ func TestGenCfg(t *testing.T) {
 			"libcjson",
 			args{
 				"libcjson",
-				WithSort,
+				WithTab,
 				[]string{".h"},
 				[]string{},
 			},
-			bytes.NewBufferString("{\n\t\"name\": \"libcjson\",\n\t\"cflags\": \"$(pkg-config --cflags libcjson)\",\n\t\"libs\": \"$(pkg-config --libs libcjson)\",\n\t\"include\": [\n\t\t\"cjson/cJSON_Utils.h\",\n\t\t\"cjson/cJSON.h\",\n\t\t\"cJSON_Utils.h\",\n\t\t\"cJSON.h\"\n\t],\n\t\"deps\": null,\n\t\"trimPrefixes\": [],\n\t\"cplusplus\": false\n}\n"),
+			readFile(cjsonCfgFilePath),
 			false,
 		},
 		{
 			"bdw-gc",
 			args{
 				"bdw-gc",
-				WithSort,
+				WithTab,
 				[]string{".h"},
 				[]string{},
 			},
@@ -863,7 +609,7 @@ func TestGenCfg(t *testing.T) {
 			"libffi",
 			args{
 				"libffi",
-				WithSort,
+				WithTab,
 				[]string{".h"},
 				[]string{},
 			},
@@ -874,34 +620,12 @@ func TestGenCfg(t *testing.T) {
 			"empty_name",
 			args{
 				"",
-				WithSort,
+				WithTab,
 				[]string{".h"},
 				[]string{},
 			},
 			nil,
 			true,
-		},
-		{
-			"expand",
-			args{
-				"libcjson",
-				WithSort | WithExpand,
-				[]string{".h"},
-				[]string{},
-			},
-			nil,
-			false,
-		},
-		{
-			"expand_not_sort",
-			args{
-				"libcjson",
-				WithExpand,
-				[]string{".h"},
-				[]string{},
-			},
-			nil,
-			false,
 		},
 		{
 			"normal_not_sort",
@@ -922,14 +646,8 @@ func TestGenCfg(t *testing.T) {
 				t.Errorf("GenCfg() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if tt.args.flag&WithExpand != 0 {
-				if got.Len() <= 0 {
-					t.Errorf("GenCfg() = %v, want expaned", got)
-				}
-			} else {
-				if tt.args.flag&WithSort != 0 && !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("GenCfg() = %v, want %v", got, tt.want)
-				}
+			if tt.args.flag&WithTab != 0 && !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GenCfg() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -952,22 +670,6 @@ func joinPath(dir, rel string) string {
 		path += string(filepath.Separator)
 	}
 	return path
-}
-
-func equalIncludes(gotIncludes, wantIncludes []string) bool {
-	if len(gotIncludes) != len(wantIncludes) {
-		return false
-	}
-	for i := range gotIncludes {
-		got := gotIncludes[i]
-		want := wantIncludes[i]
-		_, gotFile := filepath.Split(got)
-		_, wantFile := filepath.Split(want)
-		if gotFile != wantFile {
-			return false
-		}
-	}
-	return true
 }
 
 func readFile(filepath string) *bytes.Buffer {
