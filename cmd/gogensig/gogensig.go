@@ -31,14 +31,6 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 )
 
-func runGoCmds(wd, pkg string) {
-	dir := filepath.Join(wd, pkg)
-	os.MkdirAll(dir, 0744)
-	os.Chdir(pkg)
-	config.RunCommand(dir, "go", "mod", "init", pkg)
-	config.RunCommand(dir, "go", "get", "github.com/goplus/llgo@main")
-}
-
 func main() {
 	ags, remainArgs := args.ParseArgs(os.Args[1:], args.LLCPPG_SIGFETCH, nil)
 
@@ -77,7 +69,8 @@ func main() {
 	wd, err := os.Getwd()
 	check(err)
 
-	runGoCmds(wd, conf.Name)
+	err = runGoCmds(wd, conf.Name)
+	check(err)
 
 	p, _, err := basic.ConvertProcesser(&basic.Config{
 		AstConvertConfig: convert.AstConvertConfig{
@@ -100,4 +93,25 @@ func check(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func runGoCmds(wd, pkg string) error {
+	dir := filepath.Join(wd, pkg)
+
+	err := os.MkdirAll(dir, 0744)
+	if err != nil {
+		return err
+	}
+
+	err = os.Chdir(pkg)
+	if err != nil {
+		return err
+	}
+
+	err = config.RunCommand(dir, "go", "mod", "init", pkg)
+	if err != nil {
+		return err
+	}
+
+	return config.RunCommand(dir, "go", "get", "github.com/goplus/llgo@latest")
 }
