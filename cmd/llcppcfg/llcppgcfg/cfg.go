@@ -259,20 +259,10 @@ func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeS
 	}
 	cfg.Include = make([]string, 0)
 	for _, cflagEntry := range cflagEntryList {
-		depCtx := NewDepCtx(cflagEntry)
-		for _, objFile := range cflagEntry.ObjFiles {
-			depCtx.ExpandDeps(objFile)
-		}
 		for _, objFile := range cflagEntry.ObjFiles {
 			cfg.Include = append(cfg.Include, objFile.HFile)
-			expandDepIDs := depCtx.depsMap[objFile]
-			for _, depID := range expandDepIDs {
-				depObj := depCtx.GetObjFileByID(depID)
-				cfg.Include = append(cfg.Include, depObj.HFile)
-			}
 		}
 	}
-	cfg.Include = removeDups(cfg.Include)
 }
 
 func NewLLCppConfig(name string, flag FlagMode) *LLCppConfig {

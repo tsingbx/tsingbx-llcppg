@@ -702,10 +702,10 @@ func Test_sortIncludes(t *testing.T) {
 			[]string{
 				"a.h",
 				"b.h",
-				"c.h",
 				"f.h",
-				"g.h",
+				"c.h",
 				"e.h",
+				"g.h",
 			},
 		},
 	}
