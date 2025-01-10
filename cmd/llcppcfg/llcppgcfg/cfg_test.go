@@ -828,7 +828,6 @@ func TestGenCfg(t *testing.T) {
 	type args struct {
 		name           string
 		flag           FlagMode
-		expand         RunMode
 		exts           []string
 		excludeSubdirs []string
 	}
@@ -843,7 +842,6 @@ func TestGenCfg(t *testing.T) {
 			args{
 				"libcjson",
 				WithSort,
-				NormalMode,
 				[]string{".h"},
 				[]string{},
 			},
@@ -855,7 +853,6 @@ func TestGenCfg(t *testing.T) {
 			args{
 				"bdw-gc",
 				WithSort,
-				NormalMode,
 				[]string{".h"},
 				[]string{},
 			},
@@ -867,7 +864,6 @@ func TestGenCfg(t *testing.T) {
 			args{
 				"libffi",
 				WithSort,
-				NormalMode,
 				[]string{".h"},
 				[]string{},
 			},
@@ -879,7 +875,6 @@ func TestGenCfg(t *testing.T) {
 			args{
 				"",
 				WithSort,
-				NormalMode,
 				[]string{".h"},
 				[]string{},
 			},
@@ -890,8 +885,7 @@ func TestGenCfg(t *testing.T) {
 			"expand",
 			args{
 				"libcjson",
-				WithSort,
-				ExpandMode,
+				WithSort | WithExpand,
 				[]string{".h"},
 				[]string{},
 			},
@@ -902,8 +896,7 @@ func TestGenCfg(t *testing.T) {
 			"expand_not_sort",
 			args{
 				"libcjson",
-				0,
-				ExpandMode,
+				WithExpand,
 				[]string{".h"},
 				[]string{},
 			},
@@ -915,7 +908,6 @@ func TestGenCfg(t *testing.T) {
 			args{
 				"libcjson",
 				0,
-				NormalMode,
 				[]string{".h"},
 				[]string{},
 			},
@@ -925,18 +917,18 @@ func TestGenCfg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GenCfg(tt.args.name, tt.args.flag, tt.args.expand, tt.args.exts, tt.args.excludeSubdirs)
+			got, err := GenCfg(tt.args.name, tt.args.flag, tt.args.exts, tt.args.excludeSubdirs)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GenCfg() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if tt.args.expand == NormalMode && tt.args.flag&WithSort != 0 {
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("GenCfg() = %v, want %v", got, tt.want)
-				}
-			} else {
+			if tt.args.flag&WithExpand != 0 {
 				if got.Len() <= 0 {
 					t.Errorf("GenCfg() = %v, want expaned", got)
+				}
+			} else {
+				if tt.args.flag&WithSort != 0 && !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("GenCfg() = %v, want %v", got, tt.want)
 				}
 			}
 		})

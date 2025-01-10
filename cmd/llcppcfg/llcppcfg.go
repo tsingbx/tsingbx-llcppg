@@ -36,12 +36,6 @@ func main() {
 		name = flag.Arg(0)
 	}
 
-	fnToCfgExpandMode := func() llcppgcfg.RunMode {
-		if expand {
-			return llcppgcfg.ExpandMode
-		}
-		return llcppgcfg.NormalMode
-	}
 	exts := strings.Fields(extsString)
 	excludeSubdirs := []string{}
 	if len(excludes) > 0 {
@@ -54,7 +48,7 @@ func main() {
 	if sortByDep {
 		flag |= llcppgcfg.WithSort
 	}
-	buf, err := llcppgcfg.GenCfg(name, flag, fnToCfgExpandMode(), exts, excludeSubdirs)
+	buf, err := llcppgcfg.GenCfg(name, flag, exts, excludeSubdirs)
 	if err != nil {
 		log.Fatal(err)
 	}

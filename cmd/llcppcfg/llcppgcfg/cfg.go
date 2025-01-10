@@ -15,19 +15,13 @@ import (
 	"github.com/goplus/llcppg/types"
 )
 
-type RunMode int
-
 type FlagMode int
-
-const (
-	NormalMode RunMode = iota
-	ExpandMode
-)
 
 const (
 	WithSort FlagMode = 1 << iota
 	WithNoTab
 	WithCpp
+	WithExpand
 )
 
 type emptyStringError struct {
@@ -298,13 +292,12 @@ func NormalizePackageName(name string) string {
 	return strings.Join(fields, "_")
 }
 
-func GenCfg(name string, flag FlagMode, expand RunMode, exts []string, excludeSubdirs []string) (*bytes.Buffer, error) {
+func GenCfg(name string, flag FlagMode, exts []string, excludeSubdirs []string) (*bytes.Buffer, error) {
 	if len(name) == 0 {
 		return nil, newEmptyStringError("name")
 	}
 	cfg := NewLLCppConfig(name, flag)
-	switch expand {
-	case ExpandMode:
+	if flag&WithExpand != 0 {
 		if flag&WithSort != 0 {
 			cfg.CFlags, _ = ExpandName(name, "", "cflags")
 			cfg.Libs, _ = ExpandName(name, "", "libs")
@@ -312,7 +305,7 @@ func GenCfg(name string, flag FlagMode, expand RunMode, exts []string, excludeSu
 		} else {
 			expandCFlagsAndLibs(name, cfg, "", exts, excludeSubdirs)
 		}
-	case NormalMode:
+	} else {
 		if flag&WithSort != 0 {
 			expandCFlags, _ := ExpandName(name, "", "cflags")
 			sortIncludes(expandCFlags, cfg, exts, excludeSubdirs)
