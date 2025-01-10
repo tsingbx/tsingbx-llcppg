@@ -2,6 +2,7 @@ package llcppgcfg
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 )
 
@@ -49,9 +50,56 @@ func (p *ObjFile) String() string {
 	return fmt.Sprintf("{OFile:%s, HFile:%s, Deps:%v}", p.OFile, p.HFile, p.Deps)
 }
 
+type IncludeList struct {
+	include    []string
+	absPathMap map[string]struct{}
+	relPathMap map[string]struct{}
+}
+
+func NewIncludeList() *IncludeList {
+	return &IncludeList{include: make([]string, 0), absPathMap: make(map[string]struct{}), relPathMap: make(map[string]struct{})}
+}
+
+func (p *IncludeList) AddCflagEntry(index int, entry *CflagEntry) {
+	if entry == nil {
+		return
+	}
+	if entry.IsEmpty() {
+		return
+	}
+	for _, objFile := range entry.ObjFiles {
+		absPath := filepath.Join(entry.Include, objFile.HFile)
+		_, ok := p.absPathMap[absPath]
+		if !ok {
+			p.absPathMap[absPath] = struct{}{}
+			p.AddIncludeForObjFile(objFile, index)
+		}
+	}
+}
+
+func (p *IncludeList) AddIncludeForObjFile(objFile *ObjFile, index int) {
+	hFile := objFile.HFile
+	_, ok := p.relPathMap[objFile.HFile]
+	if ok {
+		hFile = fmt.Sprintf("%d:%s", index, objFile.HFile)
+	}
+	p.relPathMap[objFile.HFile] = struct{}{}
+	p.include = append(p.include, hFile)
+}
+
 type CflagEntry struct {
 	Include  string
 	ObjFiles []*ObjFile
+}
+
+func (c *CflagEntry) IsEmpty() bool {
+	if len(c.Include) == 0 {
+		return true
+	}
+	if len(c.ObjFiles) == 0 {
+		return true
+	}
+	return false
 }
 
 func (c *CflagEntry) String() string {

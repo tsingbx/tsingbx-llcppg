@@ -2,6 +2,7 @@ package llcppgcfg
 
 import (
 	"bytes"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -715,6 +716,41 @@ func Test_getDir(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getDir(tt.args.relPath); got != tt.want {
 				t.Errorf("getDir() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getClangArgs(t *testing.T) {
+	cflags, inc := newCflags("cfg_test_data/same_rel")
+	multiCflags := fmt.Sprintf("%s %s", filepath.Join(cflags, "libcjson/include"), filepath.Join(cflags, "stdcjson/include"))
+	type args struct {
+		cflags  string
+		relpath string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			"cjson",
+			args{
+				cflags:  multiCflags,
+				relpath: "cjson.h",
+			},
+			[]string{"-I/libcjson/include", "-I/stdcjson/include", "-MM", "cjson.h"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getClangArgs(tt.args.cflags, tt.args.relpath)
+			if tt.name == "cjson" {
+				got[0] = strings.ReplaceAll(got[0], inc, "")
+				got[1] = strings.ReplaceAll(got[1], inc, "")
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getClangArgs() = %v, want %v", got, tt.want)
 			}
 		})
 	}

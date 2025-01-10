@@ -173,19 +173,12 @@ func parseCFlagsEntry(cflags, cflag string, exts []string, excludeSubdirs []stri
 
 func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeSubdirs []string) {
 	list := strings.Fields(expandCflags)
-	cflagEntryList := make([]*CflagEntry, 0)
-	for _, cflag := range list {
+	includeList := NewIncludeList()
+	for i, cflag := range list {
 		pCflagEntry := parseCFlagsEntry(expandCflags, cflag, exts, excludeSubdirs)
-		if pCflagEntry != nil {
-			cflagEntryList = append(cflagEntryList, pCflagEntry)
-		}
+		includeList.AddCflagEntry(i, pCflagEntry)
 	}
-	cfg.Include = make([]string, 0)
-	for _, cflagEntry := range cflagEntryList {
-		for _, objFile := range cflagEntry.ObjFiles {
-			cfg.Include = append(cfg.Include, objFile.HFile)
-		}
-	}
+	cfg.Include = includeList.include
 }
 
 func NewLLCppConfig(name string, flag FlagMode) *LLCppConfig {
