@@ -183,7 +183,16 @@ func findDepSlice(lines []string) ([]string, string) {
 	return []string{}, objFileString
 }
 
-func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string, excludeSubdirs []string) *ObjFile {
+func getClangArgs(cflags string, relpath string) []string {
+	args := make([]string, 0)
+	cflagsField := strings.Fields(cflags)
+	args = append(args, cflagsField...)
+	args = append(args, "-MM")
+	args = append(args, relpath)
+	return args
+}
+
+func parseFileEntry(cflags, trimCflag, path string, d fs.DirEntry, exts []string, excludeSubdirs []string) *ObjFile {
 	if d.IsDir() || strings.HasPrefix(d.Name(), ".") {
 		return nil
 	}
@@ -197,15 +206,16 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string, excludeS
 	if idx == len(exts) {
 		return nil
 	}
-	relPath, err := filepath.Rel(trimStr, path)
+	relPath, err := filepath.Rel(trimCflag, path)
 	if err != nil {
 		relPath = path
 	}
 	if isExcludeDir(relPath, excludeSubdirs) {
 		return nil
 	}
-	clangCmd := cmdout.NewExecCommand("clang", "-I"+trimStr, "-MM", relPath)
-	outString, err := cmdout.GetOut(clangCmd, trimStr)
+	args := getClangArgs(cflags, relPath)
+	clangCmd := cmdout.NewExecCommand("clang", args...)
+	outString, err := cmdout.GetOut(clangCmd, trimCflag)
 	if err != nil || outString == "" {
 		objFile := NewObjFile(relPath, relPath)
 		return objFile
@@ -218,22 +228,22 @@ func parseFileEntry(trimStr, path string, d fs.DirEntry, exts []string, excludeS
 	return objFile
 }
 
-func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) *CflagEntry {
-	if !strings.HasPrefix(l, "-I") {
+func parseCFlagsEntry(cflags, cflag string, exts []string, excludeSubdirs []string) *CflagEntry {
+	if !strings.HasPrefix(cflag, "-I") {
 		return nil
 	}
-	trimStr := strings.TrimPrefix(l, "-I")
-	if !strings.HasSuffix(trimStr, string(filepath.Separator)) {
-		trimStr += string(filepath.Separator)
+	trimCflag := strings.TrimPrefix(cflag, "-I")
+	if !strings.HasSuffix(trimCflag, string(filepath.Separator)) {
+		trimCflag += string(filepath.Separator)
 	}
 	var cflagEntry CflagEntry
-	cflagEntry.Include = trimStr
+	cflagEntry.Include = trimCflag
 	cflagEntry.ObjFiles = make([]*ObjFile, 0)
-	err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(trimCflag, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		pObjFile := parseFileEntry(trimStr, path, d, exts, excludeSubdirs)
+		pObjFile := parseFileEntry(cflags, trimCflag, path, d, exts, excludeSubdirs)
 		if pObjFile != nil {
 			cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, pObjFile)
 		}
@@ -251,8 +261,8 @@ func parseCFlagsEntry(l string, exts []string, excludeSubdirs []string) *CflagEn
 func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeSubdirs []string) {
 	list := strings.Fields(expandCflags)
 	cflagEntryList := make([]*CflagEntry, 0)
-	for _, l := range list {
-		pCflagEntry := parseCFlagsEntry(l, exts, excludeSubdirs)
+	for _, cflag := range list {
+		pCflagEntry := parseCFlagsEntry(expandCflags, cflag, exts, excludeSubdirs)
 		if pCflagEntry != nil {
 			cflagEntryList = append(cflagEntryList, pCflagEntry)
 		}

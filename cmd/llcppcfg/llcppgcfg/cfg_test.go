@@ -476,12 +476,13 @@ func (p *parseEntry) Info() (os.FileInfo, error) {
 }
 
 func Test_parseFileEntry(t *testing.T) {
-	_, inc := newCflags("cfg_test_data/cjson/include/")
+	cflags, inc := newCflags("cfg_test_data/cjson/include/")
 	path := inc + "cJSON.h"
 	internalPath := filepath.Join(inc, "internal")
 	objFile := NewObjFileString("cJSON.o:cJSON.h")
 	objFile.Deps = []string{}
 	type args struct {
+		cflags         string
 		trimStr        string
 		path           string
 		d              fs.DirEntry
@@ -496,6 +497,7 @@ func Test_parseFileEntry(t *testing.T) {
 		{
 			"cjson_ok",
 			args{
+				cflags,
 				inc,
 				path,
 				&parseEntry{name: "cJSON.h"},
@@ -507,6 +509,7 @@ func Test_parseFileEntry(t *testing.T) {
 		{
 			"cjson_exts_not_found",
 			args{
+				cflags,
 				inc,
 				path,
 				&parseEntry{name: "cJSON.h"},
@@ -518,6 +521,7 @@ func Test_parseFileEntry(t *testing.T) {
 		{
 			"cjson_not_rel_path",
 			args{
+				cflags,
 				inc,
 				"cJSON.h",
 				&parseEntry{name: "cJSON.h"},
@@ -529,6 +533,7 @@ func Test_parseFileEntry(t *testing.T) {
 		{
 			"cjson_exclude_dir",
 			args{
+				cflags,
 				inc,
 				filepath.Join(internalPath, "a.h"),
 				&parseEntry{name: "a.h"},
@@ -540,7 +545,7 @@ func Test_parseFileEntry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := parseFileEntry(tt.args.trimStr, tt.args.path, tt.args.d, tt.args.exts, tt.args.excludeSubdirs)
+			got := parseFileEntry(tt.args.cflags, tt.args.trimStr, tt.args.path, tt.args.d, tt.args.exts, tt.args.excludeSubdirs)
 			if tt.want != nil && got != nil && !got.IsEqual(tt.want) {
 				t.Errorf("parseFileEntry() = %v, want %v", got, tt.want)
 			}
@@ -554,9 +559,10 @@ func Test_parseFileEntry(t *testing.T) {
 }
 
 func Test_parseCFlagsEntry(t *testing.T) {
-	trimStr, inc := newCflags("cfg_test_data/cjson/include/")
+	cflags, inc := newCflags("cfg_test_data/cjson/include/")
 	type args struct {
-		l              string
+		cflags         string
+		cflag          string
 		exts           []string
 		excludeSubdirs []string
 	}
@@ -568,7 +574,8 @@ func Test_parseCFlagsEntry(t *testing.T) {
 		{
 			"cjson_prefix_with_I",
 			args{
-				trimStr,
+				cflags,
+				cflags,
 				[]string{".h"},
 				[]string{"internal"},
 			},
@@ -583,6 +590,7 @@ func Test_parseCFlagsEntry(t *testing.T) {
 		{
 			"cjson_not_prefix_with_I",
 			args{
+				cflags,
 				inc,
 				[]string{".h"},
 				[]string{},
@@ -592,6 +600,7 @@ func Test_parseCFlagsEntry(t *testing.T) {
 		{
 			"cjson_walk_dir_err",
 			args{
+				cflags,
 				"-I/a/b/c",
 				[]string{".h"},
 				[]string{},
@@ -601,7 +610,7 @@ func Test_parseCFlagsEntry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := parseCFlagsEntry(tt.args.l, tt.args.exts, tt.args.excludeSubdirs)
+			got := parseCFlagsEntry(tt.args.cflags, tt.args.cflag, tt.args.exts, tt.args.excludeSubdirs)
 			if got != nil && tt.want != nil && !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("parseCFlagsEntry() = %v, want %v", got, tt.want)
 			}
