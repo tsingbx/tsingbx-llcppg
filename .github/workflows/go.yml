@@ -55,10 +55,14 @@ jobs:
         go install -v ./cmd/...
         export LLGO_ROOT=$GITHUB_WORKSPACE/llgo
         echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
-       
 
     - name: Build
       run: go build -v ./...
+
+    - name: Set up Go for testing
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
 
     - name: Install llcppg modules
       run: |
