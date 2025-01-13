@@ -25,6 +25,7 @@ const (
 	VFlagName        FlagName = "v"
 	VfetchFlagName   FlagName = "vfetch"
 	VsymgFlagName    FlagName = "vsymg"
+	VgogenFlagName   FlagName = "vgogen"
 	CppFlagName      FlagName = "cpp"
 	ExtsFlagName     FlagName = "exts"
 	ExcludesFlagName FlagName = "excludes"
@@ -204,6 +205,8 @@ func main() {
 	flag.BoolVar(&vSig, string(VfetchFlagName), false, "enable verbose of llcppsigfetch")
 	vSym := false
 	flag.BoolVar(&vSym, string(VsymgFlagName), false, "enable verbose of llcppsymg")
+	vGogen := false
+	flag.BoolVar(&vGogen, string(VgogenFlagName), false, "enable verbose of gogensig")
 	cpp := false
 	flag.BoolVar(&cpp, string(CppFlagName), false, "if it is a cpp library")
 	exts := ""

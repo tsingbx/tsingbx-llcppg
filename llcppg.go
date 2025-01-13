@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -29,25 +30,55 @@ import (
 	"github.com/goplus/llgo/xtool/env"
 )
 
-var verbose bool
+type modeFlags int
 
-func command(name string, args ...string) *exec.Cmd {
-	if verbose {
-		args = append([]string{"-v"}, args...)
-	}
-	return exec.Command(name, args...)
+const (
+	ModeCodegen modeFlags = 1 << iota
+	ModeSymbGen
+	ModeAll = ModeCodegen | ModeSymbGen
+)
+
+type verboseFlags int
+
+const (
+	VerboseSymg verboseFlags = 1 << iota
+	VerboseSigfetch
+	VerboseGogen
+	VerboseAll = VerboseSymg | VerboseSigfetch | VerboseGogen
+)
+
+type CommandOptions struct {
+	Name    string
+	Args    []string
+	Verbose bool
 }
 
-func llcppsymg(conf []byte) error {
-	cmd := command("llcppsymg", "-")
+func command(opts CommandOptions) *exec.Cmd {
+	args := opts.Args
+	if opts.Verbose {
+		args = append([]string{"-v"}, args...)
+	}
+	return exec.Command(opts.Name, args...)
+}
+
+func llcppsymg(conf []byte, v verboseFlags) error {
+	cmd := command(CommandOptions{
+		Name:    "llcppsymg",
+		Args:    []string{"-"},
+		Verbose: (v & VerboseSymg) != 0,
+	})
 	cmd.Stdin = bytes.NewReader(conf)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
-func llcppsigfetch(conf []byte, out *io.PipeWriter) {
-	cmd := command("llcppsigfetch", "-")
+func llcppsigfetch(conf []byte, v verboseFlags, out *io.PipeWriter) {
+	cmd := command(CommandOptions{
+		Name:    "llcppsigfetch",
+		Args:    []string{"-"},
+		Verbose: (v & VerboseSigfetch) != 0,
+	})
 	cmd.Stdin = bytes.NewReader(conf)
 	cmd.Stdout = out
 	cmd.Stderr = os.Stderr
@@ -56,8 +87,12 @@ func llcppsigfetch(conf []byte, out *io.PipeWriter) {
 	out.Close()
 }
 
-func gogensig(in io.Reader, cfg string) error {
-	cmd := command("gogensig", "-", "-cfg="+cfg)
+func gogensig(in io.Reader, cfg string, v verboseFlags) error {
+	cmd := command(CommandOptions{
+		Name:    "gogensig",
+		Args:    []string{"-", "-cfg=" + cfg},
+		Verbose: (v & VerboseGogen) != 0,
+	})
 	cmd.Stdin = in
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -65,14 +100,65 @@ func gogensig(in io.Reader, cfg string) error {
 }
 
 func main() {
-	ags, _ := args.ParseArgs(os.Args[1:], args.LLCPPG_CFG, nil)
-	if ags.Help {
-		fmt.Fprintln(os.Stderr, "Usage: llcppg [config-file] [-v]")
+	var symbGen, codeGen, help bool
+	var vSymg, vSigfetch, vGogen, vAll bool
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, "Usage: llcppg [-v|-vfetch|-vsymg|-vgogen] [-symbgen] [-codegen] [-h|--help] [config-file]")
+		fmt.Fprintln(os.Stderr, "Options:")
+		flag.PrintDefaults()
+	}
+	flag.BoolVar(&vAll, "v", false, "Enable verbose output")
+	flag.BoolVar(&vSigfetch, "vfetch", false, "Enable verbose of llcppsigfetch")
+	flag.BoolVar(&vSymg, "vsymg", false, "Enable verbose of llcppsymg")
+	flag.BoolVar(&vGogen, "vgogen", false, "Enable verbose of gogensig")
+	flag.BoolVar(&symbGen, "symbgen", false, "Only use llcppsymg to generate llcppg.symb.json")
+	flag.BoolVar(&codeGen, "codegen", false, "Only use (llcppsigfetch & gogensig) to generate go code binding")
+	flag.BoolVar(&help, "h", false, "Display help information")
+	flag.BoolVar(&help, "help", false, "Display help information")
+	flag.Parse()
+
+	verbose := verboseFlags(0)
+	mode := ModeAll
+	if vAll {
+		verbose = VerboseAll
+		mode = ModeAll
+	}
+	if vSigfetch {
+		verbose |= VerboseSigfetch
+	}
+	if vGogen {
+		verbose |= VerboseGogen
+	}
+	if vSymg {
+		verbose |= VerboseSymg
+	}
+
+	if codeGen {
+		mode = ModeCodegen
+	}
+	if symbGen {
+		mode = ModeSymbGen
+	}
+
+	if help {
+		flag.Usage()
 		return
 	}
-	verbose = ags.Verbose
 
-	f, err := os.Open(ags.CfgFile)
+	remainArgs := flag.Args()
+
+	var cfgFile string
+	if len(remainArgs) > 0 {
+		cfgFile = remainArgs[0]
+	} else {
+		cfgFile = args.LLCPPG_CFG
+	}
+
+	do(cfgFile, mode, verbose)
+}
+
+func do(cfgFile string, mode modeFlags, verbose verboseFlags) {
+	f, err := os.Open(cfgFile)
 	check(err)
 	defer f.Close()
 
@@ -84,14 +170,18 @@ func main() {
 	b, err := json.MarshalIndent(&conf, "", "  ")
 	check(err)
 
-	err = llcppsymg(b)
-	check(err)
+	if mode&ModeSymbGen != 0 {
+		err = llcppsymg(b, verbose)
+		check(err)
+	}
 
-	r, w := io.Pipe()
-	go llcppsigfetch(b, w)
+	if mode&ModeCodegen != 0 {
+		r, w := io.Pipe()
+		go llcppsigfetch(b, verbose, w)
 
-	err = gogensig(r, ags.CfgFile)
-	check(err)
+		err = gogensig(r, cfgFile, verbose)
+		check(err)
+	}
 }
 
 func check(err error) {

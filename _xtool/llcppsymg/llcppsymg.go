@@ -35,6 +35,11 @@ func main() {
 
 	ags, _ := args.ParseArgs(os.Args[1:], args.LLCPPG_CFG, nil)
 
+	if ags.Help {
+		printUsage()
+		return
+	}
+
 	var data []byte
 	var err error
 	if ags.UseStdin {
@@ -98,4 +103,8 @@ func check(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func printUsage() {
+	fmt.Fprintln(os.Stderr, "Usage: llcppsymg [-v] [config-file]")
 }
