@@ -5,184 +5,220 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"log"
-	"os"
-	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
+	"unicode"
 
+	"github.com/goplus/llcppg/cmdout"
 	"github.com/goplus/llcppg/types"
 )
 
-type CfgExpandMode int
+type llcppCfgKey string
 
 const (
-	NormalMode CfgExpandMode = iota
-	ExpandMode
+	cfgLibsKey   llcppCfgKey = "libs"
+	cfgCflagsKey llcppCfgKey = "cflags"
 )
 
-type LLCppConfig types.Config
+type FlagMode int
 
-type NilError struct {
-}
+const (
+	WithTab FlagMode = 1 << iota
+	WithCpp
+)
 
-func (p *NilError) Error() string {
-	return "nil error"
-}
-
-func NewNilError() *NilError {
-	return &NilError{}
-}
-
-type EmptyStringError struct {
+type emptyStringError struct {
 	name string
 }
 
-func (p *EmptyStringError) Error() string {
+func (p *emptyStringError) Error() string {
 	return p.name + " can't be empty"
 }
 
-func NewEmptyStringError(name string) *EmptyStringError {
-	return &EmptyStringError{name: name}
+func newEmptyStringError(name string) *emptyStringError {
+	return &emptyStringError{name: name}
 }
 
-func CmdOutString(cmd *exec.Cmd) (string, error) {
-	if cmd == nil {
-		return "", NewNilError()
+type LLCppConfig types.Config
+
+func getDir(relPath string) string {
+	index := strings.IndexRune(relPath, filepath.Separator)
+	if index < 0 {
+		return relPath
 	}
-	outBuf := bytes.NewBufferString("")
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = outBuf
-	err := cmd.Run()
+	return relPath[:index]
+}
+
+func isExcludeDir(relPath string, excludeSubdirs []string) bool {
+	if len(excludeSubdirs) == 0 {
+		return false
+	}
+	dir := getDir(relPath)
+	for _, subdir := range excludeSubdirs {
+		if subdir == dir {
+			return true
+		}
+	}
+	return false
+}
+
+func ExpandName(name string, dir string, cfgKey llcppCfgKey) string {
+	originString := fmt.Sprintf("$(pkg-config --%s %s)", cfgKey, name)
+	return cmdout.ExpandString(originString, dir)
+}
+
+func findDepSlice(lines []string) ([]string, string) {
+	objFileString := ""
+	iStart := 0
+	numLines := len(lines)
+	complete := false
+	for i := 0; i < numLines && !complete; i++ {
+		line := lines[i]
+		if strings.ContainsRune(line, rune(':')) && !strings.HasSuffix(line, ":") {
+			objFileString = line
+			iStart = i + 1
+			break
+		}
+		complete = true
+		for j := i + 1; j < numLines; j++ {
+			line2 := lines[j]
+			if len(line2) > 0 {
+				iStart = j + 1
+				objFileString = line + line2
+				break
+			}
+		}
+	}
+	if iStart < numLines {
+		return lines[iStart:], objFileString
+	}
+	return []string{}, objFileString
+}
+
+func getClangArgs(cflags string, relpath string) []string {
+	args := make([]string, 0)
+	cflagsField := strings.Fields(cflags)
+	args = append(args, cflagsField...)
+	args = append(args, "-MM")
+	args = append(args, relpath)
+	return args
+}
+
+func parseFileEntry(cflags, trimCflag, path string, d fs.DirEntry, exts []string, excludeSubdirs []string) *ObjFile {
+	if d.IsDir() || strings.HasPrefix(d.Name(), ".") {
+		return nil
+	}
+	idx := len(exts)
+	for i, ext := range exts {
+		if strings.HasSuffix(d.Name(), ext) {
+			idx = i
+			break
+		}
+	}
+	if idx == len(exts) {
+		return nil
+	}
+	relPath, err := filepath.Rel(trimCflag, path)
 	if err != nil {
-		return outBuf.String(), err
+		relPath = path
 	}
-	return outBuf.String(), nil
+	if isExcludeDir(relPath, excludeSubdirs) {
+		return nil
+	}
+	args := getClangArgs(cflags, relPath)
+	clangCmd := cmdout.NewExecCommand("clang", args...)
+	outString, err := cmdout.GetOut(clangCmd, trimCflag)
+	if err != nil || outString == "" {
+		objFile := NewObjFile(relPath, relPath)
+		return objFile
+	}
+	outString = strings.ReplaceAll(outString, "\\\n", "\n")
+	fields := strings.Fields(outString)
+	lines, objFileStr := findDepSlice(fields)
+	objFile := NewObjFileString(objFileStr)
+	objFile.Deps = append(objFile.Deps, lines...)
+	return objFile
 }
 
-func ExecCommand(cmdStr string, args ...string) *exec.Cmd {
-	cmdStr = strings.TrimSpace(cmdStr)
-	return exec.Command(cmdStr, args...)
-}
-
-func ExpandString(str string) string {
-	str = strings.ReplaceAll(str, "(", "{")
-	str = strings.ReplaceAll(str, ")", "}")
-	expandStr := os.Expand(str, func(s string) string {
-		args := strings.Fields(s)
-		if len(args) == 0 {
-			return ""
-		}
-		outString, err := CmdOutString(ExecCommand(args[0], args[1:]...))
+func parseCFlagsEntry(cflags, cflag string, exts []string, excludeSubdirs []string) *CflagEntry {
+	if !strings.HasPrefix(cflag, "-I") {
+		return nil
+	}
+	trimCflag := strings.TrimPrefix(cflag, "-I")
+	if !strings.HasSuffix(trimCflag, string(filepath.Separator)) {
+		trimCflag += string(filepath.Separator)
+	}
+	var cflagEntry CflagEntry
+	cflagEntry.Include = trimCflag
+	cflagEntry.ObjFiles = make([]*ObjFile, 0)
+	err := filepath.WalkDir(trimCflag, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return ""
+			return err
 		}
-		return outString
+		pObjFile := parseFileEntry(cflags, trimCflag, path, d, exts, excludeSubdirs)
+		if pObjFile != nil {
+			cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, pObjFile)
+		}
+		return nil
 	})
-	return strings.TrimSpace(expandStr)
-}
-
-func doExpandCflags(str string, fn func(s string) bool) ([]string, string) {
-	list := strings.Fields(str)
-	contains := make(map[string]string, 0)
-	for _, l := range list {
-		trimStr := strings.TrimPrefix(l, "-I")
-		trimStr += "/"
-		err := filepath.WalkDir(trimStr, func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			if d.IsDir() {
-				return nil
-			}
-			if !fn(d.Name()) {
-				return nil
-			}
-			_, ok := contains[path]
-			if !ok {
-				relPath, errRel := filepath.Rel(trimStr, path)
-				if errRel != nil {
-					return errRel
-				}
-				contains[path] = relPath
-			}
-			return nil
-		})
-		if err != nil {
-			log.Println(err)
-		}
-	}
-
-	includes := make([]string, 0)
-	includeMap := make(map[string]struct{})
-	for path, relPath := range contains {
-		includeDir, found := strings.CutSuffix(path, relPath)
-		if found {
-			includeMap[includeDir] = struct{}{}
-		}
-		includes = append(includes, relPath)
-	}
-	var flagsBuilder strings.Builder
-	for include := range includeMap {
-		if flagsBuilder.Len() > 0 {
-			flagsBuilder.WriteRune(' ')
-		}
-		flagsBuilder.WriteString("-I" + include)
-	}
-	flags := flagsBuilder.String()
-	return includes, flags
-}
-
-func ExpandLibsName(name string) string {
-	originLibs := fmt.Sprintf("${pkg-config --libs %s}", name)
-	return ExpandString(originLibs)
-}
-
-func ExpandCflags(originCFlags string) ([]string, string) {
-	cflags := ExpandString(originCFlags)
-	expandIncludes, expandCflags := doExpandCflags(cflags, func(s string) bool {
-		ext := filepath.Ext(s)
-		return ext == ".h" || ext == ".hpp"
+	sort.Slice(cflagEntry.ObjFiles, func(i, j int) bool {
+		return len(cflagEntry.ObjFiles[i].Deps) > len(cflagEntry.ObjFiles[j].Deps)
 	})
-	if len(expandCflags) > 0 {
-		cflags = expandCflags
+	if err != nil {
+		return nil
 	}
-	return expandIncludes, cflags
+	return &cflagEntry
 }
 
-func ExpandCFlagsName(name string) ([]string, string) {
-	originCFlags := fmt.Sprintf("${pkg-config --cflags %s}", name)
-	return ExpandCflags(originCFlags)
+func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeSubdirs []string) {
+	list := strings.Fields(expandCflags)
+	includeList := NewIncludeList()
+	for i, cflag := range list {
+		pCflagEntry := parseCFlagsEntry(expandCflags, cflag, exts, excludeSubdirs)
+		includeList.AddCflagEntry(i, pCflagEntry)
+	}
+	cfg.Include = includeList.include
 }
 
-func expandCFlagsAndLibs(name string, cfg *LLCppConfig) {
-	cfg.Include, cfg.CFlags = ExpandCFlagsName(name)
-	cfg.Libs = ExpandLibsName(name)
-}
-
-func NewLLCppConfig(name string, isCpp bool) *LLCppConfig {
+func NewLLCppConfig(name string, flag FlagMode) *LLCppConfig {
 	cfg := &LLCppConfig{
 		Name: name,
 	}
 	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
 	cfg.TrimPrefixes = []string{}
-	cfg.Cplusplus = isCpp
-	cfg.Include, _ = ExpandCFlagsName(name)
+	cfg.Cplusplus = (flag&WithCpp != 0)
 	return cfg
 }
 
-func GenCfg(name string, cpp bool, expand CfgExpandMode) (*bytes.Buffer, error) {
+func NormalizePackageName(name string) string {
+	fields := strings.FieldsFunc(name, func(r rune) bool {
+		return !unicode.IsLetter(r) && r != '_' && !unicode.IsDigit(r)
+	})
+	if len(fields) > 0 {
+		if len(fields[0]) > 0 && unicode.IsDigit(rune(fields[0][0])) {
+			fields[0] = "_" + fields[0]
+		}
+	}
+	return strings.Join(fields, "_")
+}
+
+func GenCfg(name string, flag FlagMode, exts []string, excludeSubdirs []string) (*bytes.Buffer, error) {
 	if len(name) == 0 {
-		return nil, NewEmptyStringError("name")
+		return nil, newEmptyStringError("name")
 	}
-	cfg := NewLLCppConfig(name, cpp)
-	if expand == ExpandMode {
-		expandCFlagsAndLibs(name, cfg)
-	}
+	cfg := NewLLCppConfig(name, flag)
+	expandCFlags := ExpandName(name, "", cfgCflagsKey)
+	sortIncludes(expandCFlags, cfg, exts, excludeSubdirs)
+
+	cfg.Name = NormalizePackageName(cfg.Name)
+
 	buf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(buf)
-	jsonEncoder.SetIndent("", "\t")
+	if flag&WithTab != 0 {
+		jsonEncoder.SetIndent("", "\t")
+	}
 	err := jsonEncoder.Encode(cfg)
 	if err != nil {
 		return nil, err
