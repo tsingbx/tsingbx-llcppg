@@ -109,13 +109,21 @@ type Context struct {
 // llgo:type C
 type Fts5ExtensionFunction func(*Fts5ExtensionApi, *Fts5Context, *Context, c.Int, **Value)
 
+type X_XmlParserCtxt struct {
+	Unused [8]uint8
+}
+type XmlParserCtxt X_XmlParserCtxt
+type HtmlParserCtxt XmlParserCtxt
+
 ===== llcppg.pub =====
 Fts5Context
 Fts5ExtensionApi
 Fts5PhraseIter
+_xmlParserCtxt X_XmlParserCtxt
 bar Bar
 foo Foo
 fts5_extension_function Fts5ExtensionFunction
+htmlParserCtxt HtmlParserCtxt
 lua_Debug Debug
 lua_State State
 sqlite3_context Context
@@ -125,3 +133,4 @@ sqlite3_pcache Pcache
 sqlite3_pcache_methods2 PcacheMethods2
 sqlite3_pcache_page PcachePage
 sqlite3_value Value
+xmlParserCtxt XmlParserCtxt

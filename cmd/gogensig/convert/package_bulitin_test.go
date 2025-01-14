@@ -31,7 +31,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 		IncPath: "Bar",
 		Path:    "Bar",
 	}
-	pkg.incomplete["Bar"] = &Incomplete{}
+	pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
 	err := pkg.NewTypedefDecl(&ast.TypedefDecl{
 		Name: &ast.Ident{Name: "Foo"},
 		Type: &ast.TagExpr{
@@ -41,7 +41,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 	if err != nil {
 		t.Fatal("NewTypedefDecl failed:", err)
 	}
-	delete(pkg.incomplete, "Bar")
+	pkg.incompleteTypes.Complete("Bar")
 
 	err = pkg.WritePkgFiles()
 	if err == nil {
@@ -53,7 +53,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 		Name: &ast.ScopingExpr{
 			X: &ast.Ident{Name: "Bar"},
 		},
-	}, nil)
+	}, nil, "NewBar")
 }
 
 func TestPubMethodName(t *testing.T) {
