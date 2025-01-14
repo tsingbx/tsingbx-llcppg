@@ -69,7 +69,7 @@ func main() {
 	wd, err := os.Getwd()
 	check(err)
 
-	err = runGoCmds(wd, conf.Name)
+	err = prepareEnv(wd, conf.Name, conf.Deps)
 	check(err)
 
 	p, _, err := basic.ConvertProcesser(&basic.Config{
@@ -95,7 +95,7 @@ func check(err error) {
 	}
 }
 
-func runGoCmds(wd, pkg string) error {
+func prepareEnv(wd, pkg string, deps []string) error {
 	dir := filepath.Join(wd, pkg)
 
 	err := os.MkdirAll(dir, 0744)
@@ -111,6 +111,13 @@ func runGoCmds(wd, pkg string) error {
 	err = config.RunCommand(dir, "go", "mod", "init", pkg)
 	if err != nil {
 		return err
+	}
+
+	for _, dep := range deps {
+		err := config.RunCommand(dir, "go", "get", dep)
+		if err != nil {
+			return err
+		}
 	}
 
 	return config.RunCommand(dir, "go", "get", "github.com/goplus/llgo@main")
