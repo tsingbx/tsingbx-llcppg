@@ -44,17 +44,9 @@ type Package struct {
 	// type must exist. This differs from C/C++ where incomplete types are allowed.
 	// Therefore, we need this mechanism to defer type initialization until all
 	// type definitions are available.
-	incompletes []*Incomplete
-	incomplete  map[string]*Incomplete // origin name(in c) to indicate the type is incomplete need to be defer init
+	incompleteTypes *IncompleteTypes
 
 	nameMapper *names.NameMapper // handles name mapping and uniqueness
-}
-
-type Incomplete struct {
-	cname   string                     // origin name(in c)
-	file    *HeaderFile                // the file where the type declaration is located
-	decl    *gogen.TypeDecl            // the need to resolved later type declaration
-	getType func() (types.Type, error) // will be executed after all incomplete types are initialized.
 }
 
 type PackageConfig struct {
@@ -69,11 +61,10 @@ type PackageConfig struct {
 // If SetCurFile is not called, all type conversions will be written to this default Go file.
 func NewPackage(config *PackageConfig) *Package {
 	p := &Package{
-		p:           gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
-		conf:        config,
-		incomplete:  make(map[string]*Incomplete),
-		incompletes: make([]*Incomplete, 0),
-		nameMapper:  names.NewNameMapper(),
+		p:               gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
+		conf:            config,
+		incompleteTypes: NewIncompleteTypes(),
+		nameMapper:      names.NewNameMapper(),
 	}
 
 	mod, err := gopmod.Load(config.OutputDir)
@@ -341,7 +332,7 @@ func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 
 // handleTypeDecl creates a new type declaration or retrieves existing one
 func (p *Package) handleTypeDecl(pubname string, cname string, typeDecl *ast.TypeDecl) *Incomplete {
-	if existDecl, exists := p.incomplete[cname]; exists {
+	if existDecl, exists := p.incompleteTypes.Lookup(cname); exists {
 		return existDecl
 	}
 	decl := p.emptyTypeDecl(pubname, typeDecl.Doc)
@@ -353,13 +344,15 @@ func (p *Package) handleTypeDecl(pubname string, cname string, typeDecl *ast.Typ
 			return types.NewStruct(p.cvt.defaultRecordField(), nil), nil
 		},
 	}
-	p.incompletes = append(p.incompletes, inc)
-	p.incomplete[inc.cname] = inc
+	p.incompleteTypes.Add(inc)
+	// p.incompletes = append(p.incompletes, inc)
+	// p.incomplete[inc.cname] = inc
 	return inc
 }
 
 func (p *Package) handleCompleteType(incom *Incomplete, typ *ast.RecordType, name string) error {
-	defer delete(p.incomplete, name)
+	// defer delete(p.incomplete, name)
+	defer p.incompleteTypes.Complete(name)
 	defer p.SetCurFile(p.curFile)
 	p.SetCurFile(incom.file)
 	structType, err := p.cvt.RecordTypeToStruct(typ)
@@ -376,9 +369,13 @@ func (p *Package) handleCompleteType(incom *Incomplete, typ *ast.RecordType, nam
 // For such declarations, create a empty type decl and store it in the
 // incomplete map, but not in the public symbol table.
 func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
-	if decl, ok := p.incomplete[name]; ok {
+	// if decl, ok := p.incomplete[name]; ok {
+	// 	return decl.decl
+	// }
+	if decl, ok := p.incompleteTypes.Lookup(name); ok {
 		return decl.decl
 	}
+
 	pubName := p.nameMapper.GetGoName(name, p.trimPrefixes())
 	decl := p.emptyTypeDecl(pubName, nil)
 	inc := &Incomplete{
@@ -389,8 +386,9 @@ func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
 			return types.NewStruct(p.cvt.defaultRecordField(), nil), nil
 		},
 	}
-	p.incompletes = append(p.incompletes, inc)
-	p.incomplete[inc.cname] = inc
+	p.incompleteTypes.Add(inc)
+	// p.incompletes = append(p.incompletes, inc)
+	// p.incomplete[inc.cname] = inc
 	p.nameMapper.SetMapping(name, pubName)
 	return decl
 }
@@ -462,12 +460,12 @@ func (p *Package) handleTyperefIncomplete(typeRef ast.Expr, typeSpecdecl *gogen.
 		return false
 	}
 
-	_, inc := p.incomplete[name]
+	_, inc := p.incompleteTypes.Lookup(name)
 	if !inc {
 		return false
 	}
 
-	incType := &Incomplete{
+	p.incompleteTypes.Add(&Incomplete{
 		cname: namedName,
 		file:  p.curFile,
 		decl:  typeSpecdecl,
@@ -478,10 +476,9 @@ func (p *Package) handleTyperefIncomplete(typeRef ast.Expr, typeSpecdecl *gogen.
 			}
 			return typ, nil
 		},
-	}
-
-	p.incompletes = append(p.incompletes, incType)
-	p.incomplete[incType.cname] = incType
+	})
+	// p.incompletes = append(p.incompletes, incType)
+	// p.incomplete[incType.cname] = incType
 	return true
 }
 
@@ -699,12 +696,8 @@ func (p *Package) WriteToBuffer(genFName string) (*bytes.Buffer, error) {
 }
 
 func (p *Package) deferTypeBuild() error {
-	for _, inc := range p.incompletes {
+	err := p.incompleteTypes.IterateIncomplete(func(inc *Incomplete) error {
 		p.SetCurFile(inc.file)
-		// skip the type that has been completed
-		if _, ok := p.incomplete[inc.cname]; !ok {
-			continue
-		}
 		typ, err := inc.getType()
 		if typ != nil {
 			inc.decl.InitType(p.p, typ)
@@ -712,10 +705,10 @@ func (p *Package) deferTypeBuild() error {
 		if err != nil {
 			return err
 		}
-	}
-	p.incomplete = make(map[string]*Incomplete, 0)
-	p.incompletes = make([]*Incomplete, 0)
-	return nil
+		return nil
+	})
+	p.incompleteTypes.Clear()
+	return err
 }
 
 func (p *Package) WritePubFile() error {
@@ -726,7 +719,9 @@ func (p *Package) WritePubFile() error {
 func (p *Package) DeclName(name string) (pubName string, changed bool, err error) {
 	pubName, changed = p.nameMapper.GetUniqueGoName(name, p.trimPrefixes())
 	// if the type is incomplete,it's ok to have the same name
-	if obj := p.p.Types.Scope().Lookup(name); obj != nil && p.incomplete[name] == nil {
+	obj := p.p.Types.Scope().Lookup(name)
+	_, ok := p.incompleteTypes.Lookup(name)
+	if obj != nil && !ok {
 		return "", false, errs.NewTypeDefinedError(pubName, name)
 	}
 	return pubName, changed, nil
@@ -792,4 +787,55 @@ func (p *Package) DepIncPaths() []string {
 		log.Println("failed to get any include paths from these package: \n", allfailed)
 	}
 	return paths
+}
+
+type IncompleteTypes struct {
+	types    []*Incomplete          // ordered list of incomplete types
+	typesMap map[string]*Incomplete // quick lookup by C name
+}
+
+type Incomplete struct {
+	cname   string                     // origin name(in c)
+	file    *HeaderFile                // the file where the type declaration is located
+	decl    *gogen.TypeDecl            // the need to resolved later type declaration
+	getType func() (types.Type, error) // will be executed after all incomplete types are initialized.
+}
+
+func NewIncompleteTypes() *IncompleteTypes {
+	return &IncompleteTypes{
+		types:    make([]*Incomplete, 0),
+		typesMap: make(map[string]*Incomplete),
+	}
+}
+
+func (it *IncompleteTypes) Add(inc *Incomplete) {
+	it.types = append(it.types, inc)
+	it.typesMap[inc.cname] = inc
+}
+
+func (it *IncompleteTypes) Lookup(cname string) (*Incomplete, bool) {
+	inc, ok := it.typesMap[cname]
+	return inc, ok
+}
+
+func (it *IncompleteTypes) Complete(cname string) {
+	delete(it.typesMap, cname)
+}
+
+func (it *IncompleteTypes) Clear() {
+	it.types = make([]*Incomplete, 0)
+	it.typesMap = make(map[string]*Incomplete)
+}
+
+func (it *IncompleteTypes) IterateIncomplete(fn func(*Incomplete) error) error {
+	for _, inc := range it.types {
+		// skip the type that has been completed
+		if _, ok := it.typesMap[inc.cname]; !ok {
+			continue
+		}
+		if err := fn(inc); err != nil {
+			return err
+		}
+	}
+	return nil
 }
