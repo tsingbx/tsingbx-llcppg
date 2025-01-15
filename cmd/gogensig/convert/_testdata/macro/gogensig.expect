@@ -3,6 +3,7 @@ package macro
 
 import (
 	"github.com/goplus/llgo/c"
+	"math"
 	_ "unsafe"
 )
 
@@ -19,6 +20,7 @@ const INT32MINHEX c.Uint = 2147483648
 const INT32MAXHEX c.Int = 2147483647
 const INT32MAXDEC c.Int = 2147483647
 const UINT32MAX c.Uint = 4294967295
+const UINT64MAX c.Ulong = math.MaxUint64
 const INT64MAX c.Ulong = 9223372036854775807
 
 ===== macro_autogen_link.go =====
