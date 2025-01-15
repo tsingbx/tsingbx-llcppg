@@ -25,7 +25,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.20'
+        go-version: '1.23'
 
     - name: Install dependencies
       if: startsWith(matrix.os, 'macos')
@@ -44,18 +44,30 @@ jobs:
         echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{matrix.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
         sudo apt-get update
-        sudo apt-get install -y llvm-${{matrix.llvm}}-dev clang-${{matrix.llvm}} libclang-${{matrix.llvm}}-dev lld-${{matrix.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev
+        sudo apt-get install -y llvm-${{matrix.llvm}}-dev clang-${{matrix.llvm}} libunwind-dev libclang-${{matrix.llvm}}-dev lld-${{matrix.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev
         echo "/usr/lib/llvm-${{matrix.llvm}}/bin" >> $GITHUB_PATH
 
     - name: Install LLGO
       run: |
-        go install github.com/goplus/llgo/cmd/llgo@latest
+        git clone https://github.com/goplus/llgo.git
+        echo $PWD
+        cd llgo/compiler
+        go install -v ./cmd/...
+        export LLGO_ROOT=$GITHUB_WORKSPACE/llgo
+        echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
 
     - name: Build
       run: go build -v ./...
 
+    - name: Set up Go for testing
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+
     - name: Install llcppg modules
-      run: bash ./install.sh
+      run: |
+        echo "Using LLGO_ROOT: $LLGO_ROOT"
+        bash ./install.sh
 
     - name: Test llcppsymg & llcppsigfetch
       run: |
@@ -64,7 +76,18 @@ jobs:
         # llgo cmptest ./_xtool/llcppsymg/_cmptest/... causes 
         # panic: runtime error: index out of range [0] with length 0
         cd _xtool/llcppsymg/_cmptest
-        llgo cmptest ./...
+          
+        # llgo cmptest ./... cause  lld: error: undefined symbol: sort.init
+        # https://github.com/goplus/llgo/issues/944
+
+        llgo cmptest ./args_test
+        llgo cmptest ./clangutils_test
+        llgo cmptest ./config_test
+        llgo cmptest ./names_test
+        llgo cmptest ./parse_test
+        llgo cmptest ./symbol_test
+        llgo cmptest ./symg_test
+
         cd ../../../
 
     - name: Test
