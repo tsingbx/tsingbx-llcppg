@@ -582,8 +582,10 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 		}
 		if str, err := litToString(value); err == nil {
 			defs.New(str, types.Typ[types.String], name)
-		} else if val, err := litToInt(value); err == nil {
-			defs.New(int(val), p.cvt.typeMap.CType("Int"), name)
+
+		} else if val, t, err := LitToInt(value); err == nil {
+			//todo(zzy): UINT64_MAX 0xFFFFFFFFFFFFFFFF will cause overflow int
+			defs.New(int(val), p.cvt.typeMap.CType(string(t)), name)
 		} else if fval, err := litToFloat(value, 64); err == nil {
 			defs.New(fval, p.cvt.typeMap.CType("Float"), name)
 		}
