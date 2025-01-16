@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"go/types"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 
@@ -84,7 +85,8 @@ func NewPackage(config *PackageConfig) *Package {
 	}
 
 	clib := p.p.Import("github.com/goplus/llgo/c")
-	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, p.p.Unsafe())
+	math := p.p.Import("math")
+	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, math, p.p.Unsafe())
 	p.cvt = NewConv(&TypeConfig{
 		Types:       p.p.Types,
 		TypeMap:     typeMap,
@@ -572,7 +574,9 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 	if p.curFile.IsSys {
 		return nil
 	}
+
 	// simple const macro define (#define NAME value)
+	// todo(zzy):support negative macro
 	if len(macro.Tokens) == 2 && macro.Tokens[1].Token == ctoken.LITERAL {
 		value := macro.Tokens[1].Lit
 		defs := p.NewConstGroup()
@@ -580,10 +584,19 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 		if err != nil {
 			return err
 		}
+		if dbg.GetDebugLog() {
+			log.Printf("NewMacro: %s = %s\n", name, value)
+		}
 		if str, err := litToString(value); err == nil {
 			defs.New(str, types.Typ[types.String], name)
-		} else if val, err := litToInt(value); err == nil {
-			defs.New(int(val), p.cvt.typeMap.CType("Int"), name)
+		} else if val, t, err := litToUint(value); err == nil {
+			//UINT64_MAX 0xFFFFFFFFFFFFFFFF will cause overflow int in const build
+			//so we need to use math.MaxUint64 to replace it
+			if t == TypeUlong && val == math.MaxUint64 {
+				defs.New(p.cvt.typeMap.pkgMap["math"].Ref("MaxUint64"), p.cvt.typeMap.CType(string(t)), name)
+			} else {
+				defs.New(int(val), p.cvt.typeMap.CType(string(t)), name)
+			}
 		} else if fval, err := litToFloat(value, 64); err == nil {
 			defs.New(fval, p.cvt.typeMap.CType("Float"), name)
 		}

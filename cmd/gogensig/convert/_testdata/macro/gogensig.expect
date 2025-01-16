@@ -3,6 +3,7 @@ package macro
 
 import (
 	"github.com/goplus/llgo/c"
+	"math"
 	_ "unsafe"
 )
 
@@ -10,6 +11,17 @@ const VALUE c.Int = 123
 const STRING string = "hello"
 const FLOAT float32 = 1.23
 const X32BITS c.Int = 0
+const XMLSAX2MAGIC c.Uint = 3740122799
+const ZSTDMAGICNUMBER c.Uint = 4247762216
+const ZSTDMAGICDICTIONARY c.Uint = 3962610743
+const ZSTDMAGICSKIPPABLESTART c.Int = 407710288
+const ZSTDMAGICSKIPPABLEMASK c.Uint = 4294967280
+const INT32MINHEX c.Uint = 2147483648
+const INT32MAXHEX c.Int = 2147483647
+const INT32MAXDEC c.Int = 2147483647
+const UINT32MAX c.Uint = 4294967295
+const UINT64MAX c.Ulong = math.MaxUint64
+const INT64MAX c.Ulong = 9223372036854775807
 
 ===== macro_autogen_link.go =====
 package macro
