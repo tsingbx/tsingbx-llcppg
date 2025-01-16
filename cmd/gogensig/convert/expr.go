@@ -20,7 +20,7 @@ func Expr(e ast.Expr) *ExprWrap {
 func (p *ExprWrap) ToInt() (int, error) {
 	v, ok := p.e.(*ast.BasicLit)
 	if ok && v.Kind == ast.IntLit {
-		v, _, err := LitToInt(v.Value)
+		v, _, err := litToInt(v.Value)
 		if err != nil {
 			return 0, err
 		}
@@ -74,32 +74,38 @@ const (
 	TypeUlong IntType = "Ulong"
 )
 
-func LitToInt(lit string) (uint64, IntType, error) {
-	var val int64
-	var uval uint64
-	var err error
-	if uval, err = strconv.ParseUint(lit, 0, 64); err == nil {
-		switch {
-		case uval <= math.MaxInt32:
-			return uval, TypeInt, nil
-		case uval <= math.MaxUint32:
-			return uval, TypeUint, nil
-		default:
-			return uval, TypeUlong, nil
-		}
+// litToInt parses a string literal into an int64 value.
+// It returns the value and the smallest IntType that can hold the value.
+func litToInt(lit string) (int64, IntType, error) {
+	val, err := strconv.ParseInt(lit, 0, 64)
+	if err != nil {
+		return 0, TypeInt, err
 	}
 
-	// handle negative numbers
-	if val, err = strconv.ParseInt(lit, 0, 64); err == nil {
-		if val < 0 {
-			if val >= math.MinInt32 {
-				// For negative numbers, preserve only the lower 32 bits
-				return uint64(uint32(int32(val))), TypeInt, nil
-			}
-			return uint64(val), TypeLong, nil
+	if val < 0 {
+		if val >= math.MinInt32 {
+			return val, TypeInt, nil
 		}
+		return val, TypeLong, nil
 	}
-	return 0, TypeInt, err
+	return val, TypeInt, nil
+}
+
+// litToUint parses a string literal into a uint64 value.
+// It returns the value and the smallest IntType that can hold the value.
+func litToUint(lit string) (uint64, IntType, error) {
+	uval, err := strconv.ParseUint(lit, 0, 64)
+	if err != nil {
+		return 0, TypeInt, err
+	}
+	switch {
+	case uval <= math.MaxInt32:
+		return uval, TypeInt, nil
+	case uval <= math.MaxUint32:
+		return uval, TypeUint, nil
+	default:
+		return uval, TypeUlong, nil
+	}
 }
 
 func litToFloat(lit string, bitSize int) (float64, error) {

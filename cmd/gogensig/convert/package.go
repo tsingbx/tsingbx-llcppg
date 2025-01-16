@@ -574,7 +574,9 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 	if p.curFile.IsSys {
 		return nil
 	}
+
 	// simple const macro define (#define NAME value)
+	// todo(zzy):support negative macro
 	if len(macro.Tokens) == 2 && macro.Tokens[1].Token == ctoken.LITERAL {
 		value := macro.Tokens[1].Lit
 		defs := p.NewConstGroup()
@@ -582,9 +584,12 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 		if err != nil {
 			return err
 		}
+		if dbg.GetDebugLog() {
+			log.Printf("NewMacro: %s = %s\n", name, value)
+		}
 		if str, err := litToString(value); err == nil {
 			defs.New(str, types.Typ[types.String], name)
-		} else if val, t, err := LitToInt(value); err == nil {
+		} else if val, t, err := litToUint(value); err == nil {
 			//UINT64_MAX 0xFFFFFFFFFFFFFFFF will cause overflow int in const build
 			//so we need to use math.MaxUint64 to replace it
 			if t == TypeUlong && val == math.MaxUint64 {
