@@ -381,8 +381,8 @@ func (p *TypeConv) inComplete(recordType *ast.RecordType) bool {
 // if this type is in a system header,skip the type gen & collect the type info
 func (p *TypeConv) handleSysType(ident *ast.Ident, loc *ast.Location, incPath string) (skip bool, anony bool, err error) {
 	anony = ident == nil
-	if !p.conf.Package.curFile.IsSys || anony {
-		return false, anony, nil
+	if isSys := p.conf.Package.curFile.IsSys; !isSys || anony {
+		return isSys, anony, nil
 	}
 	if existingLoc, ok := p.SysTypeLoc[ident.Name]; ok {
 		return true, anony, fmt.Errorf("type %s already defined in %s,include path: %s", ident.Name, existingLoc.Path, existingLoc.IncPath)
