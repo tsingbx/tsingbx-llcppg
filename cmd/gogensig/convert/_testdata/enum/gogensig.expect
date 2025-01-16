@@ -10,6 +10,7 @@ const (
 	Enum1 c.Int = 0
 	Enum2 c.Int = 1
 )
+const COLORDEFAULT c.Int = -1
 
 type Spectrum c.Int
 
