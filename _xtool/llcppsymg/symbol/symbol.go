@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
+	"regexp"
 	"runtime"
 	"strings"
 	"unsafe"
@@ -60,7 +62,12 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 			continue
 		}
 
-		files, err := nm.New("").List(dylibPath)
+		args := []string{}
+		if runtime.GOOS == "linux" {
+			args = append(args, "-D")
+		}
+
+		files, err := nm.New("").List(dylibPath, args...)
 		if err != nil {
 			parseErrors = append(parseErrors, fmt.Sprintf("ParseDylibSymbols:Failed to list symbols in dylib %s: %v", dylibPath, err))
 			continue
@@ -90,30 +97,17 @@ func getSysLibPaths() []string {
 		if dbg.GetDebugSymbol() {
 			fmt.Println("getSysLibPaths:find sys lib path from linux")
 		}
-		paths = []string{
-			"/usr/lib",
-			"/usr/local/lib",
+		//resolution from https://github.com/goplus/llcppg/commit/02307485db9269481297a4dc5e8449fffaa4f562
+		cmd := exec.Command("ld", "--verbose")
+		output, err := cmd.Output()
+		if err != nil {
+			panic(err)
 		}
-		paths = append(paths, getPath("/etc/ld.so.conf")...)
-		if dbg.GetDebugSymbol() && len(paths) == 0 {
-			fmt.Println("getSysLibPaths:/etc/ld.so.conf havent find any path")
+		matches := regexp.MustCompile(`SEARCH_DIR\("=([^"]+)"\)`).FindAllStringSubmatch(string(output), -1)
+		for _, match := range matches {
+			paths = append(paths, match[1])
 		}
-		confd := "/etc/ld.so.conf.d"
-		dir, err := os.Stat(confd)
-		if err != nil || !dir.IsDir() {
-			if dbg.GetDebugSymbol() {
-				fmt.Println("getSysLibPaths:/etc/ld.so.conf.d not found or not dir")
-			}
-			return paths
-		}
-		// todo(zzy) : wait llgo os.ReadDir support
-		// files, err := os.ReadDir(confd)
-		// if err == nil {
-		// 	for _, file := range files {
-		// 		filepath := filepath.Join(confd, file.Name())
-		// 		paths = append(paths, getPath(filepath)...)
-		// 	}
-		// }
+		return paths
 	}
 	return paths
 }
