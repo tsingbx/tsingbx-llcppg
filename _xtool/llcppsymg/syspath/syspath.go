@@ -35,8 +35,8 @@ func ParseLdOutput(output string) []string {
 func GetIncludePaths() []string {
 	var paths []string
 	if runtime.GOOS == "linux" {
-		cmd := exec.Command("clang", "-v", "-x", "c", "-E", "/dev/null")
-		output, err := cmd.Output()
+		cmd := exec.Command("clang", "-E", "-v", "-x", "c", "/dev/null")
+		output, err := cmd.CombinedOutput()
 		if err != nil {
 			panic(err)
 		}

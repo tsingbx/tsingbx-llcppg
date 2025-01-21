@@ -10,6 +10,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
 	cppgtypes "github.com/goplus/llcppg/types"
@@ -164,7 +165,7 @@ func (p *PkgInfo) GetIncPaths() ([]string, []string, error) {
 	}
 	expandedIncFlags := env.ExpandEnv(p.CppgConf.CFlags)
 	cflags := cfgparse.ParseCFlags(expandedIncFlags)
-	incPaths, notFounds, err := cflags.GenHeaderFilePaths(p.CppgConf.Include, []string{})
+	incPaths, notFounds, err := cflags.GenHeaderFilePaths(p.CppgConf.Include, syspath.GetIncludePaths())
 	p.includes = incPaths
 	return incPaths, notFounds, err
 }

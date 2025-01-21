@@ -86,9 +86,11 @@ func (cf *CFlags) GenHeaderFilePaths(files []string, defaultPaths []string) ([]s
 	var foundPaths []string
 	var notFound []string
 
+	searchPaths := append(cf.Paths, defaultPaths...)
+
 	for _, file := range files {
 		var found bool
-		for _, path := range cf.Paths {
+		for _, path := range searchPaths {
 			fullPath := filepath.Join(path, file)
 			if _, err := os.Stat(fullPath); err == nil {
 				foundPaths = append(foundPaths, fullPath)
