@@ -4,6 +4,7 @@ import (
 	"os/exec"
 	"regexp"
 	"runtime"
+	"strings"
 )
 
 func GetLibPaths() []string {
@@ -27,6 +28,36 @@ func ParseLdOutput(output string) []string {
 	matches := regexp.MustCompile(`SEARCH_DIR\("=([^"]+)"\)`).FindAllStringSubmatch(output, -1)
 	for _, match := range matches {
 		paths = append(paths, match[1])
+	}
+	return paths
+}
+
+func GetIncludePaths() []string {
+	var paths []string
+	if runtime.GOOS == "linux" {
+		cmd := exec.Command("clang", "-v", "-x", "c", "-E", "/dev/null")
+		output, err := cmd.Output()
+		if err != nil {
+			panic(err)
+		}
+		return ParseClangIncOutput(string(output))
+	}
+	return paths
+}
+
+func ParseClangIncOutput(output string) []string {
+	var paths []string
+	start := strings.Index(output, "#include <...> search starts here:")
+	end := strings.Index(output, "End of search list.")
+	if start == -1 || end == -1 {
+		return paths
+	}
+	content := output[start:end]
+	lines := strings.Split(content, "\n")
+	for _, line := range lines[1:] {
+		if path := strings.TrimSpace(line); path != "" {
+			paths = append(paths, path)
+		}
 	}
 	return paths
 }
