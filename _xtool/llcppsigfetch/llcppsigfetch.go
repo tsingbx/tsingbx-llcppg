@@ -154,7 +154,7 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 	}
 
 	cflag := cfgparse.ParseCFlags(conf.CFlags)
-	files, notFounds, err := cflag.GenHeaderFilePaths(conf.Include)
+	files, notFounds, err := cflag.GenHeaderFilePaths(conf.Include, []string{})
 	check(err)
 
 	if verbose {

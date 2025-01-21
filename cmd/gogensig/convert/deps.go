@@ -164,7 +164,7 @@ func (p *PkgInfo) GetIncPaths() ([]string, []string, error) {
 	}
 	expandedIncFlags := env.ExpandEnv(p.CppgConf.CFlags)
 	cflags := cfgparse.ParseCFlags(expandedIncFlags)
-	incPaths, notFounds, err := cflags.GenHeaderFilePaths(p.CppgConf.Include)
+	incPaths, notFounds, err := cflags.GenHeaderFilePaths(p.CppgConf.Include, []string{})
 	p.includes = incPaths
 	return incPaths, notFounds, err
 }

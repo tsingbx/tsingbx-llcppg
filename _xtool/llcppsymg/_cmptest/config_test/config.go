@@ -312,7 +312,7 @@ func TestGenHeaderFilePath() {
 		fmt.Printf("Input files: %v\n", tc.files)
 
 		cflag := cfgparse.ParseCFlags(tc.cflags)
-		result, notFounds, err := cflag.GenHeaderFilePaths(tc.files)
+		result, notFounds, err := cflag.GenHeaderFilePaths(tc.files, []string{})
 
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)

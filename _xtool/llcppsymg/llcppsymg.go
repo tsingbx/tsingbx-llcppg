@@ -79,7 +79,7 @@ func main() {
 	check(err)
 
 	cflag := cfgparse.ParseCFlags(conf.CFlags)
-	filepaths, notFounds, err := cflag.GenHeaderFilePaths(conf.Include)
+	filepaths, notFounds, err := cflag.GenHeaderFilePaths(conf.Include, []string{})
 	check(err)
 
 	if ags.Verbose {

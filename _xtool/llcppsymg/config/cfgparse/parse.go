@@ -82,7 +82,7 @@ func ParseCFlags(cflags string) *CFlags {
 	return cf
 }
 
-func (cf *CFlags) GenHeaderFilePaths(files []string) ([]string, []string, error) {
+func (cf *CFlags) GenHeaderFilePaths(files []string, defaultPaths []string) ([]string, []string, error) {
 	var foundPaths []string
 	var notFound []string
 

@@ -1,0 +1,7 @@
+#stdout
+=== TestLdOutput ===
+[/usr/local/lib/aarch64-linux-gnu /lib/aarch64-linux-gnu /usr/lib/aarch64-linux-gnu /usr/local/lib /lib /usr/lib /usr/aarch64-linux-gnu/lib]
+
+#stderr
+
+#exit 0
