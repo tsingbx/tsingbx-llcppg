@@ -8,12 +8,13 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
+	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/c/cjson"
 )
 
 type Context struct {
-	Files []*FileEntry
+	FileSet []*ast.FileEntry
 	*ContextConfig
 }
 
@@ -24,7 +25,7 @@ type ContextConfig struct {
 
 func NewContext(cfg *ContextConfig) *Context {
 	return &Context{
-		Files: make([]*FileEntry, 0),
+		FileSet: make([]*ast.FileEntry, 0),
 		ContextConfig: &ContextConfig{
 			Conf:     cfg.Conf,
 			IncFlags: cfg.IncFlags,
@@ -33,7 +34,7 @@ func NewContext(cfg *ContextConfig) *Context {
 }
 
 func (p *Context) Output() *cjson.JSON {
-	return MarshalOutputASTFiles(p.Files)
+	return MarshalFileSet(p.FileSet)
 }
 
 // ProcessFiles processes the given files and adds them to the context
@@ -54,7 +55,7 @@ func (p *Context) processFile(path string) error {
 	if dbg.GetDebugParse() {
 		fmt.Fprintln(os.Stderr, "processFile: path", path)
 	}
-	for _, entry := range p.Files {
+	for _, entry := range p.FileSet {
 		if entry.Path == path {
 			if dbg.GetDebugParse() {
 				fmt.Fprintln(os.Stderr, "processFile: already parsed", path)
@@ -67,11 +68,11 @@ func (p *Context) processFile(path string) error {
 		return errors.New("failed to parse file: " + path)
 	}
 
-	p.Files = append(p.Files, parsedFiles...)
+	p.FileSet = append(p.FileSet, parsedFiles...)
 	return nil
 }
 
-func (p *Context) parseFile(path string) ([]*FileEntry, error) {
+func (p *Context) parseFile(path string) ([]*ast.FileEntry, error) {
 	if dbg.GetDebugParse() {
 		fmt.Fprintln(os.Stderr, "parseFile: path", path)
 	}

@@ -191,7 +191,7 @@ func runExtract(file string, isTemp bool, isCpp bool, outToFile bool, otherArgs 
 	check(err)
 	_, err = converter.Convert()
 	check(err)
-	result := converter.MarshalOutputASTFiles()
+	result := converter.Output()
 	cstr := result.Print()
 	outputResult(cstr, outToFile)
 	cjson.FreeCStr(cstr)

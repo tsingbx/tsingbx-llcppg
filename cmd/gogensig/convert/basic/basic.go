@@ -1,9 +1,9 @@
 package basic
 
 import (
+	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/processor"
-	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	"github.com/goplus/llcppg/cmd/gogensig/visitor"
 )
 
@@ -34,7 +34,7 @@ func ConvertProcesser(cfg *Config) (*processor.DocFileSetProcessor, *convert.Pac
 	incs := astConvert.Pkg.DepIncPaths()
 
 	return processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
-		Exec: func(file *unmarshal.FileEntry) error {
+		Exec: func(file *ast.FileEntry) error {
 			visitorManager.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
 			return nil
 		},

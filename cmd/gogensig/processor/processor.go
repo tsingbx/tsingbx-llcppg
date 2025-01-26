@@ -5,7 +5,6 @@ import (
 
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
-	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	"github.com/goplus/llcppg/cmd/gogensig/visitor"
 )
 
@@ -34,7 +33,7 @@ type DocFileSetProcessor struct {
 	depIncs     []string // abs path
 }
 
-type Exec func(*unmarshal.FileEntry) error
+type Exec func(*ast.FileEntry) error
 
 type ProcesserConfig struct {
 	Exec    Exec
@@ -57,7 +56,7 @@ func NewDocFileSetProcessor(cfg *ProcesserConfig) *DocFileSetProcessor {
 	return p
 }
 
-func (p *DocFileSetProcessor) visitFile(path string, files unmarshal.FileSet) {
+func (p *DocFileSetProcessor) visitFile(path string, files []*ast.FileEntry) {
 	if _, ok := p.visitedFile[path]; ok {
 		return
 	}
@@ -74,7 +73,7 @@ func (p *DocFileSetProcessor) visitFile(path string, files unmarshal.FileSet) {
 		p.visitFile(include.Path, files)
 	}
 	if p.exec != nil {
-		err := p.exec(&findFile)
+		err := p.exec(findFile)
 		if err != nil {
 			log.Panic("visit file error: ", err, " file: ", findFile.Path)
 		}
@@ -83,7 +82,7 @@ func (p *DocFileSetProcessor) visitFile(path string, files unmarshal.FileSet) {
 	delete(p.processing, findFile.Path)
 }
 
-func (p *DocFileSetProcessor) ProcessFileSet(files unmarshal.FileSet) error {
+func (p *DocFileSetProcessor) ProcessFileSet(files []*ast.FileEntry) error {
 	for _, inc := range p.depIncs {
 		idx := FindEntry(files, inc)
 		if idx < 0 {
@@ -117,7 +116,7 @@ func (p *DocFileSetProcessor) ProcessFileSetFromPath(filePath string) error {
 }
 
 // FindEntry finds the entry in FileSet. If useIncPath is true, it searches by IncPath, otherwise by Path
-func FindEntry(files unmarshal.FileSet, path string) int {
+func FindEntry(files []*ast.FileEntry, path string) int {
 	for i, e := range files {
 		if e.Path == path {
 			return i
