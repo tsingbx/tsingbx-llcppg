@@ -1118,7 +1118,7 @@ func TestUnmarshalNode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			node, err := unmarshal.UnmarshalNode([]byte(tc.json))
+			node, err := unmarshal.Node([]byte(tc.json))
 			if err != nil {
 				t.Fatalf("UnmarshalNode failed: %v", err)
 			}
@@ -1142,8 +1142,10 @@ func TestUnmarshalNode(t *testing.T) {
 }
 
 func TestUnmarshalFileSet(t *testing.T) {
-	files := `[
+	files := `
+[
   {
+    "_Type": "FileEntry",
     "path": "/opt/homebrew/Cellar/inih/58/include/INIReader.h",
     "isSys": false,
 	"incPath": "INIReader.h",
@@ -1509,12 +1511,7 @@ func TestUnmarshalFileSet(t *testing.T) {
   }
 ]`
 
-	expected := []struct {
-		Path    string
-		IsSys   bool
-		IncPath string
-		Doc     *ast.File
-	}{
+	expected := []*ast.FileEntry{
 		{
 			Path:    "/opt/homebrew/Cellar/inih/58/include/INIReader.h",
 			IsSys:   false,
@@ -1729,7 +1726,7 @@ func TestUnmarshalFileSet(t *testing.T) {
 		},
 	}
 
-	fileSet, err := unmarshal.UnmarshalFileSet([]byte(files))
+	fileSet, err := unmarshal.FileSet([]byte(files))
 
 	if err != nil {
 		t.Fatalf("UnmarshalNode failed: %v", err)
@@ -1761,13 +1758,13 @@ func TestUnmarshalErrors(t *testing.T) {
 		// UnmarshalNode errors
 		{
 			name:        "UnmarshalNode - Invalid JSON",
-			fn:          unmarshal.UnmarshalNode,
+			fn:          unmarshal.Node,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling node type",
+			expectedErr: "unmarshal error in Node into unmarshal.nodeTemp",
 		},
 		{
 			name:        "UnmarshalNode - Unknown type",
-			fn:          unmarshal.UnmarshalNode,
+			fn:          unmarshal.Node,
 			input:       `{"_Type": "UnknownType"}`,
 			expectedErr: "unknown node type: UnknownType",
 		},
@@ -1775,324 +1772,465 @@ func TestUnmarshalErrors(t *testing.T) {
 		// unmarshalToken errors
 		{
 			name:        "unmarshalToken - Invalid JSON",
-			fn:          unmarshal.UnmarshalToken,
+			fn:          unmarshal.Token,
 			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshalling Token",
+			expectedErr: "unmarshal error in Token into ast.Token",
 		},
 
 		// unmarshalMacro errors
 		{
 			name:        "unmarshalMacro - Invalid JSON",
-			fn:          unmarshal.UnmarshalMacro,
+			fn:          unmarshal.Macro,
 			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshalling Macro",
+			expectedErr: "unmarshal error in Macro into ast.Macro",
 		},
 
 		// unmarshalInclude errors
 		{
 			name:        "unmarshalInclude - Invalid JSON",
-			fn:          unmarshal.UnmarshalInclude,
+			fn:          unmarshal.Include,
 			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshalling Include",
+			expectedErr: "unmarshal error in Include into ast.Include",
 		},
 
 		// unmarshalBasicLit errors
 		{
 			name:        "unmarshalBasicLit - Invalid JSON",
-			fn:          unmarshal.UnmarshalBasicLit,
+			fn:          unmarshal.BasicLit,
 			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshalling BasicLit",
+			expectedErr: "unmarshal error in BasicLit into ast.BasicLit",
 		},
 
 		// unmarshalBuiltinType errors
 		{
 			name:        "unmarshalBuiltinType - Invalid JSON",
-			fn:          unmarshal.UnmarshalBuiltinType,
+			fn:          unmarshal.BuiltinType,
 			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshalling BuiltinType",
+			expectedErr: "unmarshal error in BuiltinType into ast.BuiltinType",
 		},
 
 		// unmarshalIdent errors
 		{
 			name:        "unmarshalIdent - Invalid JSON",
-			fn:          unmarshal.UnmarshalIdent,
+			fn:          unmarshal.Ident,
 			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshalling Ident",
+			expectedErr: "unmarshal error in Ident into ast.Ident",
 		},
 
 		// unmarshalVariadic errors
 		{
 			name:        "unmarshalVariadic - Invalid JSON",
-			fn:          unmarshal.UnmarshalVariadic,
+			fn:          unmarshal.Variadic,
 			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshalling Variadic",
+			expectedErr: "unmarshal error in Variadic into ast.Variadic",
 		},
 
 		// unmarshalXType errors
 		{
 			name:        "unmarshalXType - Invalid JSON",
-			fn:          unmarshal.UnmarshalPointerType,
+			fn:          unmarshal.PointerType,
 			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshalling XType",
+			expectedErr: "unmarshal error in XType into unmarshal.XTypeTemp",
 		},
 		{
 			name:        "unmarshalXType - Invalid X field",
-			fn:          unmarshal.UnmarshalPointerType,
+			fn:          unmarshal.PointerType,
 			input:       `{"X": {"_Type": "InvalidType"}}`,
-			expectedErr: "unmarshalling field X",
+			expectedErr: "unmarshal error in XType when converting X of unmarshal.XTypeTemp",
 		},
 		{
 			name: "unmarshalXType - Unexpected type",
 			fn: func(data []byte) (ast.Node, error) {
-				return unmarshal.UnmarshalXType(data, &ast.BasicLit{})
+				return unmarshal.XType(data, &ast.BasicLit{})
+			},
+			input:       `{"X": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
+			expectedErr: "unmarshal error in XType: got *ast.Token, want ast.Expr",
+		},
+		{
+			name: "unmarshalXType - Unexpected type",
+			fn: func(data []byte) (ast.Node, error) {
+				return unmarshal.XType(data, &ast.BasicLit{})
 			},
 			input:       `{"X": {"_Type": "Ident", "Name": "test"}}`,
-			expectedErr: "unexpected type: *ast.BasicLit",
+			expectedErr: "unmarshal error in XType: got *ast.BasicLit, want *ast.PointerType, *ast.LvalueRefType, *ast.RvalueRefType",
 		},
-
 		// unmarshalArrayType errors
 		{
 			name:        "unmarshalArrayType - Invalid JSON",
-			fn:          unmarshal.UnmarshalArrayType,
+			fn:          unmarshal.ArrayType,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling ArrayType",
+			expectedErr: "unmarshal error in ArrayType into unmarshal.arrayTemp",
 		},
 		{
 			name:        "unmarshalArrayType - Invalid Elt",
-			fn:          unmarshal.UnmarshalArrayType,
+			fn:          unmarshal.ArrayType,
 			input:       `{"Elt": {"_Type": "InvalidType"}, "Len": null}`,
-			expectedErr: "error unmarshalling array Elt",
+			expectedErr: "unmarshal error in ArrayType when converting Elt of unmarshal.arrayTemp",
+		},
+		{
+			name:        "unmarshalArrayType - Unexpect Elt",
+			fn:          unmarshal.ArrayType,
+			input:       `{"Elt": {"_Type": "Token", "Token": 1, "Lit": "test"}, "Len": null}`,
+			expectedErr: "unmarshal error in ArrayType: got *ast.Token, want ast.Expr",
 		},
 		{
 			name:        "unmarshalArrayType - Invalid Len",
-			fn:          unmarshal.UnmarshalArrayType,
+			fn:          unmarshal.ArrayType,
 			input:       `{"Elt": {"_Type": "BuiltinType", "Kind": 1}, "Len": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling array Len",
+			expectedErr: "unmarshal error in ArrayType when converting Len of *ast.ArrayType",
+		},
+		{
+			name:        "unmarshalArrayType - Unexpect Len",
+			fn:          unmarshal.ArrayType,
+			input:       `{"Elt": {"_Type": "BuiltinType", "Kind": 1}, "Len": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
+			expectedErr: "unmarshal error in ArrayType: got *ast.Token, want ast.Expr",
 		},
 
 		// unmarshalField errors
 		{
 			name:        "unmarshalField - Invalid JSON",
-			fn:          unmarshal.UnmarshalField,
+			fn:          unmarshal.Field,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling Field",
+			expectedErr: "unmarshal error in Field into unmarshal.fieldTemp",
 		},
 		{
 			name:        "unmarshalField - Invalid Type",
-			fn:          unmarshal.UnmarshalField,
+			fn:          unmarshal.Field,
 			input:       `{"Type": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling field Type",
+			expectedErr: "unmarshal error in Field when converting Type of unmarshal.fieldTemp",
 		},
 
 		// unmarshalFieldList errors
 		{
 			name:        "unmarshalFieldList - Invalid JSON",
-			fn:          unmarshal.UnmarshalFieldList,
+			fn:          unmarshal.FieldList,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling FieldList",
+			expectedErr: "unmarshal error in FieldList into unmarshal.fieldListTemp",
 		},
 		{
 			name:        "unmarshalFieldList - Invalid field",
-			fn:          unmarshal.UnmarshalFieldList,
+			fn:          unmarshal.FieldList,
 			input:       `{"List": [{"_Type": "InvalidType"}]}`,
-			expectedErr: "error unmarshalling field in FieldList",
+			expectedErr: "unmarshal error in FieldList when converting List of unmarshal.fieldListTemp",
 		},
 		{
+			name:        "unmarshalFieldList - Unexpected field",
+			fn:          unmarshal.FieldList,
+			input:       `{"List": [{"_Type": "Token", "Token": 1, "Lit": "test"}]}`,
+			expectedErr: "unmarshal error in FieldList: got *ast.Token, want *ast.Field",
+		},
+		// unmarshalTagExpr errors
+		{
 			name:        "unmarshalTagExpr - Invalid JSON",
-			fn:          unmarshal.UnmarshalTagExpr,
+			fn:          unmarshal.TagExpr,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling TagExpr",
+			expectedErr: "unmarshal error in TagExpr into unmarshal.tagExprTemp",
 		},
 		{
 			name:        "unmarshalTagExpr - Invalid Name",
-			fn:          unmarshal.UnmarshalTagExpr,
+			fn:          unmarshal.TagExpr,
 			input:       `{"Name": {"_Type": "InvalidType"}, "Tag": 0}`,
-			expectedErr: "error unmarshalling TagExpr Name",
+			expectedErr: "unmarshal error in TagExpr when converting Name of unmarshal.tagExprTemp",
+		},
+		{
+			name:        "unmarshalTagExpr - Unexpected Name",
+			fn:          unmarshal.TagExpr,
+			input:       `{"Name": {"_Type": "Token", "Token": 1, "Lit": "test"}, "Tag": 0}`,
+			expectedErr: "unmarshal error in TagExpr: got *ast.Token, want ast.Expr",
 		},
 
 		// unmarshalScopingExpr errors
 		{
 			name:        "unmarshalScopingExpr - Invalid JSON",
-			fn:          unmarshal.UnmarshalScopingExpr,
+			fn:          unmarshal.ScopingExpr,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling ScopingExpr",
+			expectedErr: "unmarshal error in ScopingExpr into unmarshal.scopingExprTemp",
 		},
 		{
 			name:        "unmarshalScopingExpr - Invalid Parent",
-			fn:          unmarshal.UnmarshalScopingExpr,
+			fn:          unmarshal.ScopingExpr,
 			input:       `{"Parent": {"_Type": "InvalidType"}, "X": {"_Type": "Ident", "Name": "test"}}`,
-			expectedErr: "unknown node type: InvalidType",
+			expectedErr: "unmarshal error in ScopingExpr when converting Parent of unmarshal.scopingExprTemp",
+		},
+		{
+			name:        "unmarshalScopingExpr - Unexpected Parent",
+			fn:          unmarshal.ScopingExpr,
+			input:       `{"Parent": {"_Type": "Token", "Token": 1, "Lit": "test"}, "X": {"_Type": "Ident", "Name": "test"}}`,
+			expectedErr: "unmarshal error in ScopingExpr: got *ast.Token, want ast.Expr",
 		},
 		{
 			name:        "unmarshalScopingExpr - Invalid X",
-			fn:          unmarshal.UnmarshalScopingExpr,
+			fn:          unmarshal.ScopingExpr,
 			input:       `{"Parent": {"_Type": "Ident", "Name": "test"}, "X": {"_Type": "InvalidType"}}`,
-			expectedErr: "unknown node type: InvalidType",
+			expectedErr: "unmarshal error in ScopingExpr when converting X of unmarshal.scopingExprTemp",
+		},
+		{
+			name:        "unmarshalScopingExpr - Unexpected X",
+			fn:          unmarshal.ScopingExpr,
+			input:       `{"Parent": {"_Type": "Ident", "Name": "test"}, "X": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
+			expectedErr: "unmarshal error in ScopingExpr: got *ast.Token, want ast.Expr",
 		},
 
 		// unmarshalEnumItem errors
 		{
 			name:        "unmarshalEnumItem - Invalid JSON",
-			fn:          unmarshal.UnmarshalEnumItem,
+			fn:          unmarshal.EnumItem,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling EnumItem",
+			expectedErr: "unmarshal error in EnumItem into unmarshal.enumItemTemp",
 		},
 		{
 			name:        "unmarshalEnumItem - Invalid Value",
-			fn:          unmarshal.UnmarshalEnumItem,
+			fn:          unmarshal.EnumItem,
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Value": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling EnumItem Value",
+			expectedErr: "unmarshal error in EnumItem when converting Value of unmarshal.enumItemTemp",
+		},
+		{
+			name:        "unmarshalEnumItem - Unexpected Value",
+			fn:          unmarshal.EnumItem,
+			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Value": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
+			expectedErr: "unmarshal error in EnumItem: got *ast.Token, want ast.Expr",
 		},
 
 		// unmarshalEnumType errors
 		{
 			name:        "unmarshalEnumType - Invalid JSON",
-			fn:          unmarshal.UnmarshalEnumType,
+			fn:          unmarshal.EnumType,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling EnumType",
+			expectedErr: "unmarshal error in EnumType into unmarshal.enumTypeTemp",
 		},
 		{
 			name:        "unmarshalEnumType - Invalid Item",
-			fn:          unmarshal.UnmarshalEnumType,
+			fn:          unmarshal.EnumType,
 			input:       `{"Items": [{"_Type": "InvalidType"}]}`,
-			expectedErr: "error unmarshalling EnumType Item",
+			expectedErr: "unmarshal error in EnumType when converting Items of unmarshal.enumTypeTemp",
+		},
+		{
+			name:        "unmarshalEnumType - Unexpected Item",
+			fn:          unmarshal.EnumType,
+			input:       `{"Items": [{"_Type": "Token", "Token": 1, "Lit": "test"}]}`,
+			expectedErr: "unmarshal error in EnumType: got *ast.Token, want *ast.EnumItem",
 		},
 
 		// unmarshalRecordType errors
 		{
 			name:        "unmarshalRecordType - Invalid JSON",
-			fn:          unmarshal.UnmarshalRecordType,
+			fn:          unmarshal.RecordType,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling RecordType",
+			expectedErr: "unmarshal error in RecordType into unmarshal.recordTypeTemp",
 		},
 		{
 			name:        "unmarshalRecordType - Invalid Fields",
-			fn:          unmarshal.UnmarshalRecordType,
+			fn:          unmarshal.RecordType,
 			input:       `{"Tag": 0, "Fields": {"_Type": "InvalidType"}, "Methods": []}`,
-			expectedErr: "error unmarshalling Fields in RecordType",
+			expectedErr: "unmarshal error in RecordType when converting Fields of unmarshal.recordTypeTemp",
+		},
+		{
+			name:        "unmarshalRecordType - Unexpected Fields",
+			fn:          unmarshal.RecordType,
+			input:       `{"Tag": 0, "Fields": {"_Type": "Token", "Token": 1, "Lit": "test"}, "Methods": []}`,
+			expectedErr: "unmarshal error in RecordType: got *ast.Token, want *ast.FieldList",
 		},
 		{
 			name:        "unmarshalRecordType - Invalid Method",
-			fn:          unmarshal.UnmarshalRecordType,
+			fn:          unmarshal.RecordType,
 			input:       `{"Tag": 0, "Fields": {"_Type": "FieldList", "List": []}, "Methods": [{"_Type": "InvalidType"}]}`,
-			expectedErr: "error unmarshalling method in RecordType",
+			expectedErr: "unmarshal error in RecordType when converting Methods of unmarshal.recordTypeTemp",
+		},
+		{
+			name:        "unmarshalRecordType - Unexpected Method",
+			fn:          unmarshal.RecordType,
+			input:       `{"Tag": 0, "Fields": {"_Type": "FieldList", "List": []}, "Methods": [{"_Type": "Token", "Token": 1, "Lit": "test"}]}`,
+			expectedErr: "unmarshal error in RecordType: got *ast.Token, want *ast.FuncDecl",
 		},
 
 		// unmarshalFuncType errors
 		{
 			name:        "unmarshalFuncType - Invalid JSON",
-			fn:          unmarshal.UnmarshalFuncType,
+			fn:          unmarshal.FuncType,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling FuncType",
+			expectedErr: "unmarshal error in FuncType into unmarshal.funcTypeTemp",
 		},
 		{
 			name:        "unmarshalFuncType - Invalid Params",
-			fn:          unmarshal.UnmarshalFuncType,
+			fn:          unmarshal.FuncType,
 			input:       `{"Params": {"_Type": "InvalidType"}, "Ret": {"_Type": "BuiltinType", "Kind": 1}}`,
-			expectedErr: "error unmarshalling Params in FuncType",
+			expectedErr: "unmarshal error in FuncType when converting Params of unmarshal.funcTypeTemp",
+		},
+		{
+			name:        "unmarshalFuncType - Unexpected Params",
+			fn:          unmarshal.FuncType,
+			input:       `{"Params": {"_Type": "Token", "Token": 1, "Lit": "test"}, "Ret": {"_Type": "BuiltinType", "Kind": 1}}`,
+			expectedErr: "unmarshal error in FuncType: got *ast.Token, want *ast.FieldList",
 		},
 		{
 			name:        "unmarshalFuncType - Invalid Ret",
-			fn:          unmarshal.UnmarshalFuncType,
+			fn:          unmarshal.FuncType,
 			input:       `{"Params": {"_Type": "FieldList", "List": []}, "Ret": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling Ret in FuncType",
+			expectedErr: "unmarshal error in FuncType when converting Ret of unmarshal.funcTypeTemp",
+		},
+		{
+			name:        "unmarshalFuncType - Unexpected Ret",
+			fn:          unmarshal.FuncType,
+			input:       `{"Params": {"_Type": "FieldList", "List": []}, "Ret": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
+			expectedErr: "unmarshal error in FuncType: got *ast.Token, want ast.Expr",
 		},
 
 		// unmarshalFuncDecl errors
 		{
 			name:        "unmarshalFuncDecl - Invalid JSON",
-			fn:          unmarshal.UnmarshalFuncDecl,
+			fn:          unmarshal.FuncDecl,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling FuncDecl",
+			expectedErr: "unmarshal error in FuncDecl into unmarshal.funcDeclTemp",
 		},
 		{
 			name:        "unmarshalFuncDecl - Invalid Type",
-			fn:          unmarshal.UnmarshalFuncDecl,
+			fn:          unmarshal.FuncDecl,
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling FuncDecl Type",
+			expectedErr: "unmarshal error in FuncDecl when converting Type of unmarshal.funcDeclTemp",
+		},
+		{
+			name:        "unmarshalFuncDecl - Unexpected Type",
+			fn:          unmarshal.FuncDecl,
+			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
+			expectedErr: "unmarshal error in FuncDecl: got *ast.Token, want *ast.FuncType",
 		},
 		{
 			name:        "unmarshalFuncDecl - Invalid DeclBase",
-			fn:          unmarshal.UnmarshalFuncDecl,
+			fn:          unmarshal.FuncDecl,
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "FuncType", "Params": {"_Type": "FieldList", "List": []}, "Ret": {"_Type": "BuiltinType", "Kind": 1}}, "Loc": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling FuncDecl DeclBase: error unmarshalling parent in DeclBase Type",
+			expectedErr: "unmarshal error in declBase when converting Parent of unmarshal.declBaseTemp",
 		},
 		{
 			name:        "unmarshalFuncDecl - Invalid DeclBase",
-			fn:          unmarshal.UnmarshalFuncDecl,
+			fn:          unmarshal.FuncDecl,
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"},"Loc":false, "Type": {"_Type": "FuncType", "Params": {"_Type": "FieldList", "List": []}, "Ret": {"_Type": "BuiltinType", "Kind": 1}}, "Loc": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling DeclBase Type",
+			expectedErr: "unmarshal error in declBase into unmarshal.declBaseTemp",
+		},
+		{
+			name:        "unmarshalFuncDecl - Unexpected DeclBase",
+			fn:          unmarshal.FuncDecl,
+			input:       `{"Loc":{"_Type":"Location","File":"temp.h"},"Parent":{"_Type":"Token","Token":1,"Lit":"test"},"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "FuncType", "Params": {"_Type": "FieldList", "List": []}, "Ret": {"_Type": "BuiltinType", "Kind": 1}}, "Loc": {"_Type": "InvalidType"}}`,
+			expectedErr: "unmarshal error in declBase: got *ast.Token, want ast.Expr",
 		},
 		// unmarshalTypeDecl errors
 		{
 			name:        "unmarshalTypeDecl - Invalid JSON",
-			fn:          unmarshal.UnmarshalTypeDecl,
+			fn:          unmarshal.TypeDecl,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling TypeDecl",
+			expectedErr: "unmarshal error in TypeDecl into unmarshal.typeDeclTemp",
 		},
 		{
 			name:        "unmarshalTypeDecl - Invalid Type",
-			fn:          unmarshal.UnmarshalTypeDecl,
+			fn:          unmarshal.TypeDecl,
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling TypeDecl Type",
+			expectedErr: "unmarshal error in TypeDecl when converting Type of unmarshal.typeDeclTemp",
+		},
+		{
+			name:        "unmarshalTypeDecl - Unexpected Type",
+			fn:          unmarshal.TypeDecl,
+			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
+			expectedErr: "unmarshal error in TypeDecl: got *ast.Token, want *ast.RecordType",
 		},
 		{
 			name:        "unmarshalTypeDecl - Invalid DeclBase",
-			fn:          unmarshal.UnmarshalTypeDecl,
-			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "BuiltinType", "Kind": 1}, "Loc": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling TypeDecl DeclBase",
+			fn:          unmarshal.TypeDecl,
+			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "RecordType", "Tag": 0, "Fields": {"_Type": "FieldList", "List": []}, "Methods": []}, "Loc": {"_Type": "InvalidType"}}`,
+			expectedErr: "unmarshal error in declBase when converting Parent of unmarshal.declBaseTemp",
 		},
 		// unmarshalTypeDefDecl errors
 		{
 			name:        "unmarshalTypeDefDecl - Invalid JSON",
-			fn:          unmarshal.UnmarshalTypeDefDecl,
+			fn:          unmarshal.TypeDefDecl,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling TypeDefDecl",
+			expectedErr: "unmarshal error in TypeDefDecl into unmarshal.typeDefDeclTemp",
 		},
 		{
 			name:        "unmarshalTypeDefDecl - Invalid Type",
-			fn:          unmarshal.UnmarshalTypeDefDecl,
+			fn:          unmarshal.TypeDefDecl,
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling TypeDefDecl Type",
+			expectedErr: "unmarshal error in TypeDefDecl when converting Type of unmarshal.typeDefDeclTemp",
+		},
+		{
+			name:        "unmarshalTypeDefDecl - Unexpected Type",
+			fn:          unmarshal.TypeDefDecl,
+			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
+			expectedErr: "unmarshal error in TypeDefDecl: got *ast.Token, want ast.Expr",
 		},
 		{
 			name:        "unmarshalTypeDefDecl - Invalid DeclBase",
-			fn:          unmarshal.UnmarshalTypeDefDecl,
+			fn:          unmarshal.TypeDefDecl,
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "BuiltinType", "Kind": 1}, "Loc": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling TypeDefDecl DeclBase",
+			expectedErr: "unmarshal error in declBase when converting Parent of unmarshal.declBaseTemp",
 		},
 		// unmarshalEnumTypeDecl errors
 		{
 			name:        "unmarshalEnumTypeDecl - Invalid JSON",
-			fn:          unmarshal.UnmarshalEnumTypeDecl,
+			fn:          unmarshal.EnumTypeDecl,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling EnumTypeDecl",
+			expectedErr: "unmarshal error in EnumTypeDecl into unmarshal.enumTypeDeclTemp",
 		},
 		{
 			name:        "unmarshalEnumTypeDecl - Invalid Type",
-			fn:          unmarshal.UnmarshalEnumTypeDecl,
+			fn:          unmarshal.EnumTypeDecl,
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling EnumTypeDecl Type",
+			expectedErr: "unmarshal error in EnumTypeDecl when converting Type of unmarshal.enumTypeDeclTemp",
+		},
+		{
+			name:        "unmarshalEnumTypeDecl - Unexpected Type",
+			fn:          unmarshal.EnumTypeDecl,
+			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
+			expectedErr: "unmarshal error in EnumTypeDecl: got *ast.Token, want *ast.EnumType",
 		},
 		{
 			name:        "unmarshalEnumTypeDecl - Invalid DeclBase",
-			fn:          unmarshal.UnmarshalEnumTypeDecl,
+			fn:          unmarshal.EnumTypeDecl,
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "EnumType", "Items": []}, "Loc": {"_Type": "InvalidType"}}`,
-			expectedErr: "error unmarshalling EnumTypeDecl DeclBase",
+			expectedErr: "unmarshal error in declBase when converting Parent of unmarshal.declBaseTemp",
 		},
 
 		// unmarshalFile errors
 		{
 			name:        "unmarshalFile - Invalid JSON",
-			fn:          unmarshal.UnmarshalFile,
+			fn:          unmarshal.File,
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling File",
+			expectedErr: "unmarshal error in File into unmarshal.fileTemp",
+		},
+		{
+			name:        "unmarshalFile - Invalid JSON",
+			fn:          unmarshal.File,
+			input:       `{"_Type": "File", "Includes": [], "Macros": [], "Decls": [{"_Type": "InvalidType"}]}`,
+			expectedErr: "",
+		},
+		{
+			name:        "unmarshalFile - Unexpected Decl",
+			fn:          unmarshal.File,
+			input:       `{"_Type": "File", "Includes": [], "Macros": [], "Decls": [{"_Type": "Token", "Token": 1, "Lit": "test"}]}`,
+			expectedErr: "unmarshal error in File: got *ast.Token, want ast.Decl",
+		},
+		{
+			name:        "unmarshalFile - Invalid JSON",
+			fn:          unmarshal.FileEntry,
+			input:       `{"invalid": "json"`,
+			expectedErr: "unmarshal error in FileEntry into unmarshal.fileEntryTemp",
+		},
+		{
+			name:        "unmarshalFile - Invalid JSON",
+			fn:          unmarshal.FileEntry,
+			input:       `{"_Type": "FileEntry", "Path": "test.h", "IsSys": false, "IncPath": "test.h", "Doc": {"_Type": "InvalidType"}}`,
+			expectedErr: "unmarshal FileEntry error in path test.h",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := tc.fn([]byte(tc.input))
+			if tc.expectedErr == "" {
+				if err != nil {
+					t.Errorf("Expected no error, but got: %v", err)
+				} else {
+					return
+				}
+			}
 			if err == nil {
 				t.Errorf("Expected error, but got nil")
 			} else if !strings.Contains(err.Error(), tc.expectedErr) {
@@ -2111,23 +2249,23 @@ func TestUnmarshalFileSetErrors(t *testing.T) {
 		{
 			name:        "Invalid JSON",
 			input:       `{"invalid": "json"`,
-			expectedErr: "error unmarshalling FilesWithPath",
-		},
-		{
-			name:        "Invalid doc",
-			input:       `[{"path": "test.cpp", "doc": {"_Type": "InvalidType"}}]`,
-			expectedErr: "error unmarshalling doc for path test.cpp",
+			expectedErr: "unmarshal error in FileSet into unmarshal.fileSetTemp",
 		},
 		{
 			name:        "Doc not *ast.File",
-			input:       `[{"path": "test.cpp", "doc": {"_Type": "Token", "Token": 1, "Lit": "test"}}]`,
-			expectedErr: "doc is not of type *ast.File for path test.cpp",
+			input:       `[{"_Type":"FileEntry","path": "test.cpp", "doc": {"_Type": "Token", "Token": 1, "Lit": "test"}}]`,
+			expectedErr: "unmarshal error in FileSet when converting Files of unmarshal.fileSetTemp",
+		},
+		{
+			name:        "Invalid doc",
+			input:       `[{"_Type": "Token", "Token": 1, "Lit": "test"}]`,
+			expectedErr: "unmarshal error in FileSet: got *ast.Token, want *ast.FileEntry",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := unmarshal.UnmarshalFileSet([]byte(tc.input))
+			_, err := unmarshal.FileSet([]byte(tc.input))
 			if tc.expectedErr == "" {
 				if err != nil {
 					t.Errorf("Expected no error, but got: %v", err)

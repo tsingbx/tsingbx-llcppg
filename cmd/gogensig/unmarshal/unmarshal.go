@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/goplus/llcppg/ast"
 )
@@ -12,169 +13,184 @@ type NodeUnmarshaler func(data []byte) (ast.Node, error)
 
 var nodeUnmarshalers map[string]NodeUnmarshaler
 
-type FileSet []FileEntry
-
-type FileEntry struct {
-	Path    string
-	IsSys   bool
-	IncPath string
-	Doc     *ast.File
-}
-
 func init() {
 	nodeUnmarshalers = map[string]NodeUnmarshaler{
 		// Not need costum unmarshal
-		"Token":       UnmarshalToken,
-		"Macro":       UnmarshalMacro,
-		"Include":     UnmarshalInclude,
-		"BasicLit":    UnmarshalBasicLit,
-		"BuiltinType": UnmarshalBuiltinType,
-		"Ident":       UnmarshalIdent,
-		"Variadic":    UnmarshalVariadic,
+		"Token":       Token,
+		"Macro":       Macro,
+		"Include":     Include,
+		"BasicLit":    BasicLit,
+		"BuiltinType": BuiltinType,
+		"Ident":       Ident,
+		"Variadic":    Variadic,
 
-		"PointerType":   UnmarshalPointerType,
-		"LvalueRefType": UnmarshalLvalueRefType,
-		"RvalueRefType": UnmarshalRvalueRefType,
+		"PointerType":   PointerType,
+		"LvalueRefType": LvalueRefType,
+		"RvalueRefType": RvalueRefType,
 
-		"ArrayType":   UnmarshalArrayType,
-		"Field":       UnmarshalField,
-		"FieldList":   UnmarshalFieldList,
-		"ScopingExpr": UnmarshalScopingExpr,
-		"TagExpr":     UnmarshalTagExpr,
-		"EnumItem":    UnmarshalEnumItem,
-		"EnumType":    UnmarshalEnumType,
-		"FuncType":    UnmarshalFuncType,
-		"RecordType":  UnmarshalRecordType,
-		"TypedefDecl": UnmarshalTypeDefDecl,
+		"ArrayType":   ArrayType,
+		"Field":       Field,
+		"FieldList":   FieldList,
+		"ScopingExpr": ScopingExpr,
+		"TagExpr":     TagExpr,
+		"EnumItem":    EnumItem,
+		"EnumType":    EnumType,
+		"FuncType":    FuncType,
+		"RecordType":  RecordType,
+		"TypedefDecl": TypeDefDecl,
 
-		"FuncDecl":     UnmarshalFuncDecl,
-		"TypeDecl":     UnmarshalTypeDecl,
-		"EnumTypeDecl": UnmarshalEnumTypeDecl,
+		"FuncDecl":     FuncDecl,
+		"TypeDecl":     TypeDecl,
+		"EnumTypeDecl": EnumTypeDecl,
 
-		"File": UnmarshalFile,
+		"File":      File,
+		"FileEntry": FileEntry,
 	}
 }
 
-func UnmarshalFileSet(data []byte) (FileSet, error) {
-	var filesWrapper []struct {
+func FileSet(data []byte) ([]*ast.FileEntry, error) {
+	type fileSetTemp []json.RawMessage
+
+	var fileSetData fileSetTemp
+	if err := json.Unmarshal(data, &fileSetData); err != nil {
+		return nil, newDeserializeError("FileSet", fileSetData, data, err)
+	}
+	fileSet := []*ast.FileEntry{}
+	for _, fileData := range fileSetData {
+		fileNode, err := Node(fileData)
+		if err != nil {
+			return nil, newUnmarshalFieldError("FileSet", fileSetData, "Files", data, err)
+		}
+		file, ok := fileNode.(*ast.FileEntry)
+		if !ok {
+			return nil, newUnexpectType("FileSet", fileNode, &ast.FileEntry{})
+		}
+		fileSet = append(fileSet, file)
+	}
+
+	return fileSet, nil
+}
+
+func FileEntry(data []byte) (ast.Node, error) {
+	type fileEntryTemp struct {
 		Path    string          `json:"path"`
 		IsSys   bool            `json:"isSys"`
 		IncPath string          `json:"incPath"`
 		Doc     json.RawMessage `json:"doc"`
 	}
-	if err := json.Unmarshal(data, &filesWrapper); err != nil {
-		return nil, fmt.Errorf("error unmarshalling FilesWithPath: %w", err)
+	var fileEntryData fileEntryTemp
+	if err := json.Unmarshal(data, &fileEntryData); err != nil {
+		return nil, newDeserializeError("FileEntry", fileEntryData, data, err)
 	}
 
-	result := []FileEntry{}
-
-	for _, fileData := range filesWrapper {
-		docNode, err := UnmarshalNode(fileData.Doc)
-		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling doc for path %s: %w", fileData.Path, err)
-		}
-
-		file, ok := docNode.(*ast.File)
-		if !ok {
-			return nil, fmt.Errorf("doc is not of type *ast.File for path %s", fileData.Path)
-		}
-
-		result = append(result, FileEntry{
-			Path:    fileData.Path,
-			IsSys:   fileData.IsSys,
-			IncPath: fileData.IncPath,
-			Doc:     file,
-		})
+	docNode, err := Node(fileEntryData.Doc)
+	if err != nil {
+		return nil, newFileEntryError(fileEntryData.Path, err)
 	}
 
-	return result, nil
+	file, ok := docNode.(*ast.File)
+	if !ok {
+		return nil, newUnexpectType("FileEntry", docNode, &ast.File{})
+	}
+
+	return &ast.FileEntry{
+		Path:    fileEntryData.Path,
+		IsSys:   fileEntryData.IsSys,
+		IncPath: fileEntryData.IncPath,
+		Doc:     file,
+	}, nil
 }
 
-func UnmarshalNode(data []byte) (ast.Node, error) {
-	var temp struct {
+func Node(data []byte) (ast.Node, error) {
+	type nodeTemp struct {
 		Type string `json:"_Type"`
 	}
-	if err := json.Unmarshal(data, &temp); err != nil {
-		return nil, fmt.Errorf("error unmarshalling node type: %v", err)
+	var nodeData nodeTemp
+	if err := json.Unmarshal(data, &nodeData); err != nil {
+		return nil, newDeserializeError("Node", nodeData, data, err)
 	}
 
-	unmarshaler, ok := nodeUnmarshalers[temp.Type]
+	unmarshaler, ok := nodeUnmarshalers[nodeData.Type]
 	if !ok {
-		return nil, fmt.Errorf("unknown node type: %s", temp.Type)
+		return nil, fmt.Errorf("unknown node type: %s", nodeData.Type)
 	}
 
 	return unmarshaler(data)
 }
 
-func UnmarshalToken(data []byte) (ast.Node, error) {
+func Token(data []byte) (ast.Node, error) {
 	var node ast.Token
 	if err := json.Unmarshal(data, &node); err != nil {
-		return nil, fmt.Errorf("unmarshalling Token: %w", err)
+		return nil, newDeserializeError("Token", node, data, err)
 	}
 	return &node, nil
 }
 
-func UnmarshalMacro(data []byte) (ast.Node, error) {
+func Macro(data []byte) (ast.Node, error) {
 	var node ast.Macro
 	if err := json.Unmarshal(data, &node); err != nil {
-		return nil, fmt.Errorf("unmarshalling Macro: %w", err)
+		return nil, newDeserializeError("Macro", node, data, err)
 	}
 	return &node, nil
 }
 
-func UnmarshalInclude(data []byte) (ast.Node, error) {
+func Include(data []byte) (ast.Node, error) {
 	var node ast.Include
 	if err := json.Unmarshal(data, &node); err != nil {
-		return nil, fmt.Errorf("unmarshalling Include: %w", err)
+		return nil, newDeserializeError("Include", node, data, err)
 	}
 	return &node, nil
 }
 
-func UnmarshalBasicLit(data []byte) (ast.Node, error) {
+func BasicLit(data []byte) (ast.Node, error) {
 	var node ast.BasicLit
 	if err := json.Unmarshal(data, &node); err != nil {
-		return nil, fmt.Errorf("unmarshalling BasicLit: %w", err)
+		return nil, newDeserializeError("BasicLit", node, data, err)
 	}
 	return &node, nil
 }
 
-func UnmarshalBuiltinType(data []byte) (ast.Node, error) {
+func BuiltinType(data []byte) (ast.Node, error) {
 	var node ast.BuiltinType
 	if err := json.Unmarshal(data, &node); err != nil {
-		return nil, fmt.Errorf("unmarshalling BuiltinType: %w", err)
+		return nil, newDeserializeError("BuiltinType", node, data, err)
 	}
 	return &node, nil
 }
 
-func UnmarshalIdent(data []byte) (ast.Node, error) {
+func Ident(data []byte) (ast.Node, error) {
 	var node ast.Ident
 	if err := json.Unmarshal(data, &node); err != nil {
-		return nil, fmt.Errorf("unmarshalling Ident: %w", err)
+		return nil, newDeserializeError("Ident", node, data, err)
 	}
 	return &node, nil
 }
 
-func UnmarshalVariadic(data []byte) (ast.Node, error) {
+func Variadic(data []byte) (ast.Node, error) {
 	var node ast.Variadic
 	if err := json.Unmarshal(data, &node); err != nil {
-		return nil, fmt.Errorf("unmarshalling Variadic: %w", err)
+		return nil, newDeserializeError("Variadic", node, data, err)
 	}
 	return &node, nil
 }
 
-func UnmarshalXType(data []byte, xType ast.Node) (ast.Node, error) {
-	var temp struct {
+func XType(data []byte, xType ast.Node) (ast.Node, error) {
+	type XTypeTemp struct {
 		X json.RawMessage
 	}
-	if err := json.Unmarshal(data, &temp); err != nil {
-		return nil, fmt.Errorf("unmarshalling XType: %w", err)
+	var xTypeData XTypeTemp
+	if err := json.Unmarshal(data, &xTypeData); err != nil {
+		return nil, newDeserializeError("XType", xTypeData, data, err)
 	}
 
-	x, err := UnmarshalNode(temp.X)
+	xNode, err := Node(xTypeData.X)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling field X: %w", err)
+		return nil, newUnmarshalFieldError("XType", xTypeData, "X", data, err)
 	}
-	expr := x.(ast.Expr)
+	expr, ok := xNode.(ast.Expr)
+	if !ok {
+		return nil, newUnexpectType("XType", xNode, "ast.Expr")
+	}
 	switch v := xType.(type) {
 	case *ast.PointerType:
 		v.X = expr
@@ -183,55 +199,64 @@ func UnmarshalXType(data []byte, xType ast.Node) (ast.Node, error) {
 	case *ast.RvalueRefType:
 		v.X = expr
 	default:
-		return nil, fmt.Errorf("unexpected type: %T", xType)
+		return nil, newUnexpectType("XType", xType, "*ast.PointerType, *ast.LvalueRefType, *ast.RvalueRefType")
 	}
 
 	return xType, nil
 }
 
-func UnmarshalPointerType(data []byte) (ast.Node, error) {
-	return UnmarshalXType(data, &ast.PointerType{})
+func PointerType(data []byte) (ast.Node, error) {
+	return XType(data, &ast.PointerType{})
 }
 
-func UnmarshalLvalueRefType(data []byte) (ast.Node, error) {
-	return UnmarshalXType(data, &ast.LvalueRefType{})
+func LvalueRefType(data []byte) (ast.Node, error) {
+	return XType(data, &ast.LvalueRefType{})
 }
 
-func UnmarshalRvalueRefType(data []byte) (ast.Node, error) {
-	return UnmarshalXType(data, &ast.RvalueRefType{})
+func RvalueRefType(data []byte) (ast.Node, error) {
+	return XType(data, &ast.RvalueRefType{})
 }
 
-func UnmarshalArrayType(data []byte) (ast.Node, error) {
-	var arrayTemp struct {
+func ArrayType(data []byte) (ast.Node, error) {
+	type arrayTemp struct {
 		Elt json.RawMessage
 		Len json.RawMessage
 	}
-	if err := json.Unmarshal(data, &arrayTemp); err != nil {
-		return nil, fmt.Errorf("error unmarshalling ArrayType: %w", err)
+	var arrayData arrayTemp
+	if err := json.Unmarshal(data, &arrayData); err != nil {
+		return nil, newDeserializeError("ArrayType", arrayData, data, err)
 	}
 
 	arrayType := &ast.ArrayType{}
 
-	elt, err := UnmarshalNode(arrayTemp.Elt)
+	eltNode, err := Node(arrayData.Elt)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling array Elt: %w", err)
+		return nil, newUnmarshalFieldError("ArrayType", arrayData, "Elt", data, err)
 	}
-	arrayType.Elt = elt.(ast.Expr)
+	elt, ok := eltNode.(ast.Expr)
+	if !ok {
+		return nil, newUnexpectType("ArrayType", eltNode, "ast.Expr")
+	}
+	arrayType.Elt = elt
 
 	// len permit nil,for array without len
-	if len(arrayTemp.Len) > 0 && !isJSONNull(arrayTemp.Len) {
-		len, err := UnmarshalNode(arrayTemp.Len)
+	if len(arrayData.Len) > 0 && !isJSONNull(arrayData.Len) {
+		lenNode, err := Node(arrayData.Len)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling array Len: %w", err)
+			return nil, newUnmarshalFieldError("ArrayType", arrayType, "Len", data, err)
 		}
-		arrayType.Len = len.(ast.Expr)
+		length, ok := lenNode.(ast.Expr)
+		if !ok {
+			return nil, newUnexpectType("ArrayType", lenNode, "ast.Expr")
+		}
+		arrayType.Len = length
 	}
 
 	return arrayType, nil
 }
 
-func UnmarshalField(data []byte) (ast.Node, error) {
-	var fieldTemp struct {
+func Field(data []byte) (ast.Node, error) {
+	type fieldTemp struct {
 		Type     json.RawMessage
 		Doc      *ast.CommentGroup
 		Names    []*ast.Ident
@@ -239,198 +264,245 @@ func UnmarshalField(data []byte) (ast.Node, error) {
 		Access   ast.AccessSpecifier
 		IsStatic bool
 	}
-	if err := json.Unmarshal(data, &fieldTemp); err != nil {
-		return nil, fmt.Errorf("error unmarshalling Field: %w", err)
+	var fieldData fieldTemp
+	if err := json.Unmarshal(data, &fieldData); err != nil {
+		return nil, newDeserializeError("Field", fieldData, data, err)
 	}
-	typeNode, err := UnmarshalNode(fieldTemp.Type)
+	typeNode, err := Node(fieldData.Type)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling field Type: %w", err)
+		return nil, newUnmarshalFieldError("Field", fieldData, "Type", data, err)
 	}
 
 	field := &ast.Field{
-		Doc:      fieldTemp.Doc,
-		Names:    fieldTemp.Names,
-		Comment:  fieldTemp.Comment,
-		Access:   fieldTemp.Access,
-		IsStatic: fieldTemp.IsStatic,
+		Doc:      fieldData.Doc,
+		Names:    fieldData.Names,
+		Comment:  fieldData.Comment,
+		Access:   fieldData.Access,
+		IsStatic: fieldData.IsStatic,
 		Type:     typeNode.(ast.Expr),
 	}
 
 	return field, nil
 }
 
-func UnmarshalFieldList(data []byte) (ast.Node, error) {
-	var fieldListTemp struct {
+func FieldList(data []byte) (ast.Node, error) {
+	type fieldListTemp struct {
 		List []json.RawMessage
 	}
-	if err := json.Unmarshal(data, &fieldListTemp); err != nil {
-		return nil, fmt.Errorf("error unmarshalling FieldList: %w", err)
+	var fieldListData fieldListTemp
+	if err := json.Unmarshal(data, &fieldListData); err != nil {
+		return nil, newDeserializeError("FieldList", fieldListData, data, err)
 	}
 
 	fieldList := &ast.FieldList{}
 
-	for _, fieldData := range fieldListTemp.List {
-		field, err := UnmarshalNode(fieldData)
+	for _, fieldData := range fieldListData.List {
+		fieldNode, err := Node(fieldData)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling field in FieldList: %w", err)
+			return nil, newUnmarshalFieldError("FieldList", fieldListData, "List", data, err)
 		}
-		fieldList.List = append(fieldList.List, field.(*ast.Field))
+		field, ok := fieldNode.(*ast.Field)
+		if !ok {
+			return nil, newUnexpectType("FieldList", fieldNode, &ast.Field{})
+		}
+		fieldList.List = append(fieldList.List, field)
 	}
 
 	return fieldList, nil
 }
 
-func UnmarshalTagExpr(data []byte) (ast.Node, error) {
-	var tagExpr struct {
+func TagExpr(data []byte) (ast.Node, error) {
+	type tagExprTemp struct {
 		Name json.RawMessage
 		Tag  ast.Tag
 	}
-	if err := json.Unmarshal(data, &tagExpr); err != nil {
-		return nil, fmt.Errorf("error unmarshalling TagExpr: %w", err)
+	var tagExprData tagExprTemp
+	if err := json.Unmarshal(data, &tagExprData); err != nil {
+		return nil, newDeserializeError("TagExpr", tagExprData, data, err)
 	}
 
-	name, err := UnmarshalNode(tagExpr.Name)
+	tagExpr := &ast.TagExpr{
+		Tag: tagExprData.Tag,
+	}
+
+	nameNode, err := Node(tagExprData.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling TagExpr Name: %w", err)
+		return nil, newUnmarshalFieldError("TagExpr", tagExprData, "Name", data, err)
 	}
-
-	return &ast.TagExpr{
-		Name: name.(ast.Expr),
-		Tag:  tagExpr.Tag,
-	}, nil
+	name, ok := nameNode.(ast.Expr)
+	if !ok {
+		return nil, newUnexpectType("TagExpr", nameNode, "ast.Expr")
+	}
+	tagExpr.Name = name
+	return tagExpr, nil
 }
 
-func UnmarshalScopingExpr(data []byte) (ast.Node, error) {
-	var scopingExpr struct {
+func ScopingExpr(data []byte) (ast.Node, error) {
+	type scopingExprTemp struct {
 		Parent json.RawMessage
 		X      json.RawMessage
 	}
-	if err := json.Unmarshal(data, &scopingExpr); err != nil {
-		return nil, fmt.Errorf("error unmarshalling ScopingExpr: %w", err)
+	var scopingExprData scopingExprTemp
+	if err := json.Unmarshal(data, &scopingExprData); err != nil {
+		return nil, newDeserializeError("ScopingExpr", scopingExprData, data, err)
 	}
 
-	parent, err := UnmarshalNode(scopingExpr.Parent)
-	if err != nil {
-		return nil, err
-	}
-	x, err := UnmarshalNode(scopingExpr.X)
-	if err != nil {
-		return nil, err
-	}
+	scopingExpr := &ast.ScopingExpr{}
 
-	return &ast.ScopingExpr{
-		Parent: parent.(ast.Expr),
-		X:      x.(ast.Expr),
-	}, nil
+	parentNode, err := Node(scopingExprData.Parent)
+	if err != nil {
+		return nil, newUnmarshalFieldError("ScopingExpr", scopingExprData, "Parent", data, err)
+	}
+	parent, ok := parentNode.(ast.Expr)
+	if !ok {
+		return nil, newUnexpectType("ScopingExpr", parentNode, "ast.Expr")
+	}
+	scopingExpr.Parent = parent
+
+	xNode, err := Node(scopingExprData.X)
+	if err != nil {
+		return nil, newUnmarshalFieldError("ScopingExpr", scopingExprData, "X", data, err)
+	}
+	x, ok := xNode.(ast.Expr)
+	if !ok {
+		return nil, newUnexpectType("ScopingExpr", xNode, "ast.Expr")
+	}
+	scopingExpr.X = x
+
+	return scopingExpr, nil
 }
 
-func UnmarshalEnumItem(data []byte) (ast.Node, error) {
-	var enumItemTemp struct {
+func EnumItem(data []byte) (ast.Node, error) {
+	type enumItemTemp struct {
 		Name  *ast.Ident
 		Value json.RawMessage
 	}
+	var enumItemData enumItemTemp
 
-	if err := json.Unmarshal(data, &enumItemTemp); err != nil {
-		return nil, fmt.Errorf("error unmarshalling EnumItem: %w", err)
+	if err := json.Unmarshal(data, &enumItemData); err != nil {
+		return nil, newDeserializeError("EnumItem", enumItemData, data, err)
 	}
 
 	enumItem := &ast.EnumItem{
-		Name: enumItemTemp.Name,
+		Name: enumItemData.Name,
 	}
 
-	if !isJSONNull(enumItemTemp.Value) {
-		value, err := UnmarshalNode(enumItemTemp.Value)
+	if !isJSONNull(enumItemData.Value) {
+		valueNode, err := Node(enumItemData.Value)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling EnumItem Value: %w", err)
+			return nil, newUnmarshalFieldError("EnumItem", enumItemData, "Value", data, err)
 		}
-		enumItem.Value = value.(ast.Expr)
+		value, ok := valueNode.(ast.Expr)
+		if !ok {
+			return nil, newUnexpectType("EnumItem", valueNode, "ast.Expr")
+		}
+		enumItem.Value = value
 	}
 
 	return enumItem, nil
 }
 
-func UnmarshalEnumType(data []byte) (ast.Node, error) {
-	var enumType struct {
+func EnumType(data []byte) (ast.Node, error) {
+	type enumTypeTemp struct {
 		Items []json.RawMessage
 	}
-	if err := json.Unmarshal(data, &enumType); err != nil {
-		return nil, fmt.Errorf("error unmarshalling EnumType: %w", err)
+	var enumTypeData enumTypeTemp
+	if err := json.Unmarshal(data, &enumTypeData); err != nil {
+		return nil, newDeserializeError("EnumType", enumTypeData, data, err)
 	}
 
 	result := &ast.EnumType{}
-
-	for _, itemData := range enumType.Items {
-		item, err := UnmarshalNode(itemData)
+	for _, itemData := range enumTypeData.Items {
+		itemNode, err := Node(itemData)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling EnumType Item: %w", err)
+			return nil, newUnmarshalFieldError("EnumType", enumTypeData, "Items", data, err)
 		}
-		result.Items = append(result.Items, item.(*ast.EnumItem))
+		item, ok := itemNode.(*ast.EnumItem)
+		if !ok {
+			return nil, newUnexpectType("EnumType", itemNode, &ast.EnumItem{})
+		}
+		result.Items = append(result.Items, item)
 	}
 
 	return result, nil
 }
 
-func UnmarshalRecordType(data []byte) (ast.Node, error) {
-	var recordTypeTemp struct {
+func RecordType(data []byte) (ast.Node, error) {
+	type recordTypeTemp struct {
 		Tag     ast.Tag
 		Fields  json.RawMessage
 		Methods []json.RawMessage
 	}
-
-	if err := json.Unmarshal(data, &recordTypeTemp); err != nil {
-		return nil, fmt.Errorf("error unmarshalling RecordType: %w", err)
+	var recordTypeData recordTypeTemp
+	if err := json.Unmarshal(data, &recordTypeData); err != nil {
+		return nil, newDeserializeError("RecordType", recordTypeData, data, err)
 	}
 
 	recordType := &ast.RecordType{
-		Tag:     recordTypeTemp.Tag,
+		Tag:     recordTypeData.Tag,
 		Methods: []*ast.FuncDecl{},
 	}
 
-	fields, err := UnmarshalNode(recordTypeTemp.Fields)
+	fieldsNode, err := Node(recordTypeData.Fields)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling Fields in RecordType: %w", err)
+		return nil, newUnmarshalFieldError("RecordType", recordTypeData, "Fields", data, err)
 	}
-	recordType.Fields = fields.(*ast.FieldList)
+	fields, ok := fieldsNode.(*ast.FieldList)
+	if !ok {
+		return nil, newUnexpectType("RecordType", fieldsNode, &ast.FieldList{})
+	}
+	recordType.Fields = fields
 
-	for _, methodData := range recordTypeTemp.Methods {
-		method, err := UnmarshalNode(methodData)
+	for _, methodData := range recordTypeData.Methods {
+		methodNode, err := Node(methodData)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling method in RecordType: %w", err)
+			return nil, newUnmarshalFieldError("RecordType", recordTypeData, "Methods", data, err)
 		}
-		recordType.Methods = append(recordType.Methods, method.(*ast.FuncDecl))
+		method, ok := methodNode.(*ast.FuncDecl)
+		if !ok {
+			return nil, newUnexpectType("RecordType", methodNode, &ast.FuncDecl{})
+		}
+		recordType.Methods = append(recordType.Methods, method)
 	}
 
 	return recordType, nil
 }
 
-func UnmarshalFuncType(data []byte) (ast.Node, error) {
-	var funcTypeTemp struct {
+func FuncType(data []byte) (ast.Node, error) {
+	type funcTypeTemp struct {
 		Params json.RawMessage
 		Ret    json.RawMessage
 	}
-	if err := json.Unmarshal(data, &funcTypeTemp); err != nil {
-		return nil, fmt.Errorf("error unmarshalling FuncType: %w", err)
+	var funcTypeData funcTypeTemp
+	if err := json.Unmarshal(data, &funcTypeData); err != nil {
+		return nil, newDeserializeError("FuncType", funcTypeData, data, err)
 	}
-	params, err := UnmarshalNode(funcTypeTemp.Params)
+	paramsNode, err := Node(funcTypeData.Params)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling Params in FuncType: %w", err)
+		return nil, newUnmarshalFieldError("FuncType", funcTypeData, "Params", data, err)
+	}
+	params, ok := paramsNode.(*ast.FieldList)
+	if !ok {
+		return nil, newUnexpectType("FuncType", paramsNode, &ast.FieldList{})
 	}
 
-	ret, err := UnmarshalNode(funcTypeTemp.Ret)
+	retNode, err := Node(funcTypeData.Ret)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling Ret in FuncType: %w", err)
+		return nil, newUnmarshalFieldError("FuncType", funcTypeData, "Ret", data, err)
+	}
+	ret, ok := retNode.(ast.Expr)
+	if !ok {
+		return nil, newUnexpectType("FuncType", retNode, "ast.Expr")
 	}
 
-	funcType := &ast.FuncType{
-		Params: params.(*ast.FieldList),
-		Ret:    ret.(ast.Expr),
-	}
-
-	return funcType, nil
+	return &ast.FuncType{
+		Params: params,
+		Ret:    ret,
+	}, nil
 }
 
-func UnmarshalFuncDecl(data []byte) (ast.Node, error) {
-	var funcDecl struct {
+func FuncDecl(data []byte) (ast.Node, error) {
+	type funcDeclTemp struct {
 		Name          *ast.Ident
 		MangledName   string
 		Type          json.RawMessage
@@ -443,177 +515,278 @@ func UnmarshalFuncDecl(data []byte) (ast.Node, error) {
 		IsVirtual     bool
 		IsOverride    bool
 	}
-	if err := json.Unmarshal(data, &funcDecl); err != nil {
-		return nil, fmt.Errorf("error unmarshalling FuncDecl: %w", err)
+	var funcDeclData funcDeclTemp
+	if err := json.Unmarshal(data, &funcDeclData); err != nil {
+		return nil, newDeserializeError("FuncDecl", funcDeclData, data, err)
 	}
 
-	typ, err := UnmarshalNode(funcDecl.Type)
+	typeNode, err := Node(funcDeclData.Type)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling FuncDecl Type: %w", err)
+		return nil, newUnmarshalFieldError("FuncDecl", funcDeclData, "Type", data, err)
+	}
+	typ, ok := typeNode.(*ast.FuncType)
+	if !ok {
+		return nil, newUnexpectType("FuncDecl", typeNode, &ast.FuncType{})
 	}
 
-	declBase, err := UnmarshalDeclBase(data)
+	declBase, err := declBase(data)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling FuncDecl DeclBase: %w", err)
+		return nil, err
 	}
 
-	result := &ast.FuncDecl{
+	return &ast.FuncDecl{
 		DeclBase:      declBase,
-		Type:          typ.(*ast.FuncType),
-		Name:          funcDecl.Name,
-		MangledName:   funcDecl.MangledName,
-		IsInline:      funcDecl.IsInline,
-		IsStatic:      funcDecl.IsStatic,
-		IsConst:       funcDecl.IsConst,
-		IsExplicit:    funcDecl.IsExplicit,
-		IsConstructor: funcDecl.IsConstructor,
-		IsDestructor:  funcDecl.IsDestructor,
-		IsVirtual:     funcDecl.IsVirtual,
-		IsOverride:    funcDecl.IsOverride,
-	}
-
-	return result, nil
+		Type:          typ,
+		Name:          funcDeclData.Name,
+		MangledName:   funcDeclData.MangledName,
+		IsInline:      funcDeclData.IsInline,
+		IsStatic:      funcDeclData.IsStatic,
+		IsConst:       funcDeclData.IsConst,
+		IsExplicit:    funcDeclData.IsExplicit,
+		IsConstructor: funcDeclData.IsConstructor,
+		IsDestructor:  funcDeclData.IsDestructor,
+		IsVirtual:     funcDeclData.IsVirtual,
+		IsOverride:    funcDeclData.IsOverride,
+	}, nil
 }
 
-func UnmarshalTypeDecl(data []byte) (ast.Node, error) {
-	var typeDecl struct {
+func TypeDecl(data []byte) (ast.Node, error) {
+	type typeDeclTemp struct {
 		Name *ast.Ident
 		Type json.RawMessage
 	}
-	if err := json.Unmarshal(data, &typeDecl); err != nil {
-		return nil, fmt.Errorf("error unmarshalling TypeDecl: %w", err)
+	var typeDeclData typeDeclTemp
+	if err := json.Unmarshal(data, &typeDeclData); err != nil {
+		return nil, newDeserializeError("TypeDecl", typeDeclData, data, err)
 	}
 
-	typ, err := UnmarshalNode(typeDecl.Type)
+	typeNode, err := Node(typeDeclData.Type)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling TypeDecl Type: %w", err)
+		return nil, newUnmarshalFieldError("TypeDecl", typeDeclData, "Type", data, err)
+	}
+	typ, ok := typeNode.(*ast.RecordType)
+	if !ok {
+		return nil, newUnexpectType("TypeDecl", typeNode, &ast.RecordType{})
 	}
 
-	declBase, err := UnmarshalDeclBase(data)
+	declBase, err := declBase(data)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling TypeDecl DeclBase: %w", err)
+		return nil, err
 	}
 
-	result := &ast.TypeDecl{
+	return &ast.TypeDecl{
 		DeclBase: declBase,
-		Name:     typeDecl.Name,
-		Type:     typ.(*ast.RecordType),
-	}
-
-	return result, nil
+		Name:     typeDeclData.Name,
+		Type:     typ,
+	}, nil
 }
 
-func UnmarshalTypeDefDecl(data []byte) (ast.Node, error) {
-	var typeDecl struct {
+func TypeDefDecl(data []byte) (ast.Node, error) {
+	type typeDefDeclTemp struct {
 		Name *ast.Ident
 		Type json.RawMessage
 	}
-	if err := json.Unmarshal(data, &typeDecl); err != nil {
-		return nil, fmt.Errorf("error unmarshalling TypeDefDecl: %w", err)
+	var typeDefDeclData typeDefDeclTemp
+	if err := json.Unmarshal(data, &typeDefDeclData); err != nil {
+		return nil, newDeserializeError("TypeDefDecl", typeDefDeclData, data, err)
 	}
 
-	typ, err := UnmarshalNode(typeDecl.Type)
+	typeNode, err := Node(typeDefDeclData.Type)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling TypeDefDecl Type: %w", err)
+		return nil, newUnmarshalFieldError("TypeDefDecl", typeDefDeclData, "Type", data, err)
+	}
+	typ, ok := typeNode.(ast.Expr)
+	if !ok {
+		return nil, newUnexpectType("TypeDefDecl", typeNode, "ast.Expr")
 	}
 
-	declBase, err := UnmarshalDeclBase(data)
+	declBase, err := declBase(data)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling TypeDefDecl DeclBase: %w", err)
+		return nil, err
 	}
 
-	result := &ast.TypedefDecl{
+	return &ast.TypedefDecl{
 		DeclBase: declBase,
-		Name:     typeDecl.Name,
-		Type:     typ.(ast.Expr),
-	}
-
-	return result, nil
+		Name:     typeDefDeclData.Name,
+		Type:     typ,
+	}, nil
 }
 
-func UnmarshalEnumTypeDecl(data []byte) (ast.Node, error) {
-	var enumTypeDecl struct {
+func EnumTypeDecl(data []byte) (ast.Node, error) {
+	type enumTypeDeclTemp struct {
 		Name *ast.Ident
 		Type json.RawMessage
 	}
-	if err := json.Unmarshal(data, &enumTypeDecl); err != nil {
-		return nil, fmt.Errorf("error unmarshalling EnumTypeDecl: %w", err)
+	var enumTypeDeclData enumTypeDeclTemp
+	if err := json.Unmarshal(data, &enumTypeDeclData); err != nil {
+		return nil, newDeserializeError("EnumTypeDecl", enumTypeDeclData, data, err)
 	}
 
-	typ, err := UnmarshalNode(enumTypeDecl.Type)
+	typeNode, err := Node(enumTypeDeclData.Type)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling EnumTypeDecl Type: %w", err)
+		return nil, newUnmarshalFieldError("EnumTypeDecl", enumTypeDeclData, "Type", data, err)
+	}
+	typ, ok := typeNode.(*ast.EnumType)
+	if !ok {
+		return nil, newUnexpectType("EnumTypeDecl", typeNode, &ast.EnumType{})
 	}
 
-	declBase, err := UnmarshalDeclBase(data)
+	declBase, err := declBase(data)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling EnumTypeDecl DeclBase: %w", err)
+		return nil, err
 	}
 
-	result := &ast.EnumTypeDecl{
+	return &ast.EnumTypeDecl{
 		DeclBase: declBase,
-		Name:     enumTypeDecl.Name,
-		Type:     typ.(*ast.EnumType),
-	}
-
-	return result, nil
+		Name:     enumTypeDeclData.Name,
+		Type:     typ,
+	}, nil
 }
 
-func UnmarshalDeclBase(data []byte) (ast.DeclBase, error) {
-	var DeclBase struct {
+func declBase(data []byte) (ast.DeclBase, error) {
+	type declBaseTemp struct {
 		Loc    *ast.Location
 		Doc    *ast.CommentGroup
 		Parent json.RawMessage
 	}
-
-	if err := json.Unmarshal(data, &DeclBase); err != nil {
-		return ast.DeclBase{}, fmt.Errorf("error unmarshalling DeclBase Type: %w", err)
+	var declBaseData declBaseTemp
+	if err := json.Unmarshal(data, &declBaseData); err != nil {
+		return ast.DeclBase{}, newDeserializeError("declBase", declBaseData, data, err)
 	}
 
-	result := ast.DeclBase{
-		Loc: DeclBase.Loc,
-		Doc: DeclBase.Doc,
+	declBase := ast.DeclBase{
+		Loc: declBaseData.Loc,
+		Doc: declBaseData.Doc,
 	}
 
-	if !isJSONNull(DeclBase.Parent) {
-		parent, err := UnmarshalNode(DeclBase.Parent)
+	if !isJSONNull(declBaseData.Parent) {
+		parentNode, err := Node(declBaseData.Parent)
 		if err != nil {
-			return ast.DeclBase{}, fmt.Errorf("error unmarshalling parent in DeclBase Type: %w", err)
+			return ast.DeclBase{}, newUnmarshalFieldError("declBase", declBaseData, "Parent", data, err)
 		}
-		result.Parent = parent.(ast.Expr)
+		parent, ok := parentNode.(ast.Expr)
+		if !ok {
+			return ast.DeclBase{}, newUnexpectType("declBase", parentNode, "ast.Expr")
+		}
+		declBase.Parent = parent
 	}
 
-	return result, nil
+	return declBase, nil
 }
 
-func UnmarshalFile(data []byte) (ast.Node, error) {
-	var file struct {
+func File(data []byte) (ast.Node, error) {
+	type fileTemp struct {
 		Decls    []json.RawMessage `json:"decls"`
 		Includes []*ast.Include    `json:"includes,omitempty"`
 		Macros   []*ast.Macro      `json:"macros,omitempty"`
 	}
-	if err := json.Unmarshal(data, &file); err != nil {
-		return nil, fmt.Errorf("error unmarshalling File: %w", err)
+	var fileData fileTemp
+	if err := json.Unmarshal(data, &fileData); err != nil {
+		return nil, newDeserializeError("File", fileData, data, err)
 	}
 
-	result := &ast.File{
-		Includes: file.Includes,
-		Macros:   file.Macros,
+	file := &ast.File{
+		Includes: fileData.Includes,
+		Macros:   fileData.Macros,
 		Decls:    []ast.Decl{},
 	}
 
-	for i, declData := range file.Decls {
-		decl, err := UnmarshalNode(declData)
+	for i, declData := range fileData.Decls {
+		declNode, err := Node(declData)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error unmarshalling %d Decl in File: %v\n%s\n", i, err, string(declData))
 			continue
 		}
-		result.Decls = append(result.Decls, decl.(ast.Decl))
+		decl, ok := declNode.(ast.Decl)
+		if !ok {
+			return nil, newUnexpectType("File", declNode, "ast.Decl")
+		}
+		file.Decls = append(file.Decls, decl)
 	}
 
-	return result, nil
+	return file, nil
 }
 
 func isJSONNull(data json.RawMessage) bool {
 	return len(data) == 4 && string(data) == "null"
+}
+
+// DeserializeError represents an error that occurs during json.Unmarshal.
+// It provides context about where the error occurred and what was being unmarshaled.
+type DeserializeError struct {
+	Func       string // function name
+	TargetType any
+	Field      string // optional, only for unmarshal node in a struct
+	Data       string // origin raw json data
+	Err        error  // unmarshal error message
+}
+
+func (e *DeserializeError) Error() string {
+	const maxDataLen = 100
+	data := e.Data
+	if len(data) > maxDataLen {
+		data = data[:maxDataLen] + "..."
+	}
+	if e.Field != "" {
+		return fmt.Sprintf("unmarshal error in %s when converting %s of %v: %s\ninput: %s",
+			e.Func, e.Field, reflect.TypeOf(e.TargetType), e.Err.Error(), data)
+	}
+	return fmt.Sprintf("unmarshal error in %s into %v: %s\ninput: %s",
+		e.Func, reflect.TypeOf(e.TargetType), e.Err.Error(), data)
+}
+
+func newDeserializeError(funcName string, targetType any, data []byte, err error) *DeserializeError {
+	return &DeserializeError{
+		Func:       funcName,
+		TargetType: targetType,
+		Data:       string(data),
+		Err:        err,
+	}
+}
+
+func newUnmarshalFieldError(funcName string, targetType any, field string, data []byte, err error) *DeserializeError {
+	return &DeserializeError{
+		Func:       funcName,
+		TargetType: targetType,
+		Field:      field,
+		Data:       string(data),
+		Err:        err,
+	}
+}
+
+type UnexpectType struct {
+	Func     string
+	GotType  any
+	WantType any
+}
+
+func (e *UnexpectType) Error() string {
+	if reflect.TypeOf(e.WantType).Kind() == reflect.String {
+		return fmt.Sprintf("unmarshal error in %s: got %v, want %s", e.Func, reflect.TypeOf(e.GotType), e.WantType)
+	}
+	return fmt.Sprintf("unmarshal error in %s: got %v, want %v", e.Func, reflect.TypeOf(e.GotType), reflect.TypeOf(e.WantType))
+}
+
+func newUnexpectType(funcName string, gotType any, wantType any) *UnexpectType {
+	return &UnexpectType{
+		Func:     funcName,
+		GotType:  gotType,
+		WantType: wantType,
+	}
+}
+
+type FileEntryError struct {
+	Path string
+	Err  error
+}
+
+func (e *FileEntryError) Error() string {
+	return fmt.Sprintf("unmarshal FileEntry error in path %s: %v", e.Path, e.Err)
+}
+
+func newFileEntryError(path string, err error) *FileEntryError {
+	return &FileEntryError{
+		Path: path,
+		Err:  err,
+	}
 }
