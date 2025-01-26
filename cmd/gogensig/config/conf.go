@@ -39,20 +39,27 @@ func GetCppgSigfetchFromByte(data []byte) ([]*ast.FileEntry, error) {
 	return unmarshal.FileSet(data)
 }
 
-func SigfetchExtract(file string, isTemp bool, isCPP bool, dir string) ([]byte, error) {
-	args := []string{"--extract", file}
+type SigfetchExtractConfig struct {
+	File   string
+	IsTemp bool
+	IsCpp  bool
+	Dir    string
+}
 
-	if isTemp {
+func SigfetchExtract(cfg *SigfetchExtractConfig) ([]byte, error) {
+	args := []string{"--extract", cfg.File}
+
+	if cfg.IsTemp {
 		args = append(args, "-temp=true")
 	}
 
-	if isCPP {
+	if cfg.IsCpp {
 		args = append(args, "-cpp=true")
 	} else {
 		args = append(args, "-cpp=false")
 	}
 
-	return executeSigfetch(args, dir)
+	return executeSigfetch(args, cfg.Dir)
 }
 
 func SigfetchConfig(configFile string, dir string) ([]byte, error) {
