@@ -6,12 +6,13 @@ import (
 	"github.com/goplus/llgo/c/cjson"
 )
 
-func MarshalOutputASTFiles(files []*FileEntry) *cjson.JSON {
+func MarshalFileSet(files []*ast.FileEntry) *cjson.JSON {
 	root := cjson.Array()
 	for _, entry := range files {
 		f := cjson.Object()
 		path := cjson.String(c.AllocaCStr(entry.Path))
 		incPath := cjson.String(c.AllocaCStr(entry.IncPath))
+		f.SetItem(c.Str("_Type"), stringField("FileEntry"))
 		f.SetItem(c.Str("incPath"), incPath)
 		f.SetItem(c.Str("path"), path)
 		f.SetItem(c.Str("doc"), MarshalASTFile(entry.Doc))
@@ -21,7 +22,7 @@ func MarshalOutputASTFiles(files []*FileEntry) *cjson.JSON {
 	return root
 }
 
-func MarshalASTFiles(files []*FileEntry) *cjson.JSON {
+func MarshalASTFiles(files []*ast.FileEntry) *cjson.JSON {
 	root := cjson.Object()
 	for _, entry := range files {
 		root.SetItem(c.AllocaCStr(entry.Path), MarshalASTFile(entry.Doc))

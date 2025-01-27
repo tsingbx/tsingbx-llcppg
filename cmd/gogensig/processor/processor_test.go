@@ -11,14 +11,14 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/basic"
 	"github.com/goplus/llcppg/cmd/gogensig/processor"
-	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	"github.com/goplus/llcppg/cmd/gogensig/visitor"
 )
 
 func TestProcessValidSigfetchContent(t *testing.T) {
 	content := []map[string]interface{}{
 		{
-			"path": "temp.h",
+			"_Type": "FileEntry",
+			"path":  "temp.h",
 			"doc": map[string]interface{}{
 				"_Type": "File",
 				"decls": []map[string]interface{}{
@@ -92,7 +92,7 @@ func TestProcessFileNotExist(t *testing.T) {
 	docVisitors := []visitor.DocVisitor{astConvert}
 	manager := processor.NewDocVisitorManager(docVisitors)
 	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
-		Exec: func(file *unmarshal.FileEntry) error {
+		Exec: func(file *ast.FileEntry) error {
 			manager.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
 			return nil
 		},
@@ -129,7 +129,7 @@ func TestProcessInvalidSigfetchContent(t *testing.T) {
 	docVisitors := []visitor.DocVisitor{astConvert}
 	manager := processor.NewDocVisitorManager(docVisitors)
 	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
-		Exec: func(file *unmarshal.FileEntry) error {
+		Exec: func(file *ast.FileEntry) error {
 			manager.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
 			return nil
 		},
@@ -149,7 +149,7 @@ func TestCustomExec(t *testing.T) {
 			t.Errorf("%s", "expect panic")
 		}
 	}()
-	file := unmarshal.FileSet{
+	file := []*ast.FileEntry{
 		{
 			Path:  "/path/to/foo.h",
 			IsSys: false,
@@ -157,7 +157,7 @@ func TestCustomExec(t *testing.T) {
 		},
 	}
 	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
-		Exec: func(file *unmarshal.FileEntry) error {
+		Exec: func(file *ast.FileEntry) error {
 			return errCustomExec
 		},
 	})
@@ -169,7 +169,7 @@ func TestCustomExec(t *testing.T) {
 
 func TestExecOrder(t *testing.T) {
 	depIncs := []string{"/path/to/int16_t.h"}
-	fileSet := unmarshal.FileSet{
+	fileSet := []*ast.FileEntry{
 		{
 			Path:    "/path/to/foo.h",
 			IncPath: "foo.h",
@@ -254,7 +254,7 @@ func TestExecOrder(t *testing.T) {
 		"/path/to/bar.h",
 	}
 	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
-		Exec: func(file *unmarshal.FileEntry) error {
+		Exec: func(file *ast.FileEntry) error {
 			processFiles = append(processFiles, file.Path)
 			return nil
 		},

@@ -215,7 +215,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 		t.Fatal(err)
 	}
 
-	inputdata, err := unmarshal.UnmarshalFileSet(bytes)
+	inputdata, err := unmarshal.FileSet(bytes)
 	if err != nil {
 		t.Fatal(err)
 	}

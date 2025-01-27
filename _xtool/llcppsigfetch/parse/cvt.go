@@ -16,15 +16,8 @@ import (
 	"github.com/goplus/llgo/c/clang"
 )
 
-type FileEntry struct {
-	Path    string
-	IncPath string
-	IsSys   bool
-	Doc     *ast.File
-}
-
 type Converter struct {
-	Files     []*FileEntry
+	Files     []*ast.FileEntry
 	FileOrder []string // todo(zzy): more efficient struct
 	curLoc    ast.Location
 	index     *clang.Index
@@ -77,8 +70,8 @@ func (ct *Converter) Dispose() {
 	ct.unit.Dispose()
 }
 
-func initFileEntries(unit *clang.TranslationUnit) []*FileEntry {
-	files := make([]*FileEntry, 0)
+func initFileEntries(unit *clang.TranslationUnit) []*ast.FileEntry {
+	files := make([]*ast.FileEntry, 0)
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		loc := unit.GetLocation(inced, 1, 1)
 		incedFile := toStr(inced.FileName())
@@ -87,7 +80,7 @@ func initFileEntries(unit *clang.TranslationUnit) []*FileEntry {
 			cur := unit.GetCursor(&incins[0])
 			incPath = toStr(cur.String())
 		}
-		files = append(files, &FileEntry{
+		files = append(files, &ast.FileEntry{
 			Path:    incedFile,
 			IncPath: incPath,
 			IsSys:   loc.IsInSystemHeader() != 0,
@@ -168,7 +161,7 @@ func (ct *Converter) GetCurFile(cursor clang.Cursor) *ast.File {
 		}
 	}
 	ct.logln("GetCurFile: Create New ast.File", filePath)
-	entry := &FileEntry{Path: filePath, Doc: &ast.File{}, IsSys: false}
+	entry := &ast.FileEntry{Path: filePath, Doc: &ast.File{}, IsSys: false}
 	if loc.IsInSystemHeader() != 0 {
 		entry.IsSys = true
 	}
@@ -307,7 +300,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 	return clang.ChildVisit_Continue
 }
 
-func (ct *Converter) Convert() ([]*FileEntry, error) {
+func (ct *Converter) Convert() ([]*ast.FileEntry, error) {
 	cursor := ct.unit.Cursor()
 	// visit top decls (struct,class,function & macro,include)
 	clangutils.VisitChildren(cursor, ct.visitTop)
@@ -954,8 +947,8 @@ func (ct *Converter) MarshalASTFiles() *cjson.JSON {
 	return MarshalASTFiles(ct.Files)
 }
 
-func (ct *Converter) MarshalOutputASTFiles() *cjson.JSON {
-	return MarshalOutputASTFiles(ct.Files)
+func (ct *Converter) Output() *cjson.JSON {
+	return MarshalFileSet(ct.Files)
 }
 
 func IsExplicitSigned(t clang.Type) bool {
