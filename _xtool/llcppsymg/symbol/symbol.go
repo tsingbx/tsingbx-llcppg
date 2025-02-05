@@ -12,6 +12,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 	"github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
@@ -28,7 +29,11 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 	if dbg.GetDebugSymbol() {
 		fmt.Println("ParseDylibSymbols:from", lib)
 	}
-	sysPaths := getSysLibPaths()
+	sysPaths := syspath.GetLibPaths()
+	if dbg.GetDebugSymbol() {
+		fmt.Println("ParseDylibSymbols:sysPaths", sysPaths)
+	}
+
 	lbs := cfgparse.ParseLibs(lib)
 	if dbg.GetDebugSymbol() {
 		fmt.Println("ParseDylibSymbols:LibConfig Parse To")
@@ -60,7 +65,12 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 			continue
 		}
 
-		files, err := nm.New("").List(dylibPath)
+		args := []string{}
+		if runtime.GOOS == "linux" {
+			args = append(args, "-D")
+		}
+
+		files, err := nm.New("").List(dylibPath, args...)
 		if err != nil {
 			parseErrors = append(parseErrors, fmt.Sprintf("ParseDylibSymbols:Failed to list symbols in dylib %s: %v", dylibPath, err))
 			continue
@@ -82,61 +92,6 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 	}
 
 	return nil, fmt.Errorf("no symbols found in any dylib. Errors: %v", parseErrors)
-}
-
-func getSysLibPaths() []string {
-	var paths []string
-	if runtime.GOOS == "linux" {
-		if dbg.GetDebugSymbol() {
-			fmt.Println("getSysLibPaths:find sys lib path from linux")
-		}
-		paths = []string{
-			"/usr/lib",
-			"/usr/local/lib",
-		}
-		paths = append(paths, getPath("/etc/ld.so.conf")...)
-		if dbg.GetDebugSymbol() && len(paths) == 0 {
-			fmt.Println("getSysLibPaths:/etc/ld.so.conf havent find any path")
-		}
-		confd := "/etc/ld.so.conf.d"
-		dir, err := os.Stat(confd)
-		if err != nil || !dir.IsDir() {
-			if dbg.GetDebugSymbol() {
-				fmt.Println("getSysLibPaths:/etc/ld.so.conf.d not found or not dir")
-			}
-			return paths
-		}
-		// todo(zzy) : wait llgo os.ReadDir support
-		// files, err := os.ReadDir(confd)
-		// if err == nil {
-		// 	for _, file := range files {
-		// 		filepath := filepath.Join(confd, file.Name())
-		// 		paths = append(paths, getPath(filepath)...)
-		// 	}
-		// }
-	}
-	return paths
-}
-
-func getPath(file string) []string {
-	if dbg.GetDebugSymbol() {
-		fmt.Println("getPath:from", file)
-	}
-	var paths []string
-	content, err := os.ReadFile(file)
-	if err != nil {
-		return paths
-	}
-	lines := strings.Split(string(content), "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line != "" && !strings.HasPrefix(line, "#") {
-			if file, err := os.Stat(line); err == nil && file.IsDir() {
-				paths = append(paths, line)
-			}
-		}
-	}
-	return paths
 }
 
 // finds the intersection of symbols from the dynamic library's symbol table and the symbols parsed from header files.

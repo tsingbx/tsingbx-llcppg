@@ -28,6 +28,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 )
@@ -154,7 +155,7 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 	}
 
 	cflag := cfgparse.ParseCFlags(conf.CFlags)
-	files, notFounds, err := cflag.GenHeaderFilePaths(conf.Include)
+	files, notFounds, err := cflag.GenHeaderFilePaths(conf.Include, syspath.GetIncludePaths())
 	check(err)
 
 	if verbose {

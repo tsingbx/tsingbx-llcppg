@@ -28,6 +28,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symbol"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 )
 
 func main() {
@@ -79,7 +80,11 @@ func main() {
 	check(err)
 
 	cflag := cfgparse.ParseCFlags(conf.CFlags)
-	filepaths, notFounds, err := cflag.GenHeaderFilePaths(conf.Include)
+	syspaths := syspath.GetIncludePaths()
+	if ags.Verbose {
+		fmt.Println("syspaths", syspaths)
+	}
+	filepaths, notFounds, err := cflag.GenHeaderFilePaths(conf.Include, syspaths)
 	check(err)
 
 	if ags.Verbose {
