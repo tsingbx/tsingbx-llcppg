@@ -1,29 +1,16 @@
-package processor
+package filesetprocessor
 
 import (
+	"io"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/visitor"
 )
-
-type DocVisitorManager struct {
-	VisitorList []visitor.DocVisitor
-}
-
-func NewDocVisitorManager(visitorList []visitor.DocVisitor) *DocVisitorManager {
-	return &DocVisitorManager{VisitorList: visitorList}
-}
-
-func (p *DocVisitorManager) Visit(node ast.Node, path string, incPath string, isSys bool) bool {
-	for _, v := range p.VisitorList {
-		v.VisitStart(path, incPath, isSys)
-		v.Visit(node)
-		v.VisitDone(path)
-	}
-	return true
-}
 
 type DocFileSetProcessor struct {
 	visitedFile map[string]struct{}
@@ -123,4 +110,79 @@ func FindEntry(files []*ast.FileEntry, path string) int {
 		}
 	}
 	return -1
+}
+
+func readSigfetchFile(sigfetchFile string) ([]byte, error) {
+	_, file := filepath.Split(sigfetchFile)
+	var data []byte
+	var err error
+	if file == "-" {
+		data, err = io.ReadAll(os.Stdin)
+	} else {
+		data, err = os.ReadFile(sigfetchFile)
+	}
+	return data, err
+}
+
+func New(cfg *convert.Config) (*DocFileSetProcessor, *convert.Package, error) {
+	astConvert, err := convert.NewAstConvert(cfg)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if cfg.PrepareFunc != nil {
+		cfg.PrepareFunc(astConvert.Pkg)
+	}
+	docVisitors := []visitor.DocVisitor{astConvert}
+	visitorList := visitor.NewDocVisitorList(docVisitors)
+
+	incs := astConvert.Pkg.DepIncPaths()
+
+	return NewDocFileSetProcessor(&ProcesserConfig{
+		Exec: func(file *ast.FileEntry) error {
+			visitorList.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
+			return nil
+		},
+		DepIncs: incs,
+		Done: func() {
+			astConvert.WritePkgFiles()
+			astConvert.WriteLinkFile()
+			astConvert.WritePubFile()
+		},
+	}), astConvert.Pkg, nil
+}
+
+func Process(cfg *convert.Config) error {
+	astConvert, err := convert.NewAstConvert(cfg)
+	if err != nil {
+		return err
+	}
+
+	if cfg.PrepareFunc != nil {
+		cfg.PrepareFunc(astConvert.Pkg)
+	}
+	docVisitors := []visitor.DocVisitor{astConvert}
+	visitorList := visitor.NewDocVisitorList(docVisitors)
+
+	incs := astConvert.Pkg.DepIncPaths()
+
+	p := NewDocFileSetProcessor(&ProcesserConfig{
+		Exec: func(file *ast.FileEntry) error {
+			visitorList.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
+			return nil
+		},
+		DepIncs: incs,
+		Done: func() {
+			astConvert.WritePkgFiles()
+			astConvert.WriteLinkFile()
+			astConvert.WritePubFile()
+		},
+	})
+
+	sigfetchFileData, err := readSigfetchFile(cfg.SigfetchFile)
+	if err != nil {
+		return err
+	}
+
+	return p.ProcessFileSetFromByte(sigfetchFileData)
 }

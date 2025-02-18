@@ -5,7 +5,7 @@ import (
 
 	"github.com/goplus/llcppg/cmd/gogensig/cmptest"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
-	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 // TODO
@@ -18,7 +18,7 @@ func TestCommentSlashStarStar(t *testing.T) {
 			GoName:     "CustomExecuteFoo",
 		},
 	},
-		&cppgtypes.Config{},
+		&llcppg.Config{},
 		`
 /**
 Foo comment

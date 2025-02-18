@@ -8,7 +8,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
-	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 func TestIdentRef(t *testing.T) {
@@ -31,7 +31,7 @@ func TestSubstObj(t *testing.T) {
 	pkg := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath:  ".",
-			CppgConf: &cppgtypes.Config{},
+			CppgConf: &llcppg.Config{},
 		},
 		Name:        "testpkg",
 		GenConf:     &gogen.Config{},

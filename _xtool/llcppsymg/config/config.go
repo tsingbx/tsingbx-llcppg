@@ -4,14 +4,14 @@ import (
 	"errors"
 	"unsafe"
 
-	"github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 )
 
 type Conf struct {
 	*cjson.JSON
-	*types.Config
+	*llcppg.Config
 }
 
 func GetConf(data []byte) (Conf, error) {
@@ -20,7 +20,7 @@ func GetConf(data []byte) (Conf, error) {
 		return Conf{}, errors.New("failed to parse config")
 	}
 
-	config := &types.Config{
+	config := &llcppg.Config{
 		Name:         GetStringItem(parsedConf, "name", ""),
 		CFlags:       GetStringItem(parsedConf, "cflags", ""),
 		Libs:         GetStringItem(parsedConf, "libs", ""),

@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
-	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 func TestLookupSymbolOK(t *testing.T) {
@@ -153,14 +153,12 @@ func TestGetCppgCfgFromPath(t *testing.T) {
 			t.Fatal("Expected non-nil config")
 		}
 
-		expectedConfig := &cppgtypes.Config{
-			Name:         "lua",
-			CFlags:       "$(pkg-config --cflags lua5.4)",
-			Include:      []string{"litelua.h"},
-			Libs:         "$(pkg-config --libs lua5.4)",
-			TrimPrefixes: []string{"lua_"},
-			Cplusplus:    false,
-		}
+		expectedConfig := llcppg.NewDefaultConfig()
+		expectedConfig.Name = "lua"
+		expectedConfig.CFlags = "$(pkg-config --cflags lua5.4)"
+		expectedConfig.Include = []string{"litelua.h"}
+		expectedConfig.Libs = "$(pkg-config --libs lua5.4)"
+		expectedConfig.TrimPrefixes = []string{"lua_"}
 
 		if !reflect.DeepEqual(cfg, expectedConfig) {
 			t.Errorf("Parsed config does not match expected config.\nGot: %+v\nWant: %+v", cfg, expectedConfig)

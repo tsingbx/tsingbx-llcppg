@@ -9,7 +9,7 @@ import (
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/visitor"
-	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 type AstConvert struct {
@@ -18,15 +18,17 @@ type AstConvert struct {
 	visitDone func(pkg *Package, incPath string)
 }
 
-type AstConvertConfig struct {
-	PkgName   string
-	SymbFile  string // llcppg.symb.json
-	CfgFile   string // llcppg.cfg
-	PubFile   string // llcppg.pub
-	OutputDir string
+type Config struct {
+	PkgName      string
+	SigfetchFile string
+	SymbFile     string // llcppg.symb.json
+	CfgFile      string // llcppg.cfg
+	PubFile      string // llcppg.pub
+	OutputDir    string
+	PrepareFunc  func(*Package)
 }
 
-func NewAstConvert(config *AstConvertConfig) (*AstConvert, error) {
+func NewAstConvert(config *Config) (*AstConvert, error) {
 	if config == nil {
 		return nil, errors.New("config is nil")
 	}
@@ -45,7 +47,7 @@ func NewAstConvert(config *AstConvertConfig) (*AstConvert, error) {
 		if dbg.GetDebugError() {
 			log.Printf("Cant get llcppg.cfg from %s Use empty config\n", config.CfgFile)
 		}
-		conf = &cppgtypes.Config{}
+		conf = llcppg.NewDefaultConfig()
 	}
 
 	pubs, err := cfg.GetPubFromPath(config.PubFile)

@@ -13,7 +13,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
-	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/xtool/env"
 	"github.com/goplus/mod/gopmod"
 )
@@ -46,11 +46,11 @@ type PkgInfo struct {
 
 type PkgBase struct {
 	PkgPath  string            // package path, e.g. github.com/goplus/llgo/cjson
-	CppgConf *cppgtypes.Config // llcppg.cfg
+	CppgConf *llcppg.Config    // llcppg.cfg
 	Pubs     map[string]string // llcppg.pub
 }
 
-func NewPkgInfo(pkgPath string, pkgDir string, conf *cppgtypes.Config, pubs map[string]string) *PkgInfo {
+func NewPkgInfo(pkgPath string, pkgDir string, conf *llcppg.Config, pubs map[string]string) *PkgInfo {
 	return &PkgInfo{
 		PkgBase: PkgBase{PkgPath: pkgPath, Pubs: pubs, CppgConf: conf},
 		Dir:     pkgDir,

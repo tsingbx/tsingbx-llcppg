@@ -10,6 +10,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/goplus/llcppg/llcppg"
 )
 
 func Test_emptyStringError_Error(t *testing.T) {
@@ -372,19 +374,19 @@ func Test_parseCFlagsEntry(t *testing.T) {
 func Test_sortIncludes(t *testing.T) {
 	cflags, _ := newCflags("cfg_test_data/cjson/include/")
 	depsCflags, _ := newCflags("cfg_test_data/deps/")
-	cfg := &LLCppConfig{
+	cfg := &llcppg.Config{
 		Name:   "libcjson",
 		CFlags: cflags,
 		Libs:   "$(pkg-config --libs libcjson)",
 	}
-	depCfg := &LLCppConfig{
+	depCfg := &llcppg.Config{
 		Name:   "deps",
 		CFlags: depsCflags,
 		Libs:   "",
 	}
 	type args struct {
 		expandCflags   string
-		cfg            *LLCppConfig
+		cfg            *llcppg.Config
 		exts           []string
 		excludeSubdirs []string
 	}
@@ -482,7 +484,7 @@ func TestNewLLCppConfig(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *LLCppConfig
+		want *llcppg.Config
 	}{
 		{
 			"libcjson",
@@ -490,21 +492,23 @@ func TestNewLLCppConfig(t *testing.T) {
 				"libcjson",
 				WithTab,
 			},
-			&LLCppConfig{
-				Name:         "libcjson",
-				CFlags:       "$(pkg-config --cflags libcjson)",
-				Libs:         "$(pkg-config --libs libcjson)",
-				Include:      nil,
-				Deps:         nil,
-				TrimPrefixes: []string{},
-				Cplusplus:    false,
+			&llcppg.Config{
+				Name:             "libcjson",
+				CFlags:           "$(pkg-config --cflags libcjson)",
+				Libs:             "$(pkg-config --libs libcjson)",
+				Include:          []string{},
+				Deps:             []string{},
+				TrimPrefixes:     []string{},
+				Cplusplus:        false,
+				Impl:             []llcppg.ImplFiles{*llcppg.NewImplFiles()},
+				IgnoreUnderScore: false,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewLLCppConfig(tt.args.name, tt.args.flag); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewLLCppConfig() = %v, want %v", got, tt.want)
+			if got := NewLLCppgConfig(tt.args.name, tt.args.flag); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewLLCppgConfig() = %v, want %v", got, tt.want)
 			}
 		})
 	}

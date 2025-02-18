@@ -7,7 +7,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
-	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 func TestTypeRefIncompleteFail(t *testing.T) {
@@ -19,7 +19,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 	pkg := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath:  ".",
-			CppgConf: &cppgtypes.Config{},
+			CppgConf: &llcppg.Config{},
 			Pubs:     make(map[string]string),
 		},
 		Name:        "testpkg",

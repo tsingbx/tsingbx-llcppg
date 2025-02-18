@@ -7,7 +7,7 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symbol"
-	"github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/xtool/nm"
 )
 
@@ -129,14 +129,14 @@ func TestReadExistingSymbolTable() {
 func TestGenSymbolTableData() {
 	fmt.Println("=== Test GenSymbolTableData ===")
 
-	commonSymbols := []*types.SymbolInfo{
+	commonSymbols := []*llcppg.SymbolInfo{
 		{Mangle: "lua_absindex", CPP: "lua_absindex(lua_State *, int)", Go: "Absindex"},
 		{Mangle: "lua_arith", CPP: "lua_arith(lua_State *, int)", Go: "Arith"},
 		{Mangle: "lua_atpanic", CPP: "lua_atpanic(lua_State *, lua_CFunction)", Go: "Atpanic"},
 		{Mangle: "lua_callk", CPP: "lua_callk(lua_State *, int, int, lua_KContext, lua_KFunction)", Go: "Callk"},
 	}
 
-	existingSymbols := map[string]types.SymbolInfo{
+	existingSymbols := map[string]llcppg.SymbolInfo{
 		"lua_absindex": {Mangle: "lua_absindex", CPP: "lua_absindex(lua_State *, int)", Go: "Absindex"},
 		"lua_arith":    {Mangle: "lua_arith", CPP: "lua_arith(lua_State *, int)", Go: "Arith"},
 		"lua_callk":    {Mangle: "lua_callk", CPP: "lua_callk(lua_State *, int, int, lua_KContext, lua_KFunction)", Go: "ModifiedCallk"},

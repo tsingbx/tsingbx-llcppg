@@ -9,7 +9,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c/cjson"
 )
 
@@ -19,7 +19,7 @@ type Context struct {
 }
 
 type ContextConfig struct {
-	Conf     *types.Config
+	Conf     *llcppg.Config
 	IncFlags []string
 }
 

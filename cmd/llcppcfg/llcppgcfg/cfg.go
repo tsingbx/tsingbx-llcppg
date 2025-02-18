@@ -11,7 +11,7 @@ import (
 	"unicode"
 
 	"github.com/goplus/llcppg/cmdout"
-	"github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 type llcppCfgKey string
@@ -39,8 +39,6 @@ func (p *emptyStringError) Error() string {
 func newEmptyStringError(name string) *emptyStringError {
 	return &emptyStringError{name: name}
 }
-
-type LLCppConfig types.Config
 
 func getDir(relPath string) string {
 	index := strings.IndexRune(relPath, filepath.Separator)
@@ -171,7 +169,7 @@ func parseCFlagsEntry(cflags, cflag string, exts []string, excludeSubdirs []stri
 	return &cflagEntry
 }
 
-func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeSubdirs []string) {
+func sortIncludes(expandCflags string, cfg *llcppg.Config, exts []string, excludeSubdirs []string) {
 	list := strings.Fields(expandCflags)
 	includeList := NewIncludeList()
 	for i, cflag := range list {
@@ -181,13 +179,14 @@ func sortIncludes(expandCflags string, cfg *LLCppConfig, exts []string, excludeS
 	cfg.Include = includeList.include
 }
 
-func NewLLCppConfig(name string, flag FlagMode) *LLCppConfig {
-	cfg := &LLCppConfig{
-		Name: name,
-	}
+func NewLLCppgConfig(name string, flag FlagMode) *llcppg.Config {
+	cfg := llcppg.NewDefaultConfig()
+	cfg.Name = name
 	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
 	cfg.TrimPrefixes = []string{}
+	cfg.Deps = []string{}
+	cfg.Include = []string{}
 	cfg.Cplusplus = (flag&WithCpp != 0)
 	return cfg
 }
@@ -208,7 +207,7 @@ func GenCfg(name string, flag FlagMode, exts []string, excludeSubdirs []string) 
 	if len(name) == 0 {
 		return nil, newEmptyStringError("name")
 	}
-	cfg := NewLLCppConfig(name, flag)
+	cfg := NewLLCppgConfig(name, flag)
 	expandCFlags := ExpandName(name, "", cfgCflagsKey)
 	sortIncludes(expandCFlags, cfg, exts, excludeSubdirs)
 
