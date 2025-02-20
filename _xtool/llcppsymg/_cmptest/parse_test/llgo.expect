@@ -41,7 +41,7 @@ Symbol Map GoName: InitWindow, ProtoName In HeaderFile: InitWindow(int, int, con
 
 === Test Case: InvalidReceiver typ.canonicalType.Kind == clang.TypePointer ===
 Parsed Symbols:
-Symbol Map GoName: X__MpzSetUiSafe, ProtoName In HeaderFile: __mpz_set_ui_safe(mpz_ptr, unsigned long), MangledName: __mpz_set_ui_safe
+Symbol Map GoName: X__mpzSetUiSafe, ProtoName In HeaderFile: __mpz_set_ui_safe(mpz_ptr, unsigned long), MangledName: __mpz_set_ui_safe
 
 
 #stderr
