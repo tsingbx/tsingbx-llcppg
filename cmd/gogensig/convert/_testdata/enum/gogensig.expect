@@ -15,79 +15,79 @@ const COLORDEFAULT c.Int = -1
 type Spectrum c.Int
 
 const (
-	SpectrumRed    Spectrum = 0
-	SpectrumOrange Spectrum = 1
-	SpectrumYello  Spectrum = 2
-	SpectrumGreen  Spectrum = 3
-	SpectrumBlue   Spectrum = 4
-	SpectrumViolet Spectrum = 5
+	Red    Spectrum = 0
+	Orange Spectrum = 1
+	Yello  Spectrum = 2
+	Green  Spectrum = 3
+	Blue   Spectrum = 4
+	Violet Spectrum = 5
 )
 
 type Kids c.Int
 
 const (
-	KidsNippy  Kids = 0
-	KidsSlats  Kids = 1
-	KidsSkippy Kids = 2
-	KidsNina   Kids = 3
-	KidsLiz    Kids = 4
+	Nippy  Kids = 0
+	Slats  Kids = 1
+	Skippy Kids = 2
+	Nina   Kids = 3
+	Liz    Kids = 4
 )
 
 type Levels c.Int
 
 const (
-	LevelsLow    Levels = 100
-	LevelsMedium Levels = 500
-	LevelsHigh   Levels = 2000
+	Low    Levels = 100
+	Medium Levels = 500
+	High   Levels = 2000
 )
 
 type Feline c.Int
 
 const (
-	FelineCat   Feline = 0
-	FelineLynx  Feline = 10
-	FelinePuma  Feline = 11
-	FelineTiger Feline = 12
+	Cat   Feline = 0
+	Lynx  Feline = 10
+	Puma  Feline = 11
+	Tiger Feline = 12
 )
 
 type Algorithm c.Int
 
 const (
-	AlgorithmUNKNOWN Algorithm = 0
-	AlgorithmNULL    Algorithm = 1
+	UNKNOWN Algorithm = 0
+	NULL    Algorithm = 1
 )
 
 type AlgorithmT Algorithm
 type AlgorithmT2 c.Int
 
 const (
-	AlgorithmT2UNKNOWN2 AlgorithmT2 = 0
-	AlgorithmT2NULL2    AlgorithmT2 = 1
+	UNKNOWN2 AlgorithmT2 = 0
+	NULL2    AlgorithmT2 = 1
 )
 
 type CodeT c.Int
 
 const (
-	CodeTNOERROR        CodeT = 0
-	CodeTGENERAL        CodeT = 1
-	CodeTUNKNOWNPACKET  CodeT = 2
-	CodeTUNKNOWNVERSION CodeT = 3
-	CodeTPUBKEYALGO     CodeT = 4
-	CodeTDIGESTALGO     CodeT = 5
-	CodeTBADPUBKEY      CodeT = 6
-	CodeTBADSECKEY      CodeT = 7
-	CodeTBADSIGNATURE   CodeT = 8
-	CodeTNOPUBKEY       CodeT = 9
-	CodeTCHECKSUM       CodeT = 10
-	CodeTBADPASSPHRASE  CodeT = 11
-	CodeTCIPHERALGO     CodeT = 12
-	CodeTKEYRINGOPEN    CodeT = 13
-	CodeTINVPACKET      CodeT = 14
-	CodeTINVARMOR       CodeT = 15
-	CodeTNOUSERID       CodeT = 16
-	CodeTNOSECKEY       CodeT = 17
-	CodeTWRONGSECKEY    CodeT = 18
-	CodeTBADKEY         CodeT = 19
+	NOERROR        CodeT = 0
+	GENERAL        CodeT = 1
+	UNKNOWNPACKET  CodeT = 2
+	UNKNOWNVERSION CodeT = 3
+	PUBKEYALGO     CodeT = 4
+	DIGESTALGO     CodeT = 5
+	BADPUBKEY      CodeT = 6
+	BADSECKEY      CodeT = 7
+	BADSIGNATURE   CodeT = 8
+	NOPUBKEY       CodeT = 9
+	CHECKSUM       CodeT = 10
+	BADPASSPHRASE  CodeT = 11
+	CIPHERALGO     CodeT = 12
+	KEYRINGOPEN    CodeT = 13
+	INVPACKET      CodeT = 14
+	INVARMOR       CodeT = 15
+	NOUSERID       CodeT = 16
+	NOSECKEY       CodeT = 17
+	WRONGSECKEY    CodeT = 18
+	BADKEY         CodeT = 19
 )
 
 ===== llcppg.pub =====

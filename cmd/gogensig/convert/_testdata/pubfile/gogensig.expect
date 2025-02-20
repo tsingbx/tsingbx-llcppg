@@ -22,7 +22,7 @@ type CustomData struct {
 type UintT c.Uint
 type Color c.Int
 
-const ColorRED Color = 0
+const RED Color = 0
 //go:linkname Func C.func
 func Func(a c.Int, b c.Int)
 

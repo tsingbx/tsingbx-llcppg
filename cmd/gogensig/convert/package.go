@@ -509,12 +509,12 @@ func (p *Package) NewEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl) error {
 	if dbg.GetDebugLog() {
 		log.Printf("NewEnumTypeDecl: %v\n", enumTypeDecl.Name)
 	}
-	enumType, enumTypeName, err := p.createEnumType(enumTypeDecl.Name)
+	enumType, err := p.createEnumType(enumTypeDecl.Name)
 	if err != nil {
 		return err
 	}
 	if len(enumTypeDecl.Type.Items) > 0 {
-		err = p.createEnumItems(enumTypeDecl.Type.Items, enumType, enumTypeName)
+		err = p.createEnumItems(enumTypeDecl.Type.Items, enumType)
 		if err != nil {
 			return err
 		}
@@ -522,7 +522,7 @@ func (p *Package) NewEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl) error {
 	return nil
 }
 
-func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, string, error) {
+func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, error) {
 	var name string
 	var changed bool
 	var err error
@@ -530,7 +530,7 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, string, error
 	if enumName != nil {
 		name, changed, err = p.DeclName(enumName.Name)
 		if err != nil {
-			return nil, "", errs.NewTypeDefinedError(name, enumName.Name)
+			return nil, errs.NewTypeDefinedError(name, enumName.Name)
 		}
 		p.CollectNameMapping(enumName.Name, name)
 	}
@@ -542,18 +542,13 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, string, error
 	if changed {
 		substObj(p.p.Types, p.p.Types.Scope(), enumName.Name, t.Type().Obj())
 	}
-	return enumType, name, nil
+	return enumType, nil
 }
 
-func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type, enumTypeName string) error {
+func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type) error {
 	defs := p.NewConstGroup()
 	for _, item := range items {
-		// maybe get a new name,because the after executed name,have some situation will found same name
-		constName := p.nameMapper.GetGoName(item.Name.Name, p.trimPrefixes())
-		if enumTypeName != "" {
-			constName = enumTypeName + "_" + constName
-		}
-		name, changed, err := p.DeclName(constName)
+		name, changed, err := p.DeclName(item.Name.Name)
 		if err != nil {
 			return errs.NewTypeDefinedError(name, item.Name.Name)
 		}
