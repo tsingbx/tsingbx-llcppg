@@ -13,7 +13,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
-	"github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/xtool/nm"
@@ -96,15 +96,15 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 
 // finds the intersection of symbols from the dynamic library's symbol table and the symbols parsed from header files.
 // It returns a list of symbols that can be externally linked.
-func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*parse.SymbolInfo) []*types.SymbolInfo {
-	var commonSymbols []*types.SymbolInfo
+func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*parse.SymbolInfo) []*llcppg.SymbolInfo {
+	var commonSymbols []*llcppg.SymbolInfo
 	for _, dylibSym := range dylibSymbols {
 		symName := dylibSym.Name
 		if runtime.GOOS == "darwin" {
 			symName = strings.TrimPrefix(symName, "_")
 		}
 		if symInfo, ok := headerSymbols[symName]; ok {
-			symbolInfo := &types.SymbolInfo{
+			symbolInfo := &llcppg.SymbolInfo{
 				Mangle: symName,
 				CPP:    symInfo.ProtoName,
 				Go:     symInfo.GoName,
@@ -115,7 +115,7 @@ func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*parse
 	return commonSymbols
 }
 
-func ReadExistingSymbolTable(fileName string) (map[string]types.SymbolInfo, bool) {
+func ReadExistingSymbolTable(fileName string) (map[string]llcppg.SymbolInfo, bool) {
 	if _, err := os.Stat(fileName); err != nil {
 		return nil, false
 	}
@@ -130,12 +130,12 @@ func ReadExistingSymbolTable(fileName string) (map[string]types.SymbolInfo, bool
 		return nil, false
 	}
 
-	existingSymbols := make(map[string]types.SymbolInfo)
+	existingSymbols := make(map[string]llcppg.SymbolInfo)
 	arraySize := parsedJSON.GetArraySize()
 
 	for i := 0; i < int(arraySize); i++ {
 		item := parsedJSON.GetArrayItem(c.Int(i))
-		symbol := types.SymbolInfo{
+		symbol := llcppg.SymbolInfo{
 			Mangle: config.GetStringItem(item, "mangle", ""),
 			CPP:    config.GetStringItem(item, "c++", ""),
 			Go:     config.GetStringItem(item, "go", ""),
@@ -146,7 +146,7 @@ func ReadExistingSymbolTable(fileName string) (map[string]types.SymbolInfo, bool
 	return existingSymbols, true
 }
 
-func GenSymbolTableData(commonSymbols []*types.SymbolInfo, existingSymbols map[string]types.SymbolInfo) ([]byte, error) {
+func GenSymbolTableData(commonSymbols []*llcppg.SymbolInfo, existingSymbols map[string]llcppg.SymbolInfo) ([]byte, error) {
 	if len(existingSymbols) > 0 {
 		if dbg.GetDebugSymbol() {
 			fmt.Println("GenSymbolTableData:generate symbol table with exist symbol table")

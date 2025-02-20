@@ -13,16 +13,16 @@ import (
 
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
-	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 // llcppg.cfg
-func GetCppgCfgFromPath(filePath string) (*cppgtypes.Config, error) {
+func GetCppgCfgFromPath(filePath string) (*llcppg.Config, error) {
 	bytes, err := ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
-	conf := &cppgtypes.Config{}
+	conf := llcppg.NewDefaultConfig()
 	err = json.Unmarshal(bytes, &conf)
 	if err != nil {
 		return nil, err

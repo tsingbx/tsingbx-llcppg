@@ -26,7 +26,7 @@ import (
 	"os/exec"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
-	"github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/xtool/env"
 )
 
@@ -162,7 +162,7 @@ func do(cfgFile string, mode modeFlags, verbose verboseFlags) {
 	check(err)
 	defer f.Close()
 
-	var conf types.Config
+	var conf llcppg.Config
 	json.NewDecoder(f).Decode(&conf)
 	conf.CFlags = env.ExpandEnv(conf.CFlags)
 	conf.Libs = env.ExpandEnv(conf.Libs)

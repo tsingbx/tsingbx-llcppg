@@ -13,11 +13,11 @@ import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/basic"
+	"github.com/goplus/llcppg/cmd/gogensig/convert/filesetprocessor"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
+	"github.com/goplus/llcppg/llcppg"
 	ctoken "github.com/goplus/llcppg/token"
-	cppgtypes "github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/xtool/env"
 )
 
@@ -196,15 +196,13 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 		}
 	}
 
-	p, pkg, err := basic.ConvertProcesser(&basic.Config{
-		PkgPreprocessor: preprocess,
-		AstConvertConfig: convert.AstConvertConfig{
-			PkgName:   name,
-			SymbFile:  symbPath,
-			CfgFile:   flagedCfgPath,
-			OutputDir: outputDir,
-			PubFile:   pubPath,
-		},
+	p, pkg, err := filesetprocessor.New(&convert.Config{
+		PkgName:     name,
+		SymbFile:    symbPath,
+		CfgFile:     flagedCfgPath,
+		OutputDir:   outputDir,
+		PubFile:     pubPath,
+		PrepareFunc: preprocess,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -270,7 +268,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 
 // ===========================error
 func TestNewAstConvert(t *testing.T) {
-	_, err := convert.NewAstConvert(&convert.AstConvertConfig{
+	_, err := convert.NewAstConvert(&convert.Config{
 		PkgName:  "test",
 		SymbFile: "",
 		CfgFile:  "",
@@ -288,7 +286,7 @@ func TestNewAstConvertFail(t *testing.T) {
 }
 
 func TestVisitDone(t *testing.T) {
-	pkg, err := convert.NewAstConvert(&convert.AstConvertConfig{
+	pkg, err := convert.NewAstConvert(&convert.Config{
 		PkgName:  "test",
 		SymbFile: "",
 		CfgFile:  "",
@@ -305,7 +303,7 @@ func TestVisitDone(t *testing.T) {
 }
 
 func TestVisitFail(t *testing.T) {
-	converter, err := convert.NewAstConvert(&convert.AstConvertConfig{
+	converter, err := convert.NewAstConvert(&convert.Config{
 		PkgName:  "test",
 		SymbFile: "",
 		CfgFile:  "",
@@ -416,7 +414,7 @@ func TestWritePkgFilesFail(t *testing.T) {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
 	defer os.RemoveAll(tempDir)
-	converter, err := convert.NewAstConvert(&convert.AstConvertConfig{
+	converter, err := convert.NewAstConvert(&convert.Config{
 		PkgName:   "test",
 		SymbFile:  "",
 		CfgFile:   "",
@@ -444,13 +442,13 @@ func TestWritePkgFilesFail(t *testing.T) {
 }
 
 func TestGetIncPathFail(t *testing.T) {
-	cfg, err := config.CreateTmpJSONFile("llcppg.cfg", &cppgtypes.Config{
+	cfg, err := config.CreateTmpJSONFile("llcppg.cfg", &llcppg.Config{
 		Include: []string{"unexist.h"},
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	converter, err := convert.NewAstConvert(&convert.AstConvertConfig{
+	converter, err := convert.NewAstConvert(&convert.Config{
 		PkgName:  "test",
 		SymbFile: "",
 		CfgFile:  cfg,

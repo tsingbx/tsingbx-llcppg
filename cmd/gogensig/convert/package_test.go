@@ -14,7 +14,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
-	cppgtypes "github.com/goplus/llcppg/types"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/mod/gopmod"
 )
 
@@ -111,7 +111,7 @@ func TestLinkFileOK(t *testing.T) {
 	pkg := createTestPkg(t, &convert.PackageConfig{
 		OutputDir: tempDir,
 		PkgBase: convert.PkgBase{
-			CppgConf: &cppgtypes.Config{
+			CppgConf: &llcppg.Config{
 				Libs: "pkg-config --libs libcjson",
 			},
 		},
@@ -133,7 +133,7 @@ func TestLinkFileFail(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: tempDir,
 			PkgBase: convert.PkgBase{
-				CppgConf: &cppgtypes.Config{},
+				CppgConf: &llcppg.Config{},
 			},
 		})
 
@@ -151,7 +151,7 @@ func TestLinkFileFail(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: tempDir,
 			PkgBase: convert.PkgBase{
-				CppgConf: &cppgtypes.Config{
+				CppgConf: &llcppg.Config{
 					Libs: "${pkg-config --libs libcjson}",
 				},
 			},
@@ -699,7 +699,7 @@ func Foo(a unsafe.Pointer) unsafe.Pointer
 					GoName:     "Foo",
 				},
 			},
-			cppgconf: &cppgtypes.Config{
+			cppgconf: &llcppg.Config{
 				Name: "testpkg",
 			},
 			expected: `
@@ -1525,7 +1525,7 @@ func TestIdentRefer(t *testing.T) {
 	t.Run("type alias", func(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			PkgBase: convert.PkgBase{
-				CppgConf: &cppgtypes.Config{},
+				CppgConf: &llcppg.Config{},
 			},
 		})
 		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
@@ -1636,7 +1636,7 @@ type genDeclTestCase struct {
 	name        string
 	decl        ast.Decl
 	symbs       []cfg.SymbolEntry
-	cppgconf    *cppgtypes.Config
+	cppgconf    *llcppg.Config
 	expected    string
 	expectedErr string
 }
@@ -1690,13 +1690,13 @@ func compareError(t *testing.T, err error, expectErr string) {
 func createTestPkg(t *testing.T, config *convert.PackageConfig) *convert.Package {
 	t.Helper()
 	if config.CppgConf == nil {
-		config.CppgConf = &cppgtypes.Config{}
+		config.CppgConf = &llcppg.Config{}
 	}
 	if config.SymbolTable == nil {
 		config.SymbolTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
 	}
 	if config.CppgConf == nil {
-		config.CppgConf = &cppgtypes.Config{}
+		config.CppgConf = &llcppg.Config{}
 	}
 	if config.SymbolTable == nil {
 		config.SymbolTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
@@ -2106,7 +2106,7 @@ func TestImport(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		p.PkgInfo = convert.NewPkgInfo(".", ".", &cppgtypes.Config{
+		p.PkgInfo = convert.NewPkgInfo(".", ".", &llcppg.Config{
 			Deps: []string{
 				"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpath",
 				"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/partfinddep",
@@ -2133,7 +2133,7 @@ func TestImport(t *testing.T) {
 		createTestPkg(t, &convert.PackageConfig{
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
-				CppgConf: &cppgtypes.Config{
+				CppgConf: &llcppg.Config{
 					Deps: []string{
 						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpub",
 					},
@@ -2150,7 +2150,7 @@ func TestImport(t *testing.T) {
 		createTestPkg(t, &convert.PackageConfig{
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
-				CppgConf: &cppgtypes.Config{
+				CppgConf: &llcppg.Config{
 					Deps: []string{
 						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invaliddep",
 					},
@@ -2162,7 +2162,7 @@ func TestImport(t *testing.T) {
 		createTestPkg(t, &convert.PackageConfig{
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
-				CppgConf: &cppgtypes.Config{
+				CppgConf: &llcppg.Config{
 					Deps: []string{
 						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjson",
 						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjsonbool",

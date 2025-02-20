@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,13 +25,13 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/basic"
+	"github.com/goplus/llcppg/cmd/gogensig/convert/filesetprocessor"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
-	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 )
 
 func main() {
-	ags, remainArgs := args.ParseArgs(os.Args[1:], args.LLCPPG_SIGFETCH, nil)
+
+	ags, remainArgs := args.ParseArgs(os.Args[1:], "-", nil)
 
 	if ags.Help {
 		printUsage()
@@ -43,49 +42,36 @@ func main() {
 		dbg.SetDebugAll()
 	}
 
-	var data []byte
-	var err error
-	if ags.UseStdin {
-		data, err = io.ReadAll(os.Stdin)
-	} else {
-		data, err = os.ReadFile(ags.CfgFile)
-	}
-	check(err)
-
-	var cfg string
+	var cfgFile string
 	for i := 0; i < len(remainArgs); i++ {
 		arg := remainArgs[i]
 		if strings.HasPrefix(arg, "-cfg=") {
-			cfg = args.StringArg(arg, args.LLCPPG_CFG)
+			cfgFile = args.StringArg(arg, args.LLCPPG_CFG)
 		}
 	}
-	if cfg == "" {
-		cfg = args.LLCPPG_CFG
+	if cfgFile == "" {
+		cfgFile = args.LLCPPG_CFG
 	}
 
-	conf, err := config.GetCppgCfgFromPath(cfg)
+	conf, err := config.GetCppgCfgFromPath(cfgFile)
 	check(err)
-
 	wd, err := os.Getwd()
 	check(err)
 
 	err = prepareEnv(wd, conf.Name, conf.Deps)
 	check(err)
 
-	p, _, err := basic.ConvertProcesser(&basic.Config{
-		AstConvertConfig: convert.AstConvertConfig{
-			PkgName:  conf.Name,
-			CfgFile:  filepath.Join(wd, cfg),
-			SymbFile: filepath.Join(wd, "llcppg.symb.json"),
-			PubFile:  filepath.Join(wd, "llcppg.pub"),
-		},
-	})
-	check(err)
+	sigfetchFile := ags.CfgFile
 
-	inputdata, err := unmarshal.FileSet(data)
-	check(err)
+	config := &convert.Config{
+		PkgName:      conf.Name,
+		SigfetchFile: filepath.Join(wd, sigfetchFile),
+		CfgFile:      filepath.Join(wd, cfgFile),
+		SymbFile:     filepath.Join(wd, "llcppg.symb.json"),
+		PubFile:      filepath.Join(wd, "llcppg.pub"),
+	}
 
-	err = p.ProcessFileSet(inputdata)
+	err = filesetprocessor.Process(config)
 	check(err)
 }
 
@@ -124,5 +110,5 @@ func prepareEnv(wd, pkg string, deps []string) error {
 }
 
 func printUsage() {
-	fmt.Fprintln(os.Stderr, "Usage: gogensig [-v] [sigfetch-file]")
+	fmt.Fprintln(os.Stderr, "Usage: gogensig [-v|-cfg] [sigfetch-file]")
 }

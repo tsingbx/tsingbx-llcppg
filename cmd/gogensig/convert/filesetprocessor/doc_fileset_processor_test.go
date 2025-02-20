@@ -1,4 +1,4 @@
-package processor_test
+package filesetprocessor_test
 
 import (
 	"errors"
@@ -9,8 +9,7 @@ import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/basic"
-	"github.com/goplus/llcppg/cmd/gogensig/processor"
+	"github.com/goplus/llcppg/cmd/gogensig/convert/filesetprocessor"
 	"github.com/goplus/llcppg/cmd/gogensig/visitor"
 )
 
@@ -63,13 +62,11 @@ func TestProcessValidSigfetchContent(t *testing.T) {
 	}
 	defer os.RemoveAll(tempDir)
 
-	p, _, err := basic.ConvertProcesser(&basic.Config{
-		AstConvertConfig: convert.AstConvertConfig{
-			PkgName:   "files",
-			SymbFile:  "",
-			CfgFile:   "",
-			OutputDir: tempDir,
-		},
+	p, _, err := filesetprocessor.New(&convert.Config{
+		PkgName:   "files",
+		SymbFile:  "",
+		CfgFile:   "",
+		OutputDir: tempDir,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -81,7 +78,7 @@ func TestProcessValidSigfetchContent(t *testing.T) {
 }
 
 func TestProcessFileNotExist(t *testing.T) {
-	astConvert, err := convert.NewAstConvert(&convert.AstConvertConfig{
+	astConvert, err := convert.NewAstConvert(&convert.Config{
 		PkgName:  "error",
 		SymbFile: "",
 		CfgFile:  "",
@@ -90,8 +87,8 @@ func TestProcessFileNotExist(t *testing.T) {
 		t.Fatal(err)
 	}
 	docVisitors := []visitor.DocVisitor{astConvert}
-	manager := processor.NewDocVisitorManager(docVisitors)
-	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
+	manager := visitor.NewDocVisitorList(docVisitors)
+	p := filesetprocessor.NewDocFileSetProcessor(&filesetprocessor.ProcesserConfig{
 		Exec: func(file *ast.FileEntry) error {
 			manager.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
 			return nil
@@ -118,7 +115,7 @@ func TestProcessInvalidSigfetchContent(t *testing.T) {
 	}
 	defer os.Remove(tempFileName)
 
-	astConvert, err := convert.NewAstConvert(&convert.AstConvertConfig{
+	astConvert, err := convert.NewAstConvert(&convert.Config{
 		PkgName:  "panic",
 		SymbFile: "",
 		CfgFile:  "",
@@ -127,8 +124,8 @@ func TestProcessInvalidSigfetchContent(t *testing.T) {
 		t.Fatal(err)
 	}
 	docVisitors := []visitor.DocVisitor{astConvert}
-	manager := processor.NewDocVisitorManager(docVisitors)
-	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
+	manager := visitor.NewDocVisitorList(docVisitors)
+	p := filesetprocessor.NewDocFileSetProcessor(&filesetprocessor.ProcesserConfig{
 		Exec: func(file *ast.FileEntry) error {
 			manager.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
 			return nil
@@ -156,7 +153,7 @@ func TestCustomExec(t *testing.T) {
 			Doc:   &ast.File{},
 		},
 	}
-	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
+	p := filesetprocessor.NewDocFileSetProcessor(&filesetprocessor.ProcesserConfig{
 		Exec: func(file *ast.FileEntry) error {
 			return errCustomExec
 		},
@@ -253,7 +250,7 @@ func TestExecOrder(t *testing.T) {
 		"/path/to/a.h",
 		"/path/to/bar.h",
 	}
-	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
+	p := filesetprocessor.NewDocFileSetProcessor(&filesetprocessor.ProcesserConfig{
 		Exec: func(file *ast.FileEntry) error {
 			processFiles = append(processFiles, file.Path)
 			return nil
