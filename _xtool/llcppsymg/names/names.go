@@ -84,19 +84,25 @@ func PubName(name string) string {
 	if len(name) == 0 {
 		return name
 	}
-	fChar := name[0]
-	if fChar == '_' {
-		i := 0
-		for i < len(name) && name[i] == '_' {
-			i++
-		}
-		prefix := name[:i]
-		return "X" + prefix + ToCamelCase(name[i:], false)
+	baseName := strings.Trim(name, "_")
+	if len(baseName) == 0 {
+		return "X" + name
 	}
-	if unicode.IsDigit(rune(fChar)) {
-		return "X" + ToCamelCase(name, false)
+	prefix := preUScore(name)
+	suffix := sufUScore(name)
+
+	if len(prefix) != 0 || unicode.IsDigit(rune(baseName[0])) {
+		return "X" + prefix + ToCamelCase(baseName, false) + suffix
 	}
-	return ToCamelCase(name, true)
+	return ToCamelCase(baseName, true) + suffix
+}
+
+func sufUScore(name string) string {
+	return strings.Repeat("_", len(name)-len(strings.TrimRight(name, "_")))
+}
+
+func preUScore(name string) string {
+	return strings.Repeat("_", len(name)-len(strings.TrimLeft(name, "_")))
 }
 
 func ToCamelCase(s string, firstPartUpper bool) string {
