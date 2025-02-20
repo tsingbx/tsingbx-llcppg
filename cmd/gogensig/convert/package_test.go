@@ -1413,9 +1413,9 @@ import (
 
 type Color c.Int
 const (
-	ColorRed   Color = 0
-	ColorGreen Color = 1
-	ColorBlue  Color = 2
+	Red   Color = 0
+	Green Color = 1
+	Blue  Color = 2
 )`,
 		},
 		{
