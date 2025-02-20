@@ -14,7 +14,7 @@ func ErrMake(source gpgerror.SourceT, code gpgerror.CodeT) gpgerror.ErrorT {
 		return gpgerror.ErrorT(gpgerror.NOERROR)
 	}
 
-	return gpgerror.ErrorT(((c.Int(source) & c.Int(SOURCEMASK)) << gpgerror.SOURCESHIFT) | (c.Int(code) & c.Int(CODEMASK)))
+	return gpgerror.ErrorT(((c.Int(source) & c.Int(SOURCEMASK)) << gpgerror.SOURCE_SHIFT) | (c.Int(code) & c.Int(CODEMASK)))
 }
 
 func main() {

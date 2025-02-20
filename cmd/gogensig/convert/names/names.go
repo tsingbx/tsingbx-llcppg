@@ -22,10 +22,9 @@ func NewNameMapper() *NameMapper {
 
 // returns a unique Go name for an original name
 // For every go name, it will be unique.
-func (m *NameMapper) GetUniqueGoName(name string, trimPrefixes []string) (string, bool) {
-	pubName := m.GetGoName(name, trimPrefixes)
-
-	if _, exists := m.mapping[name]; exists {
+func (m *NameMapper) GetUniqueGoName(name string, trimPrefixes []string, toCamel bool) (string, bool) {
+	pubName, exist := m.genGoName(name, trimPrefixes, toCamel)
+	if exist {
 		return pubName, pubName != name
 	}
 
@@ -39,14 +38,19 @@ func (m *NameMapper) GetUniqueGoName(name string, trimPrefixes []string) (string
 }
 
 // returns the Go name for an original name,if the name is already mapped,return the mapped name
-func (m *NameMapper) GetGoName(name string, trimPrefixes []string) string {
+func (m *NameMapper) genGoName(name string, trimPrefixes []string, toCamel bool) (string, bool) {
 	if goName, exists := m.mapping[name]; exists {
 		if goName == "" {
-			return name
+			return name, true
 		}
-		return goName
+		return goName, true
 	}
-	return GoName(name, trimPrefixes)
+	name = removePrefixedName(name, trimPrefixes)
+	if toCamel {
+		return PubName(name), false
+	} else {
+		return ExportName(name), false
+	}
 }
 
 func (m *NameMapper) SetMapping(originName, newName string) {
@@ -55,11 +59,6 @@ func (m *NameMapper) SetMapping(originName, newName string) {
 		value = newName
 	}
 	m.mapping[originName] = value
-}
-
-func GoName(name string, trimPrefixes []string) string {
-	name = removePrefixedName(name, trimPrefixes)
-	return PubName(name)
 }
 
 func removePrefixedName(name string, trimPrefixes []string) string {
@@ -106,6 +105,19 @@ func PubName(name string) string {
 		return "X" + ToCamelCase(name, false)
 	}
 	return ToCamelCase(name, true)
+}
+
+// Only Make it Public,no turn to other camel method
+func ExportName(name string) string {
+	fChar := name[0]
+	if fChar == '_' || unicode.IsDigit(rune(fChar)) {
+		return "X" + name
+	}
+	return UpperFirst(name)
+}
+
+func UpperFirst(name string) string {
+	return strings.ToUpper(name[:1]) + name[1:]
 }
 
 // /path/to/foo.h -> foo.go
