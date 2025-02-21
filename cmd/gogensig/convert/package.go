@@ -12,9 +12,9 @@ import (
 	goast "go/ast"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
 	ctoken "github.com/goplus/llcppg/token"
@@ -310,7 +310,7 @@ func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 
 	cname := typeDecl.Name.Name
 	isForward := p.cvt.inComplete(typeDecl.Type)
-	name, changed, err := p.DeclName(cname)
+	name, changed, err := p.DeclName(cname, true)
 	if err != nil {
 		if isForward {
 			return nil
@@ -379,7 +379,7 @@ func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
 		return decl.decl
 	}
 
-	pubName := p.nameMapper.GetGoName(name, p.trimPrefixes())
+	pubName, _ := p.nameMapper.GetUniqueGoName(name, p.trimPrefixes(), true)
 	decl := p.emptyTypeDecl(pubName, nil)
 	inc := &Incomplete{
 		cname: name,
@@ -413,7 +413,7 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 	if dbg.GetDebugLog() {
 		log.Printf("NewTypedefDecl: %v\n", typedefDecl.Name)
 	}
-	name, changed, err := p.DeclName(typedefDecl.Name.Name)
+	name, changed, err := p.DeclName(typedefDecl.Name.Name, true)
 	if err != nil {
 		return err
 	}
@@ -528,7 +528,7 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, error) {
 	var err error
 	var t *gogen.TypeDecl
 	if enumName != nil {
-		name, changed, err = p.DeclName(enumName.Name)
+		name, changed, err = p.DeclName(enumName.Name, true)
 		if err != nil {
 			return nil, errs.NewTypeDefinedError(name, enumName.Name)
 		}
@@ -548,7 +548,7 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, error) {
 func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type) error {
 	defs := p.NewConstGroup()
 	for _, item := range items {
-		name, changed, err := p.DeclName(item.Name.Name)
+		name, changed, err := p.DeclName(item.Name.Name, true)
 		if err != nil {
 			return errs.NewTypeDefinedError(name, item.Name.Name)
 		}
@@ -575,7 +575,7 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 	if len(macro.Tokens) == 2 && macro.Tokens[1].Token == ctoken.LITERAL {
 		value := macro.Tokens[1].Lit
 		defs := p.NewConstGroup()
-		name, _, err := p.DeclName(macro.Name)
+		name, _, err := p.DeclName(macro.Name, false)
 		if err != nil {
 			return err
 		}
@@ -724,8 +724,8 @@ func (p *Package) WritePubFile() error {
 }
 
 // For a decl name, it should be unique
-func (p *Package) DeclName(name string) (pubName string, changed bool, err error) {
-	pubName, changed = p.nameMapper.GetUniqueGoName(name, p.trimPrefixes())
+func (p *Package) DeclName(name string, toCamel bool) (pubName string, changed bool, err error) {
+	pubName, changed = p.nameMapper.GetUniqueGoName(name, p.trimPrefixes(), toCamel)
 	// if the type is incomplete,it's ok to have the same name
 	obj := p.p.Types.Scope().Lookup(name)
 	_, ok := p.incompleteTypes.Lookup(name)

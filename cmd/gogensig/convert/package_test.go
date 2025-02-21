@@ -8,11 +8,11 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/cmp"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/mod/gopmod"

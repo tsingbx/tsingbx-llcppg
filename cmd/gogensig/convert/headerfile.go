@@ -1,7 +1,7 @@
 package convert
 
 import (
-	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 )
 
 type HeaderFile struct {
