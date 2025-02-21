@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	"github.com/goplus/llcppg/llcppg"
 )
@@ -35,7 +34,7 @@ func GetPubFromPath(filePath string) (map[string]string, error) {
 	return ReadPubFile(filePath)
 }
 
-func GetCppgSigfetchFromByte(data []byte) ([]*ast.FileEntry, error) {
+func GetCppgSigfetchFromByte(data []byte) ([]*llcppg.FileEntry, error) {
 	return unmarshal.FileSet(data)
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/filesetprocessor"
 	"github.com/goplus/llcppg/cmd/gogensig/visitor"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 func TestProcessValidSigfetchContent(t *testing.T) {
@@ -89,7 +90,7 @@ func TestProcessFileNotExist(t *testing.T) {
 	docVisitors := []visitor.DocVisitor{astConvert}
 	manager := visitor.NewDocVisitorList(docVisitors)
 	p := filesetprocessor.NewDocFileSetProcessor(&filesetprocessor.ProcesserConfig{
-		Exec: func(file *ast.FileEntry) error {
+		Exec: func(file *llcppg.FileEntry) error {
 			manager.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
 			return nil
 		},
@@ -126,7 +127,7 @@ func TestProcessInvalidSigfetchContent(t *testing.T) {
 	docVisitors := []visitor.DocVisitor{astConvert}
 	manager := visitor.NewDocVisitorList(docVisitors)
 	p := filesetprocessor.NewDocFileSetProcessor(&filesetprocessor.ProcesserConfig{
-		Exec: func(file *ast.FileEntry) error {
+		Exec: func(file *llcppg.FileEntry) error {
 			manager.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
 			return nil
 		},
@@ -146,7 +147,7 @@ func TestCustomExec(t *testing.T) {
 			t.Errorf("%s", "expect panic")
 		}
 	}()
-	file := []*ast.FileEntry{
+	file := []*llcppg.FileEntry{
 		{
 			Path:  "/path/to/foo.h",
 			IsSys: false,
@@ -154,7 +155,7 @@ func TestCustomExec(t *testing.T) {
 		},
 	}
 	p := filesetprocessor.NewDocFileSetProcessor(&filesetprocessor.ProcesserConfig{
-		Exec: func(file *ast.FileEntry) error {
+		Exec: func(file *llcppg.FileEntry) error {
 			return errCustomExec
 		},
 	})
@@ -166,7 +167,7 @@ func TestCustomExec(t *testing.T) {
 
 func TestExecOrder(t *testing.T) {
 	depIncs := []string{"/path/to/int16_t.h"}
-	fileSet := []*ast.FileEntry{
+	fileSet := []*llcppg.FileEntry{
 		{
 			Path:    "/path/to/foo.h",
 			IncPath: "foo.h",
@@ -251,7 +252,7 @@ func TestExecOrder(t *testing.T) {
 		"/path/to/bar.h",
 	}
 	p := filesetprocessor.NewDocFileSetProcessor(&filesetprocessor.ProcesserConfig{
-		Exec: func(file *ast.FileEntry) error {
+		Exec: func(file *llcppg.FileEntry) error {
 			processFiles = append(processFiles, file.Path)
 			return nil
 		},

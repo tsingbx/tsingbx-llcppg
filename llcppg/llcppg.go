@@ -1,5 +1,7 @@
 package llcppg
 
+import "github.com/goplus/llcppg/ast"
+
 const LLCPPG_CFG = "llcppg.cfg"
 const LLCPPG_SYMB = "llcppg.symb.json"
 const LLCPPG_SIGFETCH = "llcppg.sigfetch.json"
@@ -41,4 +43,11 @@ type SymbolInfo struct {
 	Mangle string `json:"mangle"` // C++ Symbol
 	CPP    string `json:"c++"`    // C++ function name
 	Go     string `json:"go"`     // Go function name
+}
+
+type FileEntry struct {
+	Path    string
+	IncPath string
+	IsSys   bool
+	Doc     *ast.File
 }

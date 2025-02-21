@@ -7,6 +7,7 @@ import (
 
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 func TestUnmarshalNode(t *testing.T) {
@@ -1511,7 +1512,7 @@ func TestUnmarshalFileSet(t *testing.T) {
   }
 ]`
 
-	expected := []*ast.FileEntry{
+	expected := []*llcppg.FileEntry{
 		{
 			Path:    "/opt/homebrew/Cellar/inih/58/include/INIReader.h",
 			IsSys:   false,
@@ -2259,7 +2260,7 @@ func TestUnmarshalFileSetErrors(t *testing.T) {
 		{
 			name:        "Invalid doc",
 			input:       `[{"_Type": "Token", "Token": 1, "Lit": "test"}]`,
-			expectedErr: "unmarshal error in FileSet: got *ast.Token, want *ast.FileEntry",
+			expectedErr: "unmarshal error in FileSet: got *ast.Token, want *llcppg.FileEntry",
 		},
 	}
 
