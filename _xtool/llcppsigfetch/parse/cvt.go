@@ -10,6 +10,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llcppg/token"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
@@ -17,7 +18,7 @@ import (
 )
 
 type Converter struct {
-	Files     []*ast.FileEntry
+	Files     []*llcppg.FileEntry
 	FileOrder []string // todo(zzy): more efficient struct
 	curLoc    ast.Location
 	index     *clang.Index
@@ -70,8 +71,8 @@ func (ct *Converter) Dispose() {
 	ct.unit.Dispose()
 }
 
-func initFileEntries(unit *clang.TranslationUnit) []*ast.FileEntry {
-	files := make([]*ast.FileEntry, 0)
+func initFileEntries(unit *clang.TranslationUnit) []*llcppg.FileEntry {
+	files := make([]*llcppg.FileEntry, 0)
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		loc := unit.GetLocation(inced, 1, 1)
 		incedFile := toStr(inced.FileName())
@@ -80,7 +81,7 @@ func initFileEntries(unit *clang.TranslationUnit) []*ast.FileEntry {
 			cur := unit.GetCursor(&incins[0])
 			incPath = toStr(cur.String())
 		}
-		files = append(files, &ast.FileEntry{
+		files = append(files, &llcppg.FileEntry{
 			Path:    incedFile,
 			IncPath: incPath,
 			IsSys:   loc.IsInSystemHeader() != 0,
@@ -161,7 +162,7 @@ func (ct *Converter) GetCurFile(cursor clang.Cursor) *ast.File {
 		}
 	}
 	ct.logln("GetCurFile: Create New ast.File", filePath)
-	entry := &ast.FileEntry{Path: filePath, Doc: &ast.File{}, IsSys: false}
+	entry := &llcppg.FileEntry{Path: filePath, Doc: &ast.File{}, IsSys: false}
 	if loc.IsInSystemHeader() != 0 {
 		entry.IsSys = true
 	}
@@ -300,7 +301,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 	return clang.ChildVisit_Continue
 }
 
-func (ct *Converter) Convert() ([]*ast.FileEntry, error) {
+func (ct *Converter) Convert() ([]*llcppg.FileEntry, error) {
 	cursor := ct.unit.Cursor()
 	// visit top decls (struct,class,function & macro,include)
 	clangutils.VisitChildren(cursor, ct.visitTop)

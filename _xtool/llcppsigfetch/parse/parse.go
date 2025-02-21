@@ -8,13 +8,12 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
-	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c/cjson"
 )
 
 type Context struct {
-	FileSet []*ast.FileEntry
+	FileSet []*llcppg.FileEntry
 	*ContextConfig
 }
 
@@ -25,7 +24,7 @@ type ContextConfig struct {
 
 func NewContext(cfg *ContextConfig) *Context {
 	return &Context{
-		FileSet: make([]*ast.FileEntry, 0),
+		FileSet: make([]*llcppg.FileEntry, 0),
 		ContextConfig: &ContextConfig{
 			Conf:     cfg.Conf,
 			IncFlags: cfg.IncFlags,
@@ -72,7 +71,7 @@ func (p *Context) processFile(path string) error {
 	return nil
 }
 
-func (p *Context) parseFile(path string) ([]*ast.FileEntry, error) {
+func (p *Context) parseFile(path string) ([]*llcppg.FileEntry, error) {
 	if dbg.GetDebugParse() {
 		fmt.Fprintln(os.Stderr, "parseFile: path", path)
 	}

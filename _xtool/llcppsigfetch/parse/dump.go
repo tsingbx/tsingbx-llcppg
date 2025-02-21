@@ -2,11 +2,12 @@ package parse
 
 import (
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 )
 
-func MarshalFileSet(files []*ast.FileEntry) *cjson.JSON {
+func MarshalFileSet(files []*llcppg.FileEntry) *cjson.JSON {
 	root := cjson.Array()
 	for _, entry := range files {
 		f := cjson.Object()
@@ -22,7 +23,7 @@ func MarshalFileSet(files []*ast.FileEntry) *cjson.JSON {
 	return root
 }
 
-func MarshalASTFiles(files []*ast.FileEntry) *cjson.JSON {
+func MarshalASTFiles(files []*llcppg.FileEntry) *cjson.JSON {
 	root := cjson.Object()
 	for _, entry := range files {
 		root.SetItem(c.AllocaCStr(entry.Path), MarshalASTFile(entry.Doc))

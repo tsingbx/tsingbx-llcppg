@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 type NodeUnmarshaler func(data []byte) (ast.Node, error)
@@ -48,22 +49,22 @@ func init() {
 	}
 }
 
-func FileSet(data []byte) ([]*ast.FileEntry, error) {
+func FileSet(data []byte) ([]*llcppg.FileEntry, error) {
 	type fileSetTemp []json.RawMessage
 
 	var fileSetData fileSetTemp
 	if err := json.Unmarshal(data, &fileSetData); err != nil {
 		return nil, newDeserializeError("FileSet", fileSetData, data, err)
 	}
-	fileSet := []*ast.FileEntry{}
+	fileSet := []*llcppg.FileEntry{}
 	for _, fileData := range fileSetData {
 		fileNode, err := Node(fileData)
 		if err != nil {
 			return nil, newUnmarshalFieldError("FileSet", fileSetData, "Files", data, err)
 		}
-		file, ok := fileNode.(*ast.FileEntry)
+		file, ok := fileNode.(*llcppg.FileEntry)
 		if !ok {
-			return nil, newUnexpectType("FileSet", fileNode, &ast.FileEntry{})
+			return nil, newUnexpectType("FileSet", fileNode, &llcppg.FileEntry{})
 		}
 		fileSet = append(fileSet, file)
 	}
@@ -93,7 +94,7 @@ func FileEntry(data []byte) (ast.Node, error) {
 		return nil, newUnexpectType("FileEntry", docNode, &ast.File{})
 	}
 
-	return &ast.FileEntry{
+	return &llcppg.FileEntry{
 		Path:    fileEntryData.Path,
 		IsSys:   fileEntryData.IsSys,
 		IncPath: fileEntryData.IncPath,

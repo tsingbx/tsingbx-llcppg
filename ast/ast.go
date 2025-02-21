@@ -376,11 +376,4 @@ type File struct {
 	Macros   []*Macro   `json:"macros,omitempty"`
 }
 
-type FileEntry struct {
-	Path    string
-	IncPath string
-	IsSys   bool
-	Doc     *File
-}
-
 // =============================================================================
