@@ -21,8 +21,13 @@ func (p *HeaderFile) ToGoFileName(pkgName string) string {
 		case llcppg.Impl:
 			return pkgName + "_autogen.go"
 		case llcppg.Third:
-			// todo(zzy):ignore third file
-			return names.HeaderFileToGo(p.File)
+			// todo(zzy):ignore third file when dependency refactored
+			if p.IsSys {
+				return names.HeaderFileToGo(p.File)
+			} else {
+				// todo(zzy):temp gen third type to libname_autogen.go
+				return pkgName + "_autogen.go"
+			}
 		default:
 			panic("unkown FileType")
 		}

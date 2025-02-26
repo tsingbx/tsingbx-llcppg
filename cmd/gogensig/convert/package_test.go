@@ -2172,3 +2172,12 @@ func TestImport(t *testing.T) {
 		})
 	})
 }
+
+func TestUnkownHfile(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Fatal("Expect Error")
+		}
+	}()
+	convert.NewHeaderFile("/path/to/foo.h", "foo.h", true, 0, false).ToGoFileName("Pkg")
+}

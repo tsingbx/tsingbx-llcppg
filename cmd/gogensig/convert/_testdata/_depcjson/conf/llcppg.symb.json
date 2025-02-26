@@ -18,6 +18,11 @@
       "mangle": "third_depfn",
       "c++": "third_depfn",
       "go": "ThirdDepfn"
+    },
+    {
+      "mangle": "third_type",
+      "c++": "thirdType",
+      "go": "ThirdType"
     }
   ]
   
