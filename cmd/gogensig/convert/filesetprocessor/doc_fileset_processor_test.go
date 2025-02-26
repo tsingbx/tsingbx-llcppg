@@ -44,6 +44,7 @@ func TestProcessValidSigfetchContent(t *testing.T) {
 					},
 				},
 			},
+			"fileType": llcppg.Inter,
 		},
 	}
 
