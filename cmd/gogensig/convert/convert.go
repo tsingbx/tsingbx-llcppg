@@ -154,7 +154,7 @@ func (p *AstConvert) VisitStart(path string, incPath string, isSys bool, fileTyp
 		File:         path,
 		IncPath:      incPath,
 		IsHeaderFile: true,
-		InCurPkg:     fileType == llcppg.Inter || fileType == llcppg.Impl,
+		FileType:     fileType,
 		IsSys:        isSys,
 	})
 }

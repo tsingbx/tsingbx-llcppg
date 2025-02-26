@@ -243,7 +243,7 @@ func TestPackageWrite(t *testing.T) {
 	filePath := filepath.Join("/path", "to", incPath)
 	genPath := names.HeaderFileToGo(filePath)
 
-	headerFile := convert.NewHeaderFile(filePath, incPath, true, true, false)
+	headerFile := convert.NewHeaderFile(filePath, incPath, true, llcppg.Inter, false)
 
 	t.Run("OutputToTempDir", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp(dir, "test_package_write")
@@ -1458,7 +1458,7 @@ func TestIdentRefer(t *testing.T) {
 		File:         "/path/to/stdio.h",
 		IncPath:      "stdio.h",
 		IsHeaderFile: true,
-		InCurPkg:     true,
+		FileType:     llcppg.Inter,
 		IsSys:        true,
 	})
 	pkg.NewTypedefDecl(&ast.TypedefDecl{
@@ -1475,7 +1475,7 @@ func TestIdentRefer(t *testing.T) {
 		File:         "/path/to/notsys.h",
 		IncPath:      "notsys.h",
 		IsHeaderFile: true,
-		InCurPkg:     true,
+		FileType:     llcppg.Inter,
 		IsSys:        false,
 	})
 	t.Run("undef sys ident ref", func(t *testing.T) {
@@ -1791,7 +1791,7 @@ func TestTypeClean(t *testing.T) {
 			File:         tc.headerFile,
 			IncPath:      tc.incPath,
 			IsHeaderFile: true,
-			InCurPkg:     true,
+			FileType:     llcppg.Inter,
 			IsSys:        false,
 		})
 		tc.addType()

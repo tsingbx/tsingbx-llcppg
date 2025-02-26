@@ -2,34 +2,45 @@ package convert
 
 import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 type HeaderFile struct {
 	File         string
 	IncPath      string
 	IsHeaderFile bool
-	InCurPkg     bool
+	FileType     llcppg.FileType
 	IsSys        bool
 }
 
-func (p *HeaderFile) ToGoFileName() string {
-	var fileName string
+func (p *HeaderFile) ToGoFileName(pkgName string) string {
 	if p.IsHeaderFile {
-		// path to go filename
-		fileName = names.HeaderFileToGo(p.File)
-	} else {
-		// package name as the default file
-		fileName = p.File + ".go"
+		switch p.FileType {
+		case llcppg.Inter:
+			return names.HeaderFileToGo(p.File)
+		case llcppg.Impl:
+			return pkgName + "_autogen.go"
+		case llcppg.Third:
+			// todo(zzy):ignore third file
+			return names.HeaderFileToGo(p.File)
+		default:
+			panic("unkown FileType")
+		}
 	}
-	return fileName
+	// package name as the default file
+	return p.File + ".go"
 }
 
-func NewHeaderFile(file string, incPath string, isHeaderFile bool, inCurPkg bool, isSys bool) *HeaderFile {
+func (p *HeaderFile) InCurPkg() bool {
+	return p.FileType == llcppg.Inter || p.FileType == llcppg.Impl
+}
+
+func NewHeaderFile(file string, incPath string, isHeaderFile bool, fileType llcppg.FileType, isSys bool) *HeaderFile {
 	return &HeaderFile{
 		File:         file,
 		IncPath:      incPath,
 		IsHeaderFile: isHeaderFile,
-		InCurPkg:     inCurPkg,
+		FileType:     fileType,
 		IsSys:        isSys,
 	}
 }
