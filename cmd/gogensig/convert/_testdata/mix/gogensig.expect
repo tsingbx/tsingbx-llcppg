@@ -1,0 +1,38 @@
+===== mix.go =====
+package mix
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+type Foo c.Long
+
+===== mix2.go =====
+package mix
+
+import _ "unsafe"
+
+type MixType X_mixType
+
+===== mix_autogen.go =====
+package mix
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+type X_mixType struct {
+	C c.Long
+}
+
+===== mix_autogen_link.go =====
+package mix
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
+
+===== llcppg.pub =====
+Foo
+_mix_type X_mixType
+mix_type MixType
