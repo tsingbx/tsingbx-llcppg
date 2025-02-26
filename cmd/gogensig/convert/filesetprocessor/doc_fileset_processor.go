@@ -130,9 +130,6 @@ func New(cfg *convert.Config) (*DocFileSetProcessor, *convert.Package, error) {
 		return nil, nil, err
 	}
 
-	if cfg.PrepareFunc != nil {
-		cfg.PrepareFunc(astConvert.Pkg)
-	}
 	docVisitors := []visitor.DocVisitor{astConvert}
 	visitorList := visitor.NewDocVisitorList(docVisitors)
 
@@ -158,9 +155,6 @@ func Process(cfg *convert.Config) error {
 		return err
 	}
 
-	if cfg.PrepareFunc != nil {
-		cfg.PrepareFunc(astConvert.Pkg)
-	}
 	docVisitors := []visitor.DocVisitor{astConvert}
 	visitorList := visitor.NewDocVisitorList(docVisitors)
 

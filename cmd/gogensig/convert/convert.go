@@ -25,7 +25,6 @@ type Config struct {
 	CfgFile      string // llcppg.cfg
 	PubFile      string // llcppg.pub
 	OutputDir    string
-	PrepareFunc  func(*Package)
 }
 
 func NewAstConvert(config *Config) (*AstConvert, error) {
