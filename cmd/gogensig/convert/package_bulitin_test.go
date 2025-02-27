@@ -27,10 +27,11 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 		OutputDir:   "",
 		SymbolTable: cfg.CreateSymbolTable([]cfg.SymbolEntry{}),
 	})
-	pkg.cvt.SysTypeLoc["Bar"] = &HeaderInfo{
-		IncPath: "Bar",
-		Path:    "Bar",
-	}
+	pkg.SetCurFile(&HeaderFile{
+		File:     "temp.h",
+		FileType: llcppg.Inter,
+	})
+	pkg.cvt.thirdTypeLoc["Bar"] = "Bar"
 	pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
 	err := pkg.NewTypedefDecl(&ast.TypedefDecl{
 		Name: &ast.Ident{Name: "Foo"},

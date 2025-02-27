@@ -213,8 +213,14 @@ func TestToType(t *testing.T) {
 	}
 }
 
+var tempFile = &convert.HeaderFile{
+	File:     "/path/to/temp.go",
+	FileType: llcppg.Inter,
+}
+
 func TestNewPackage(t *testing.T) {
 	pkg := createTestPkg(t, &convert.PackageConfig{})
+	pkg.SetCurFile(tempFile)
 	comparePackageOutput(t, pkg, `
 	package testpkg
 	import _ "unsafe"
@@ -243,7 +249,7 @@ func TestPackageWrite(t *testing.T) {
 	filePath := filepath.Join("/path", "to", incPath)
 	genPath := names.HeaderFileToGo(filePath)
 
-	headerFile := convert.NewHeaderFile(filePath, incPath, true, llcppg.Inter, false)
+	headerFile := convert.NewHeaderFile(filePath, llcppg.Inter)
 
 	t.Run("OutputToTempDir", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp(dir, "test_package_write")
@@ -314,21 +320,6 @@ func TestPackageWrite(t *testing.T) {
 	})
 }
 
-/*
-	func TestPreparseOutputDir(t *testing.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("no permission folder: no error?")
-			}
-		}()
-		convert.NewPackage(&convert.PackageConfig{
-			PkgPath:   ".",
-			Name:      "testpkg",
-			GenConf:   &gogen.Config{},
-			OutputDir: "invalid\x00path",
-		})
-	}
-*/
 func TestFuncDecl(t *testing.T) {
 	testCases := []genDeclTestCase{
 		{
@@ -1162,6 +1153,7 @@ func TestRedef(t *testing.T) {
 			},
 		),
 	})
+	pkg.SetCurFile(tempFile)
 
 	flds := &ast.FieldList{
 		List: []*ast.Field{
@@ -1455,11 +1447,8 @@ const (
 func TestIdentRefer(t *testing.T) {
 	pkg := createTestPkg(t, &convert.PackageConfig{})
 	pkg.SetCurFile(&convert.HeaderFile{
-		File:         "/path/to/stdio.h",
-		IncPath:      "stdio.h",
-		IsHeaderFile: true,
-		FileType:     llcppg.Inter,
-		IsSys:        true,
+		File:     "/path/to/stdio.h",
+		FileType: llcppg.Third,
 	})
 	pkg.NewTypedefDecl(&ast.TypedefDecl{
 		DeclBase: ast.DeclBase{
@@ -1472,11 +1461,8 @@ func TestIdentRefer(t *testing.T) {
 		},
 	})
 	pkg.SetCurFile(&convert.HeaderFile{
-		File:         "/path/to/notsys.h",
-		IncPath:      "notsys.h",
-		IsHeaderFile: true,
-		FileType:     llcppg.Inter,
-		IsSys:        false,
+		File:     "/path/to/notsys.h",
+		FileType: llcppg.Inter,
 	})
 	t.Run("undef sys ident ref", func(t *testing.T) {
 		err := pkg.NewTypeDecl(&ast.TypeDecl{
@@ -1528,8 +1514,9 @@ func TestIdentRefer(t *testing.T) {
 				CppgConf: &llcppg.Config{},
 			},
 		})
+		pkg.SetCurFile(tempFile)
 		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
-			Name: &ast.Ident{Name: "int8_t"},
+			Name: &ast.Ident{Name: "typ_int8_t"},
 			Type: &ast.BuiltinType{
 				Kind:  ast.Char,
 				Flags: ast.Signed,
@@ -1547,7 +1534,7 @@ func TestIdentRefer(t *testing.T) {
 						{
 							Names: []*ast.Ident{{Name: "a"}},
 							Type: &ast.Ident{
-								Name: "int8_t",
+								Name: "typ_int8_t",
 							},
 						},
 					},
@@ -1560,9 +1547,9 @@ func TestIdentRefer(t *testing.T) {
 		comparePackageOutput(t, pkg, `
 		package testpkg
 		import _ "unsafe"
-		type Int8T int8
+		type TypInt8T int8
 		type Foo struct {
-			A Int8T
+			A TypInt8T
 		}
 		`)
 	})
@@ -1577,6 +1564,7 @@ func TestForwardDecl(t *testing.T) {
 			},
 		),
 	})
+	pkg.SetCurFile(tempFile)
 
 	forwardDecl := &ast.TypeDecl{
 		Name: &ast.Ident{Name: "Foo"},
@@ -1652,6 +1640,7 @@ func testGenDecl(t *testing.T, tc genDeclTestCase) {
 	if pkg == nil {
 		t.Fatal("NewPackage failed")
 	}
+	pkg.SetCurFile(tempFile)
 	var err error
 	switch d := tc.decl.(type) {
 	case *ast.TypeDecl:
@@ -1722,7 +1711,7 @@ func createTestPkg(t *testing.T, config *convert.PackageConfig) *convert.Package
 func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 	t.Helper()
 	// For Test,The Test package's header filename same as package name
-	buf, err := pkg.WriteDefaultFileToBuffer()
+	buf, err := pkg.WriteToBuffer("temp.go")
 	if err != nil {
 		t.Fatalf("WriteTo failed: %v", err)
 	}
@@ -1788,11 +1777,8 @@ func TestTypeClean(t *testing.T) {
 
 	for i, tc := range testCases {
 		pkg.SetCurFile(&convert.HeaderFile{
-			File:         tc.headerFile,
-			IncPath:      tc.incPath,
-			IsHeaderFile: true,
-			FileType:     llcppg.Inter,
-			IsSys:        false,
+			File:     tc.headerFile,
+			FileType: llcppg.Inter,
 		})
 		tc.addType()
 
@@ -1848,248 +1834,6 @@ func TestHeaderFileToGo(t *testing.T) {
 	}
 }
 
-func TestIncPathToPkg(t *testing.T) {
-	testCases := map[string]map[string][]string{
-		// macos 14.0
-		"darwin": {
-			convert.SysPkgC: []string{
-				"alloc.h",
-				"_ctype.h",
-				"_stdio.h",
-				"_types.h",
-				"_types/_intmax_t.h",
-				"_types/_uint16_t.h",
-				"_types/_uint32_t.h",
-				"_types/_uint64_t.h",
-				"_types/_uint8_t.h",
-				"_types/_uintmax_t.h",
-				"_types/_wctrans_t.h",
-				"_types/_wctype_t.h",
-				"_wctype.h",
-				"arm/_types.h",
-				"arm/types.h",
-				"inttypes.h",
-				"malloc/_malloc.h",
-				"malloc/_malloc_type.h",
-				"secure/_stdio.h",
-				"stddef.h",
-				"stdint.h",
-				"stdio.h",
-				"stdlib.h",
-				"string.h",
-				"sys/_types.h",
-				"sys/_types/_ct_rune_t.h",
-				"sys/_types/_dev_t.h",
-				"sys/_types/_errno_t.h",
-				"sys/_types/_id_t.h",
-				"sys/_types/_int16_t.h",
-				"sys/_types/_int32_t.h",
-				"sys/_types/_int64_t.h",
-				"sys/_types/_int8_t.h",
-				"sys/_types/_intptr_t.h",
-				"sys/_types/_mbstate_t.h",
-				"sys/_types/_mode_t.h",
-				"sys/_types/_off_t.h",
-				"sys/_types/_pid_t.h",
-				"sys/_types/_ptrdiff_t.h",
-				"sys/_types/_rsize_t.h",
-				"sys/_types/_rune_t.h",
-				"sys/_types/_size_t.h",
-				"sys/_types/_ssize_t.h",
-				"sys/_types/_u_int16_t.h",
-				"sys/_types/_u_int32_t.h",
-				"sys/_types/_u_int64_t.h",
-				"sys/_types/_u_int8_t.h",
-				"sys/_types/_ucontext.h",
-				"sys/_types/_uid_t.h",
-				"sys/_types/_uintptr_t.h",
-				"sys/_types/_va_list.h",
-				"sys/_types/_wchar_t.h",
-				"sys/_types/_wint_t.h",
-				"sys/stdio.h",
-				"wchar.h",
-				"wctype.h",
-			},
-			convert.SysPkgPthread: []string{
-				"sys/_pthread/_pthread_attr_t.h",
-				"sys/_pthread/_pthread_types.h",
-				"sys/_pthread/_pthread_t.h",
-			},
-			convert.SysPkgI18n: []string{
-				"_locale.h",
-				"locale.h",
-			},
-			convert.SysPkgOs: []string{
-				"sys/signal.h",
-				"sys/_types/_sigaltstack.h",
-				"sys/_types/_sigset_t.h",
-				"signal.h",
-				"sys/errno.h",
-				"sys/resource.h",
-				"sys/wait.h",
-				"arm/signal.h",
-			},
-			convert.SysPkgTime: []string{
-				"time.h",
-				"sys/_types/_time_t.h",
-				"sys/_types/_clock_t.h",
-				//posix
-				"sys/_types/_timespec.h",
-				"sys/_types/_timeval.h",
-			},
-			convert.SysPkgUnixNet: []string{
-				"sys/socket.h",
-				"arpa/inet.h",
-				"netinet6/in6.h",
-				"netinet/in.h",
-				"net/if.h",
-				"net/if_var.h",
-			},
-			convert.SysPkgMath: []string{
-				"math.h",
-				"fenv.h",
-			},
-			convert.SysPkgSetjmp: []string{
-				"setjmp.h",
-			},
-		},
-		// Ubuntu 24.04 LTS
-		"linux": {
-			convert.SysPkgC: []string{
-				"__stdarg_va_list.h",
-				"ctype.h",
-				"linux/types.h",
-				"bits/types/struct___jmp_buf_tag.h",
-				"bits/types/stack_t.h",
-				"bits/types/FILE.h",
-				"__stdarg___gnuc_va_list.h",
-				"__stddef_size_t.h",
-				"wchar.h",
-				"bits/types/struct_FILE.h",
-				"bits/types/mbstate_t.h",
-				"bits/types/__FILE.h",
-				"bits/stdint-uintn.h",
-				"bits/types.h",
-				"__stddef_wchar_t.h",
-				"__stddef_max_align_t.h",
-				"string.h",
-				"__stddef_ptrdiff_t.h",
-				"stdio.h",
-				"wctype.h",
-				"stdint.h",
-				"uchar.h",
-				"bits/stdint-least.h",
-				"bits/wctype-wchar.h",
-				"sys/types.h",
-				"bits/types/__mbstate_t.h",
-				"bits/types/wint_t.h",
-				"bits/types/__fpos_t.h",
-				"stdlib.h",
-				"bits/stdint-intn.h",
-				"inttypes.h",
-				"alloca.h",
-				"bits/floatn.h",
-				"bits/uintn-identity.h",
-				"stdatomic.h",
-				"errno.h",
-
-				// posix
-				"asm-generic/posix_types.h",
-				"asm/posix_types.h",
-				"strings.h",
-				"bits/thread-shared-types.h",
-
-				// linux
-				"bits/types/cookie_io_functions_t.h",
-				"bits/types/__fpos64_t.h",
-				"linux/posix_types.h",
-				"bits/byteswap.h",
-				"bits/procfs.h",
-			},
-			convert.SysPkgI18n: []string{
-				"bits/types/__locale_t.h",
-				"bits/types/locale_t.h",
-				"locale.h",
-			},
-			convert.SysPkgOs: []string{
-				"signal.h",
-				"assert.h",
-				"bits/types/sig_atomic_t.h",
-
-				// posix
-				"bits/types/sigset_t.h",
-				"bits/types/siginfo_t.h",
-				"bits/types/__sigval_t.h",
-				"bits/types/sigval_t.h",
-				"bits/types/sigevent_t.h",
-				"bits/types/struct_sigstack.h",
-				"bits/types/__sigset_t.h",
-				"bits/sigaction.h",
-				"asm/sigcontext.h",
-				"sys/select.h",
-				"sys/user.h",
-				"sys/procfs.h",
-				"sys/ucontext.h",
-			},
-			convert.SysPkgTime: []string{
-				"time.h",
-				"sys/time.h",
-				"bits/types/clock_t.h",
-				"bits/types/struct_tm.h",
-				"bits/types/time_t.h",
-				// posix
-				"bits/types/timer_t.h",
-				"bits/types/struct_timespec.h",
-				"bits/types/struct_timeval.h",
-				"bits/types/clockid_t.h",
-				"bits/types/struct_itimerspec.h",
-			},
-			convert.SysPkgMath: []string{
-				"bits/math-vector.h",
-				"math.h",
-				"fenv.h",
-				"bits/fenv.h",
-			},
-			convert.SysPkgSetjmp: []string{
-				"setjmp.h",
-			},
-			convert.SysPkgPthread: []string{
-				"pthread.h",
-				"bits/pthreadtypes.h",
-			},
-		},
-	}
-	for testVer, pkgMap := range testCases {
-		for expectPkg, incs := range pkgMap {
-			for _, inc := range incs {
-				if gotPkg, _ := convert.IncPathToPkg(inc); gotPkg != expectPkg {
-					t.Errorf("testVer: %s, inc: %s, expect: %s, got: %s", testVer, inc, expectPkg, gotPkg)
-				}
-			}
-		}
-	}
-}
-
-func TestIncPathToPkgInvalidRegex(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("Expected panic for invalid regex pattern, but got none")
-		}
-	}()
-
-	// Save original mappings and restore after test
-	oldMappings := convert.PkgMappings
-	convert.PkgMappings = []convert.PkgMapping{
-		{Pattern: "[", Package: "invalid"}, // Invalid regex pattern - unclosed character class
-	}
-	defer func() {
-		convert.PkgMappings = oldMappings
-	}()
-
-	// This should panic due to invalid regex
-	convert.IncPathToPkg("any_path")
-}
-
 func TestImport(t *testing.T) {
 	t.Run("invalid mod", func(t *testing.T) {
 		loader := convert.PkgDepLoader{}
@@ -2122,7 +1866,6 @@ func TestImport(t *testing.T) {
 		if err == nil {
 			t.Fatal("expected error")
 		}
-		p.DepIncPaths()
 	})
 	t.Run("invalid pub file", func(t *testing.T) {
 		defer func() {
@@ -2179,5 +1922,5 @@ func TestUnkownHfile(t *testing.T) {
 			t.Fatal("Expect Error")
 		}
 	}()
-	convert.NewHeaderFile("/path/to/foo.h", "foo.h", true, 0, false).ToGoFileName("Pkg")
+	convert.NewHeaderFile("/path/to/foo.h", 0).ToGoFileName("Pkg")
 }
