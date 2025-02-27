@@ -33,6 +33,7 @@ const (
 	HelpFlagName     FlagName = "help"
 	DemosFlagName    FlagName = "demos"
 	DemoFlagName     FlagName = "demo"
+	DemoConfName     FlagName = "conf"
 )
 
 func RunCommandWithOut(out *io.PipeWriter, dir, cmdName string, args ...string) {
@@ -218,6 +219,7 @@ func main() {
 	flag.BoolVar(&help, string(HelpFlagName), false, "print help message")
 	demosPath := flag.String(string(DemosFlagName), "", "test all first-level demo directories in the specified path")
 	demoPath := flag.String(string(DemoFlagName), "", "test the specified demo directory")
+	confPath := flag.String(string(DemoConfName), "", "path to the config directory relative to demo directory, defaults to \".\" if empty")
 	flag.Parse()
 
 	if help || len(os.Args) == 1 {
@@ -264,9 +266,9 @@ func main() {
 		pkgs := getPkgs()
 		runPkgs(pkgs, cfg)
 	case appMode == runDemos:
-		demo.RunAllGenPkgDemos(*demosPath)
+		demo.RunAllGenPkgDemos(*demosPath, *confPath)
 	case appMode == runDemo:
-		demo.RunGenPkgDemo(*demoPath)
+		demo.RunGenPkgDemo(*demoPath, *confPath)
 	default:
 		if len(flag.Args()) > 0 {
 			arg := flag.Arg(0)
