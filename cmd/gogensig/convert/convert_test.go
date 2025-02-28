@@ -138,14 +138,16 @@ func TestDepPkg(t *testing.T) {
 
 	thirdDepPath := buildTestPath(dir, testDataDir, "thirddep")
 	thirdDep2Path := buildTestPath(dir, testDataDir, "thirddep2")
+	thirdDep3Path := buildTestPath(dir, testDataDir, "thirddep3")
 	basicDepPath := buildTestPath(dir, testDataDir, "basicdep")
 
 	thirdDepHFile := buildTestPath(thirdDepPath, hfileDir)
 	thirdDep2HFile := buildTestPath(thirdDep2Path, hfileDir)
+	thirdDep3HFile := buildTestPath(thirdDep3Path, hfileDir)
 	basicDepHFile := buildTestPath(basicDepPath, hfileDir)
 
 	cleanups := []func(){
-		inc(depcjsonConf, fmt.Sprintf(" -I%s -I%s -I%s", thirdDepHFile, thirdDep2HFile, basicDepHFile)),
+		inc(depcjsonConf, fmt.Sprintf(" -I%s -I%s -I%s -I%s", thirdDepHFile, thirdDep2HFile, thirdDep3HFile, basicDepHFile)),
 		inc(buildTestPath(thirdDepPath, "llcppg.cfg"), fmt.Sprintf(" -I%s -I%s", thirdDepHFile, basicDepHFile)),
 		inc(buildTestPath(thirdDep2Path, "llcppg.cfg"), fmt.Sprintf(" -I%s -I%s -I%s", thirdDep2HFile, thirdDepHFile, basicDepHFile)),
 		inc(buildTestPath(basicDepPath, "llcppg.cfg"), fmt.Sprintf(" -I%s", basicDepHFile)),
@@ -465,31 +467,13 @@ func TestWritePkgFilesFail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to change directory permissions: %v", err)
 	}
-	converter.VisitStart("test.h", "/path/to/test.h", false)
+	converter.VisitStart("test.h", "/path/to/test.h", false, llcppg.Inter)
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("Expected panic, but got: %v", r)
 		}
 	}()
 	converter.WritePkgFiles()
-}
-
-func TestGetIncPathFail(t *testing.T) {
-	cfg, err := config.CreateTmpJSONFile("llcppg.cfg", &llcppg.Config{
-		Include: []string{"unexist.h"},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	converter, err := convert.NewAstConvert(&convert.Config{
-		PkgName:  "test",
-		SymbFile: "",
-		CfgFile:  cfg,
-	})
-	if err != nil {
-		t.Fatal("NewAstConvert Fail")
-	}
-	converter.VisitStart("test.h", "", false)
 }
 
 func ModInit(name string) (string, error) {

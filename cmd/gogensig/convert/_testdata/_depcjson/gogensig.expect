@@ -1,3 +1,17 @@
+===== _depcjson_autogen.go =====
+package _depcjson
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+type X_depcjsonType c.Int
+
+type ThirdDep3 struct {
+	B c.Long
+}
+
 ===== temp.go =====
 package _depcjson
 
@@ -17,14 +31,8 @@ func ParseClientRequest(json_string *int8, error_buffer *int8, buffer_size uintp
 func SerializeResponse(response *cjson.CJSON, buffer *int8, length c.Int, pretty_print cjson.CJSONBool) cjson.CJSONBool
 //go:linkname ThirdDepfn C.third_depfn
 func ThirdDepfn(a *thirddep.ThirdDep, b *thirddep2.ThirdDep2, c X_depcjsonType, d basicdep.BasicDep) thirddep.ThirdDep
+//go:linkname ThirdType C.third_type
+func ThirdType(a *ThirdDep3) ThirdDep3
 
-===== type.go =====
-package _depcjson
-
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
-
-type X_depcjsonType c.Int
-
+===== llcppg.pub =====
+_depcjson_type X_depcjsonType

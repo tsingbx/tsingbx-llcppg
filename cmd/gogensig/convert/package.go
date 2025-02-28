@@ -17,6 +17,7 @@ import (
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
+	"github.com/goplus/llcppg/llcppg"
 	ctoken "github.com/goplus/llcppg/token"
 	"github.com/goplus/mod/gopmod"
 )
@@ -108,14 +109,14 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 	}
 
 	if curFile == nil {
-		curFile = NewHeaderFile(hfile.File, hfile.IncPath, hfile.IsHeaderFile, hfile.InCurPkg, hfile.IsSys)
+		curFile = NewHeaderFile(hfile.File, hfile.IncPath, hfile.IsHeaderFile, hfile.FileType, hfile.IsSys)
 		p.files = append(p.files, curFile)
 	}
 
 	p.curFile = curFile
-	fileName := curFile.ToGoFileName()
+	fileName := curFile.ToGoFileName(p.conf.Name)
 	if dbg.GetDebugLog() {
-		log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, curFile.InCurPkg)
+		log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, curFile.FileType)
 	}
 	if _, err := p.p.SetCurFile(fileName, true); err != nil {
 		log.Panicf("fail to set current file %s\n", curFile.File)
@@ -629,14 +630,16 @@ func (p *Package) WritePkgFiles() error {
 		return err
 	}
 	for _, file := range p.files {
-		if file.IsHeaderFile && !file.IsSys {
+		// todo(zzy):file.IsSys will remove in new dependency execute logic
+		if file.IsHeaderFile && !file.IsSys && file.FileType == llcppg.Inter {
 			err := p.Write(file.File)
 			if err != nil {
 				return err
 			}
 		}
 	}
-	return nil
+
+	return p.WriteAutogenFile()
 }
 
 // Write generates a Go file based on the package content.
@@ -652,6 +655,15 @@ func (p *Package) Write(headerFile string) error {
 		log.Printf("Write HeaderFile [%s] from  gogen:[%s] to [%s]\n", headerFile, fileName, filePath)
 	}
 	return p.writeToFile(fileName, filePath)
+}
+
+func (p *Package) WriteAutogenFile() error {
+	if file, ok := p.p.File(p.conf.Name + "_autogen.go"); ok {
+		// fileName := p.conf.Name + "_autogen.go"
+		filePath := filepath.Join(p.GetOutputDir(), file.Name())
+		return p.writeToFile(file.Name(), filePath)
+	}
+	return nil
 }
 
 func (p *Package) WriteLinkFile() (string, error) {
@@ -736,7 +748,7 @@ func (p *Package) DeclName(name string, toCamel bool) (pubName string, changed b
 }
 
 func (p *Package) trimPrefixes() []string {
-	if p.curFile.InCurPkg {
+	if p.curFile.InCurPkg() {
 		return p.CppgConf.TrimPrefixes
 	}
 	return []string{}
@@ -750,7 +762,7 @@ func (p *Package) CollectNameMapping(originName, newName string) {
 		value = newName
 	}
 	p.nameMapper.SetMapping(originName, value)
-	if p.curFile.InCurPkg {
+	if p.curFile.InCurPkg() {
 		p.Pubs[originName] = value
 	}
 }
