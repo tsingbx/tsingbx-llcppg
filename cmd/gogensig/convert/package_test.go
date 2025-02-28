@@ -1465,7 +1465,12 @@ func TestIdentRefer(t *testing.T) {
 		FileType: llcppg.Inter,
 	})
 	t.Run("undef sys ident ref", func(t *testing.T) {
-		err := pkg.NewTypeDecl(&ast.TypeDecl{
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatalf("expected Panic")
+			}
+		}()
+		pkg.NewTypeDecl(&ast.TypeDecl{
 			DeclBase: ast.DeclBase{
 				Loc: &ast.Location{File: "/path/to/notsys.h"},
 			},
@@ -1484,10 +1489,14 @@ func TestIdentRefer(t *testing.T) {
 				},
 			},
 		})
-		compareError(t, err, "undefType not found")
 	})
 	t.Run("undef tag ident ref", func(t *testing.T) {
-		err := pkg.NewTypeDecl(&ast.TypeDecl{
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatalf("expected Panic")
+			}
+		}()
+		pkg.NewTypeDecl(&ast.TypeDecl{
 			Name: &ast.Ident{Name: "Bar"},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
@@ -1506,7 +1515,6 @@ func TestIdentRefer(t *testing.T) {
 				},
 			},
 		})
-		compareError(t, err, "undefType not found")
 	})
 	t.Run("type alias", func(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{

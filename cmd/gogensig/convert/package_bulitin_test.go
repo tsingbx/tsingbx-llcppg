@@ -1,6 +1,7 @@
 package convert
 
 import (
+	"errors"
 	"go/types"
 	"testing"
 
@@ -11,11 +12,6 @@ import (
 )
 
 func TestTypeRefIncompleteFail(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fatal("Expected panic, got nil")
-		}
-	}()
 	pkg := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath:  ".",
@@ -27,34 +23,56 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 		OutputDir:   "",
 		SymbolTable: cfg.CreateSymbolTable([]cfg.SymbolEntry{}),
 	})
-	pkg.SetCurFile(&HeaderFile{
+	tempFile := &HeaderFile{
 		File:     "temp.h",
 		FileType: llcppg.Inter,
-	})
-	pkg.cvt.thirdTypeLoc["Bar"] = "Bar"
-	pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
-	err := pkg.NewTypedefDecl(&ast.TypedefDecl{
-		Name: &ast.Ident{Name: "Foo"},
-		Type: &ast.TagExpr{
-			Name: &ast.Ident{Name: "Bar"},
-		},
-	})
-	if err != nil {
-		t.Fatal("NewTypedefDecl failed:", err)
 	}
-	pkg.incompleteTypes.Complete("Bar")
+	pkg.SetCurFile(tempFile)
 
-	err = pkg.WritePkgFiles()
-	if err == nil {
-		t.Fatal("Expected error, got nil")
-	}
+	t.Run("write pkg fail", func(t *testing.T) {
+		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar", file: tempFile, getType: func() (types.Type, error) {
+			return nil, errors.New("Mock Err")
+		}})
+		err := pkg.WritePkgFiles()
+		if err == nil {
+			t.Fatal("Expect Error")
+		}
+		pkg.incompleteTypes.Complete("Bar")
+	})
 
-	pkg.handleTyperefIncomplete(&ast.TagExpr{
-		Tag: 0,
-		Name: &ast.ScopingExpr{
-			X: &ast.Ident{Name: "Bar"},
-		},
-	}, nil, "NewBar")
+	t.Run("defer write third type not found", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatal("Expected panic, got nil")
+			}
+		}()
+		pkg.cvt.thirdTypeLoc["Bar"] = "Bar"
+		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
+		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
+			Name: &ast.Ident{Name: "Foo"},
+			Type: &ast.TagExpr{
+				Name: &ast.Ident{Name: "Bar"},
+			},
+		})
+		if err != nil {
+			t.Fatal("NewTypedefDecl failed:", err)
+		}
+		pkg.incompleteTypes.Complete("Bar")
+		pkg.WritePkgFiles()
+	})
+	t.Run("ref tag incomplete fail", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatal("Expected panic, got nil")
+			}
+		}()
+		pkg.handleTyperefIncomplete(&ast.TagExpr{
+			Tag: 0,
+			Name: &ast.ScopingExpr{
+				X: &ast.Ident{Name: "Bar"},
+			},
+		}, nil, "NewBar")
+	})
 }
 
 func TestPubMethodName(t *testing.T) {
@@ -97,5 +115,37 @@ func TestGetNameType(t *testing.T) {
 	customRes := getNamedType(customSturct)
 	if customRes != nil {
 		t.Fatal("Expected nil, got", customRes)
+	}
+}
+
+func TestTrimPrefixes(t *testing.T) {
+	pkg := NewPackage(&PackageConfig{
+		PkgBase: PkgBase{
+			PkgPath: ".",
+			CppgConf: &llcppg.Config{
+				TrimPrefixes: []string{"prefix1", "prefix2"},
+			},
+			Pubs: make(map[string]string),
+		},
+		Name:        "testpkg",
+		GenConf:     &gogen.Config{},
+		OutputDir:   "",
+		SymbolTable: &cfg.SymbolTable{},
+	})
+
+	pkg.curFile = &HeaderFile{
+		FileType: llcppg.Inter,
+	}
+
+	result := pkg.trimPrefixes()
+	expected := []string{"prefix1", "prefix2"}
+	if len(result) != len(expected) || (len(result) > 0 && result[0] != expected[0]) {
+		t.Errorf("Expected %v, got %v", expected, result)
+	}
+
+	pkg.curFile.FileType = llcppg.Third
+	result = pkg.trimPrefixes()
+	if len(result) != 0 {
+		t.Errorf("Expected Empty TrimPrefix")
 	}
 }

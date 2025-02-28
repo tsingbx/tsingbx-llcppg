@@ -138,7 +138,7 @@ func (p *TypeConv) handlePointerType(t *ast.PointerType) (types.Type, error) {
 }
 
 func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
-	lookup := func(name string) (types.Type, error) {
+	lookup := func(name string) types.Type {
 		// For types defined in other packages, they should already be in current scope
 		// We don't check for types.Named here because the type returned from ConvertType
 		// for aliases like int8_t might be a built-in type (e.g., int8),
@@ -148,7 +148,7 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		if obj == nil {
 			// in third hfile but not have converted go type
 			if path, ok := p.thirdTypeLoc[name]; ok {
-				return nil, fmt.Errorf("%s[%s] not found correspoding type", name, path)
+				log.Panicf("convert %s first, declare its converted package in llcppg.cfg deps for load [%s].", path, name)
 			} else {
 				// implicit forward decl
 				decl := p.conf.Package.handleImplicitForwardDecl(name)
@@ -161,28 +161,22 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		if p.ctx == Record {
 			if named, ok := typ.(*types.Named); ok {
 				if _, ok := named.Underlying().(*types.Signature); ok {
-					return p.typeMap.CType("Pointer"), nil
+					return p.typeMap.CType("Pointer")
 				}
 			}
 		}
-		return typ, nil
+		return typ
 	}
 	switch t := t.(type) {
 	case *ast.Ident:
-		typ, err := lookup(t.Name)
-		if err != nil {
-			return nil, fmt.Errorf("%s not found %w", t.Name, err)
-		}
+		typ := lookup(t.Name)
 		return typ, nil
 	case *ast.ScopingExpr:
 		// todo(zzy)
 	case *ast.TagExpr:
 		// todo(zzy):scoping
 		if ident, ok := t.Name.(*ast.Ident); ok {
-			typ, err := lookup(ident.Name)
-			if err != nil {
-				return nil, fmt.Errorf("%s not found", ident.Name)
-			}
+			typ := lookup(ident.Name)
 			return typ, nil
 		}
 		// todo(zzy):scoping expr

@@ -357,8 +357,6 @@ func (p *Package) handleTypeDecl(pubname string, cname string, typeDecl *ast.Typ
 		},
 	}
 	p.incompleteTypes.Add(inc)
-	// p.incompletes = append(p.incompletes, inc)
-	// p.incomplete[inc.cname] = inc
 	return inc
 }
 
@@ -399,8 +397,6 @@ func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
 		},
 	}
 	p.incompleteTypes.Add(inc)
-	// p.incompletes = append(p.incompletes, inc)
-	// p.incomplete[inc.cname] = inc
 	p.nameMapper.SetMapping(name, pubName)
 	return decl
 }
@@ -483,14 +479,9 @@ func (p *Package) handleTyperefIncomplete(typeRef ast.Expr, typeSpecdecl *gogen.
 		decl:  typeSpecdecl,
 		getType: func() (types.Type, error) {
 			typ, err := p.ToType(typeRef)
-			if err != nil {
-				return nil, err
-			}
-			return typ, nil
+			return typ, err
 		},
 	})
-	// p.incompletes = append(p.incompletes, incType)
-	// p.incomplete[incType.cname] = incType
 	return true
 }
 
