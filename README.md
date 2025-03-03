@@ -39,9 +39,23 @@ Here's a demo configuration to generate LLGO bindings for cjson library:
   "cflags": "$(pkg-config --cflags libcjson)",
   "include": ["cJSON.h","cJSON_Utils.h"],
   "libs": "$(pkg-config --libs libcjson libcjson_utils)",
-  "trimPrefixes": ["cJSONUtils_","cJSON_"]
+  "trimPrefixes": ["cJSONUtils_","cJSON_"],
+  "cplusplus": false,
+  "deps": ["c"],
+  "mix": false
 }
 ```
+
+The configuration file supports the following options:
+
+- `name`: The name of the generated package
+- `cflags`: Compiler flags for the C/C++ library
+- `include`: Header files to include in the binding generation
+- `libs`: Library flags for linking
+- `trimPrefixes`: Prefixes to remove from function names & type names
+- `cplusplus`: Set to true for C++ libraries(not support)
+- `deps`: Dependencies (other packages & standard libraries)
+- `mix`: Set to true when package header files are mixed with other header files in the same directory. In this mode, only files explicitly listed in `include` are processed as package files.
 
 After creating the configuration file, run:
 
@@ -236,6 +250,45 @@ func (recv_ *JSON) PrintBuffered(prebuffer c.Int, fmt Bool) *int8 {
 ```
 
 More demo projects and configuration files can be found under `_llcppgtest` directory.
+
+### Header File Concepts
+In the `llcppg.cfg`, the `include` field specifies the list of interface header files to be converted. These header files are the primary source for generating Go code, and each listed header file will generate a corresponding .go file.
+
+```json
+{
+  "name": "xslt",
+  "cflags": "$(pkg-config --cflags libxslt)",
+  "include": [
+    "libxslt/xslt.h",
+    "libxslt/security.h"
+  ]
+}
+```
+#### Package Header File Determination
+
+llcppg determines whether a header file belongs to the current package based on the following rules:
+
+1. **Interface header files**: Header files explicitly listed in the `include` field
+2. **Implementation header files**: Other header files in the same root directory as interface header files
+
+For example, if the configuration includes `libxslt/xslt.h`, and this file contains `#include "xsltexports.h"`, then:
+- `xslt.h` is an interface header file, which will generate `xslt.go`
+- `xsltexports.h` is an implementation header file, whose content will be generated into `xslt_autogen.go`
+
+Header files that don't belong to the current package (such as standard libraries or third-party dependencies) won't be directly converted but are handled through dependency relationships.
+
+#### Special Case: Mixed Header Files
+For cases where package header files are mixed with other header files in the same directory (such as system headers or third-party libraries), you can handle this by setting `mix: true`:
+
+```json
+{
+  "mix": true
+}
+```
+
+In this case, only header files explicitly declared in the `include` field are considered package header files, and all others are treated as third-party header files. Note that in this mode, implementation header files of the package also need to be explicitly declared in `include`, otherwise they will be treated as third-party header files and won't be processed. 
+
+This is particularly useful in scenarios like Linux systems where library headers might be installed in common directories (e.g., `/usr/include/sqlite3.h` alongside system headers like `/usr/include/stdio.h`).
 
 ### Dependency
 
