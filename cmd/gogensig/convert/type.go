@@ -32,31 +32,26 @@ const (
 )
 
 type TypeConv struct {
-	gogen.PkgRef
-
-	thirdTypeLoc map[string]string   // type name from third package -> define location
-	symbolTable  *config.SymbolTable // llcppg.symb.json
-	typeMap      *BuiltinTypeMap
-	ctx          TypeContext
-	conf         *TypeConfig
+	pkg         *Package
+	types       *types.Package
+	symbolTable *config.SymbolTable // llcppg.symb.json
+	typeMap     *BuiltinTypeMap
+	ctx         TypeContext
 }
 
 type TypeConfig struct {
-	Package      *Package
-	Types        *types.Package
-	TypeMap      *BuiltinTypeMap
-	SymbolTable  *config.SymbolTable
-	TrimPrefixes []string
+	Package     *Package
+	TypeMap     *BuiltinTypeMap
+	SymbolTable *config.SymbolTable
 }
 
 func NewConv(conf *TypeConfig) *TypeConv {
 	typeConv := &TypeConv{
-		symbolTable:  conf.SymbolTable,
-		typeMap:      conf.TypeMap,
-		conf:         conf,
-		thirdTypeLoc: make(map[string]string),
+		symbolTable: conf.SymbolTable,
+		typeMap:     conf.TypeMap,
+		pkg:         conf.Package,
+		types:       conf.Package.p.Types,
 	}
-	typeConv.Types = conf.Types
 	return typeConv
 }
 
@@ -144,14 +139,14 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		// for aliases like int8_t might be a built-in type (e.g., int8),
 
 		var typ types.Type
-		obj := gogen.Lookup(p.Types.Scope(), name)
+		obj := gogen.Lookup(p.types.Scope(), name)
 		if obj == nil {
 			// in third hfile but not have converted go type
-			if path, ok := p.thirdTypeLoc[name]; ok {
+			if path, ok := p.pkg.locMap.Lookup(name); ok {
 				log.Panicf("convert %s first, declare its converted package in llcppg.cfg deps for load [%s].", path, name)
 			} else {
 				// implicit forward decl
-				decl := p.conf.Package.handleImplicitForwardDecl(name)
+				decl := p.pkg.handleImplicitForwardDecl(name)
 				typ = decl.Type()
 			}
 		} else {
@@ -249,7 +244,7 @@ func (p *TypeConv) retToResult(ret ast.Expr) (*types.Tuple, error) {
 	}
 	if typ != nil && !p.typeMap.IsVoidType(typ) {
 		// in c havent multiple return
-		return types.NewTuple(types.NewVar(token.NoPos, p.Types, "", typ)), nil
+		return types.NewTuple(types.NewVar(token.NoPos, p.types, "", typ)), nil
 	}
 	return types.NewTuple(), nil
 }
@@ -276,7 +271,7 @@ func (p *TypeConv) fieldListToVars(params *ast.FieldList, hasNamedParam bool) ([
 // todo(zzy): use  Unused [unsafe.Sizeof(0)]byte in the source code
 func (p *TypeConv) defaultRecordField() []*types.Var {
 	return []*types.Var{
-		types.NewVar(token.NoPos, p.Types, "Unused", types.NewArray(types.Typ[types.Byte], int64(unsafe.Sizeof(0)))),
+		types.NewVar(token.NoPos, p.types, "Unused", types.NewArray(types.Typ[types.Byte], int64(unsafe.Sizeof(0)))),
 	}
 }
 
@@ -308,7 +303,7 @@ func (p *TypeConv) fieldToVar(field *ast.Field, hasNamedParam bool, argIndex int
 			name = avoidKeyword(name)
 		}
 	}
-	return types.NewVar(token.NoPos, p.Types, name, typ), nil
+	return types.NewVar(token.NoPos, p.types, name, typ), nil
 }
 
 func (p *TypeConv) RecordTypeToStruct(recordType *ast.RecordType) (types.Type, error) {
@@ -351,22 +346,6 @@ func (p *TypeConv) ToDefaultEnumType() types.Type {
 // Should use recordType == nil to identify forward declarations, which requires llcppsigfetch support
 func (p *TypeConv) inComplete(recordType *ast.RecordType) bool {
 	return recordType.Fields != nil && len(recordType.Fields.List) == 0
-}
-
-// typedecl,enumdecl,funcdecl,funcdecl
-// true determine continue execute the type gen
-// if this type is in a third header,skip the type gen & collect the type info
-func (p *TypeConv) handleThirdType(ident *ast.Ident, loc *ast.Location) (skip bool, anony bool) {
-	anony = ident == nil
-	if curPkg := p.conf.Package.curFile.InCurPkg(); curPkg || anony {
-		return !curPkg, anony
-	}
-	if _, ok := p.thirdTypeLoc[ident.Name]; ok {
-		// a third ident in multiple location is permit
-		return true, anony
-	}
-	p.thirdTypeLoc[ident.Name] = loc.File
-	return true, anony
 }
 
 func (p *TypeConv) LookupSymbol(mangleName config.MangleNameType) (*GoFuncSpec, error) {

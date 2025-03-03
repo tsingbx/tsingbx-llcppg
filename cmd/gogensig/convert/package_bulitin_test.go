@@ -46,7 +46,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 				t.Fatal("Expected panic, got nil")
 			}
 		}()
-		pkg.cvt.thirdTypeLoc["Bar"] = "Bar"
+		pkg.locMap.Add(&ast.Ident{Name: "Bar"}, &ast.Location{File: "Bar"})
 		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
 		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
 			Name: &ast.Ident{Name: "Foo"},

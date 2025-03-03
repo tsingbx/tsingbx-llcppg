@@ -30,6 +30,7 @@ type Package struct {
 	cvt     *TypeConv      // package type convert
 	curFile *HeaderFile    // current processing c header file.
 	files   []*HeaderFile  // header files.
+	locMap  *ThirdTypeLoc  // record third type's location
 
 	// incomplete stores type declarations that are not fully defined yet, including:
 	// - Forward declarations in C/C++
@@ -67,6 +68,7 @@ func NewPackage(config *PackageConfig) *Package {
 		p:               gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
 		conf:            config,
 		incompleteTypes: NewIncompleteTypes(),
+		locMap:          NewThirdTypeLoc(),
 		nameMapper:      names.NewNameMapper(),
 	}
 
@@ -102,7 +104,6 @@ func NewPackage(config *PackageConfig) *Package {
 	math := p.p.Import("math")
 	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, math, p.p.Unsafe())
 	p.cvt = NewConv(&TypeConfig{
-		Types:       p.p.Types,
 		TypeMap:     typeMap,
 		SymbolTable: config.SymbolTable,
 		Package:     p,
@@ -243,7 +244,7 @@ func pubMethodName(recv types.Type, fnSpec *GoFuncSpec) string {
 }
 
 func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
-	isThird, anony := p.cvt.handleThirdType(funcDecl.Name, funcDecl.Loc)
+	isThird, anony := p.handleType(funcDecl.Name, funcDecl.Loc)
 	if isThird {
 		if dbg.GetDebugLog() {
 			log.Printf("NewFuncDecl: %v is a function of third header file\n", funcDecl.Name)
@@ -300,7 +301,7 @@ func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (rec
 // - Forward declarations: Pre-registers incomplete types for later definition
 // - Self-referential types: Handles types that reference themselves (like linked lists)
 func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
-	skip, anony := p.cvt.handleThirdType(typeDecl.Name, typeDecl.Loc)
+	skip, anony := p.handleType(typeDecl.Name, typeDecl.Loc)
 	if skip {
 		if dbg.GetDebugLog() {
 			log.Printf("NewTypeDecl: %s type of third header\n", typeDecl.Name)
@@ -408,7 +409,7 @@ func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) *gogen.TypeD
 }
 
 func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
-	skip, _ := p.cvt.handleThirdType(typedefDecl.Name, typedefDecl.Loc)
+	skip, _ := p.handleType(typedefDecl.Name, typedefDecl.Loc)
 	if skip {
 		if dbg.GetDebugLog() {
 			log.Printf("NewTypedefDecl: %v is a typedef of third header file\n", typedefDecl.Name)
@@ -499,7 +500,7 @@ func (p *Package) NewTypedefs(name string, typ types.Type) *gogen.TypeDecl {
 }
 
 func (p *Package) NewEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl) error {
-	skip, _ := p.cvt.handleThirdType(enumTypeDecl.Name, enumTypeDecl.Loc)
+	skip, _ := p.handleType(enumTypeDecl.Name, enumTypeDecl.Loc)
 	if skip {
 		if dbg.GetDebugLog() {
 			log.Printf("NewEnumTypeDecl: %v is a enum type of system header file\n", enumTypeDecl.Name)
@@ -742,6 +743,22 @@ func (p *Package) trimPrefixes() []string {
 	return []string{}
 }
 
+// typedecl,enumdecl,funcdecl,funcdecl
+// true determine continue execute the type gen
+// if this type is in a third header,skip the type gen & collect the type info
+func (p *Package) handleType(ident *ast.Ident, loc *ast.Location) (skip bool, anony bool) {
+	anony = ident == nil
+	if curPkg := p.curFile.InCurPkg(); curPkg || anony {
+		return !curPkg, anony
+	}
+	if _, ok := p.locMap.Lookup(ident.Name); ok {
+		// a third ident in multiple location is permit
+		return true, anony
+	}
+	p.locMap.Add(ident, loc)
+	return true, anony
+}
+
 // Collect the name mapping between origin name and pubname
 // if in current package, it will be collected in public symbol table
 func (p *Package) CollectNameMapping(originName, newName string) {
@@ -753,6 +770,25 @@ func (p *Package) CollectNameMapping(originName, newName string) {
 	if p.curFile.InCurPkg() {
 		p.Pubs[originName] = value
 	}
+}
+
+type ThirdTypeLoc struct {
+	locMap map[string]string // type name from third package -> define location
+}
+
+func NewThirdTypeLoc() *ThirdTypeLoc {
+	return &ThirdTypeLoc{
+		locMap: make(map[string]string),
+	}
+}
+
+func (p *ThirdTypeLoc) Add(ident *ast.Ident, loc *ast.Location) {
+	p.locMap[ident.Name] = loc.File
+}
+
+func (p *ThirdTypeLoc) Lookup(name string) (string, bool) {
+	loc, ok := p.locMap[name]
+	return loc, ok
 }
 
 type IncompleteTypes struct {
