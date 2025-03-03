@@ -143,7 +143,7 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		if obj == nil {
 			// in third hfile but not have converted go type
 			if path, ok := p.pkg.locMap.Lookup(name); ok {
-				log.Panicf("convert %s first, declare its converted package in llcppg.cfg deps for load [%s].", path, name)
+				log.Panicf("convert %s first, declare its converted package in llcppg.cfg deps for load [%s]. See: https://github.com/goplus/llcppg?tab=readme-ov-file#dependency", path, name)
 			} else {
 				// implicit forward decl
 				decl := p.pkg.handleImplicitForwardDecl(name)
