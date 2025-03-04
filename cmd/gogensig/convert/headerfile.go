@@ -6,46 +6,29 @@ import (
 )
 
 type HeaderFile struct {
-	File         string
-	IncPath      string
-	IsHeaderFile bool
-	FileType     llcppg.FileType
-	IsSys        bool
+	File     string
+	FileType llcppg.FileType
 }
 
+// Note:third hfile should not set to gogen.Package
 func (p *HeaderFile) ToGoFileName(pkgName string) string {
-	if p.IsHeaderFile {
-		switch p.FileType {
-		case llcppg.Inter:
-			return names.HeaderFileToGo(p.File)
-		case llcppg.Impl:
-			return pkgName + "_autogen.go"
-		case llcppg.Third:
-			// todo(zzy):ignore third file when dependency refactored
-			if p.IsSys {
-				return names.HeaderFileToGo(p.File)
-			} else {
-				// todo(zzy):temp gen third type to libname_autogen.go
-				return pkgName + "_autogen.go"
-			}
-		default:
-			panic("unkown FileType")
-		}
+	switch p.FileType {
+	case llcppg.Inter:
+		return names.HeaderFileToGo(p.File)
+	case llcppg.Impl, llcppg.Third:
+		return pkgName + "_autogen.go"
+	default:
+		panic("unkown FileType")
 	}
-	// package name as the default file
-	return p.File + ".go"
 }
 
 func (p *HeaderFile) InCurPkg() bool {
 	return p.FileType == llcppg.Inter || p.FileType == llcppg.Impl
 }
 
-func NewHeaderFile(file string, incPath string, isHeaderFile bool, fileType llcppg.FileType, isSys bool) *HeaderFile {
+func NewHeaderFile(file string, fileType llcppg.FileType) *HeaderFile {
 	return &HeaderFile{
-		File:         file,
-		IncPath:      incPath,
-		IsHeaderFile: isHeaderFile,
-		FileType:     fileType,
-		IsSys:        isSys,
+		File:     file,
+		FileType: fileType,
 	}
 }

@@ -15,27 +15,22 @@ import (
 type DocFileSetProcessor struct {
 	visitedFile map[string]struct{}
 	processing  map[string]struct{}
-	exec        Exec     // execute a single file
-	done        func()   // done callback
-	depIncs     []string // abs path
+	exec        Exec   // execute a single file
+	done        func() // done callback
 }
 
 type Exec func(*llcppg.FileEntry) error
 
 type ProcesserConfig struct {
-	Exec    Exec
-	Done    func()
-	DepIncs []string // abs path
+	Exec Exec
+	Done func()
 }
 
-// allDepIncs is the absolute path of all dependent include files
-// such as /path/to/foo.h, etc. skip these files,because they are already processed
 func NewDocFileSetProcessor(cfg *ProcesserConfig) *DocFileSetProcessor {
 	p := &DocFileSetProcessor{
 		processing:  make(map[string]struct{}),
 		visitedFile: make(map[string]struct{}),
 		done:        cfg.Done,
-		depIncs:     cfg.DepIncs,
 	}
 	if cfg.Exec != nil {
 		p.exec = cfg.Exec
@@ -70,13 +65,6 @@ func (p *DocFileSetProcessor) visitFile(path string, files []*llcppg.FileEntry) 
 }
 
 func (p *DocFileSetProcessor) ProcessFileSet(files []*llcppg.FileEntry) error {
-	for _, inc := range p.depIncs {
-		idx := FindEntry(files, inc)
-		if idx < 0 {
-			continue
-		}
-		p.visitedFile[files[idx].Path] = struct{}{}
-	}
 	for _, file := range files {
 		p.visitFile(file.Path, files)
 	}
@@ -133,14 +121,11 @@ func New(cfg *convert.Config) (*DocFileSetProcessor, *convert.Package, error) {
 	docVisitors := []visitor.DocVisitor{astConvert}
 	visitorList := visitor.NewDocVisitorList(docVisitors)
 
-	incs := astConvert.Pkg.DepIncPaths()
-
 	return NewDocFileSetProcessor(&ProcesserConfig{
 		Exec: func(file *llcppg.FileEntry) error {
-			visitorList.Visit(file.Doc, file.Path, file.IncPath, file.IsSys, file.FileType)
+			visitorList.Visit(file.Doc, file.Path, file.FileType)
 			return nil
 		},
-		DepIncs: incs,
 		Done: func() {
 			astConvert.WritePkgFiles()
 			astConvert.WriteLinkFile()
@@ -158,14 +143,11 @@ func Process(cfg *convert.Config) error {
 	docVisitors := []visitor.DocVisitor{astConvert}
 	visitorList := visitor.NewDocVisitorList(docVisitors)
 
-	incs := astConvert.Pkg.DepIncPaths()
-
 	p := NewDocFileSetProcessor(&ProcesserConfig{
 		Exec: func(file *llcppg.FileEntry) error {
-			visitorList.Visit(file.Doc, file.Path, file.IncPath, file.IsSys, file.FileType)
+			visitorList.Visit(file.Doc, file.Path, file.FileType)
 			return nil
 		},
-		DepIncs: incs,
 		Done: func() {
 			astConvert.WritePkgFiles()
 			astConvert.WriteLinkFile()

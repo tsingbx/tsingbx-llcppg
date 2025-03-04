@@ -30,6 +30,7 @@ type Package struct {
 	cvt     *TypeConv      // package type convert
 	curFile *HeaderFile    // current processing c header file.
 	files   []*HeaderFile  // header files.
+	locMap  *ThirdTypeLoc  // record third type's location
 
 	// incomplete stores type declarations that are not fully defined yet, including:
 	// - Forward declarations in C/C++
@@ -67,7 +68,20 @@ func NewPackage(config *PackageConfig) *Package {
 		p:               gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
 		conf:            config,
 		incompleteTypes: NewIncompleteTypes(),
+		locMap:          NewThirdTypeLoc(),
 		nameMapper:      names.NewNameMapper(),
+	}
+
+	// default have load llgo/c
+	hasC := false
+	for _, dep := range config.CppgConf.Deps {
+		if dep == "c" || dep == "github.com/goplus/llgo/c" {
+			hasC = true
+			break
+		}
+	}
+	if !hasC {
+		config.CppgConf.Deps = append([]string{"c"}, config.CppgConf.Deps...)
 	}
 
 	mod, err := gopmod.Load(config.OutputDir)
@@ -90,12 +104,10 @@ func NewPackage(config *PackageConfig) *Package {
 	math := p.p.Import("math")
 	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, math, p.p.Unsafe())
 	p.cvt = NewConv(&TypeConfig{
-		Types:       p.p.Types,
 		TypeMap:     typeMap,
 		SymbolTable: config.SymbolTable,
 		Package:     p,
 	})
-	p.SetCurFile(&HeaderFile{File: p.conf.Name})
 	return p
 }
 
@@ -109,19 +121,20 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 	}
 
 	if curFile == nil {
-		curFile = NewHeaderFile(hfile.File, hfile.IncPath, hfile.IsHeaderFile, hfile.FileType, hfile.IsSys)
+		curFile = NewHeaderFile(hfile.File, hfile.FileType)
 		p.files = append(p.files, curFile)
 	}
 
 	p.curFile = curFile
-	fileName := curFile.ToGoFileName(p.conf.Name)
-	if dbg.GetDebugLog() {
-		log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, curFile.FileType)
+	// for third hfile not register to gogen.Package
+	if curFile.FileType != llcppg.Third {
+		fileName := curFile.ToGoFileName(p.conf.Name)
+		if dbg.GetDebugLog() {
+			log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, curFile.FileType)
+		}
+		p.p.SetCurFile(fileName, true)
+		p.p.Unsafe().MarkForceUsed(p.p)
 	}
-	if _, err := p.p.SetCurFile(fileName, true); err != nil {
-		log.Panicf("fail to set current file %s\n", curFile.File)
-	}
-	p.p.Unsafe().MarkForceUsed(p.p)
 }
 
 func (p *Package) GetGenPackage() *gogen.Package {
@@ -130,10 +143,6 @@ func (p *Package) GetGenPackage() *gogen.Package {
 
 func (p *Package) GetOutputDir() string {
 	return p.conf.OutputDir
-}
-
-func (p *Package) GetTypeConv() *TypeConv {
-	return p.cvt
 }
 
 // todo(zzy):refine logic
@@ -235,12 +244,12 @@ func pubMethodName(recv types.Type, fnSpec *GoFuncSpec) string {
 }
 
 func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
-	skip, anony, err := p.cvt.handleSysType(funcDecl.Name, funcDecl.Loc, p.curFile.IncPath)
-	if skip {
+	isThird, anony := p.handleType(funcDecl.Name, funcDecl.Loc)
+	if isThird {
 		if dbg.GetDebugLog() {
-			log.Printf("NewFuncDecl: %v is a function of system header file\n", funcDecl.Name)
+			log.Printf("NewFuncDecl: %v is a function of third header file\n", funcDecl.Name)
 		}
-		return err
+		return nil
 	}
 	if dbg.GetDebugLog() {
 		log.Printf("NewFuncDecl: %v\n", funcDecl.Name)
@@ -292,12 +301,12 @@ func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (rec
 // - Forward declarations: Pre-registers incomplete types for later definition
 // - Self-referential types: Handles types that reference themselves (like linked lists)
 func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
-	skip, anony, err := p.cvt.handleSysType(typeDecl.Name, typeDecl.Loc, p.curFile.IncPath)
+	skip, anony := p.handleType(typeDecl.Name, typeDecl.Loc)
 	if skip {
 		if dbg.GetDebugLog() {
-			log.Printf("NewTypeDecl: %s type of system header\n", typeDecl.Name)
+			log.Printf("NewTypeDecl: %s type of third header\n", typeDecl.Name)
 		}
-		return err
+		return nil
 	}
 	if dbg.GetDebugLog() {
 		log.Printf("NewTypeDecl: %v\n", typeDecl.Name)
@@ -349,8 +358,6 @@ func (p *Package) handleTypeDecl(pubname string, cname string, typeDecl *ast.Typ
 		},
 	}
 	p.incompleteTypes.Add(inc)
-	// p.incompletes = append(p.incompletes, inc)
-	// p.incomplete[inc.cname] = inc
 	return inc
 }
 
@@ -391,8 +398,6 @@ func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
 		},
 	}
 	p.incompleteTypes.Add(inc)
-	// p.incompletes = append(p.incompletes, inc)
-	// p.incomplete[inc.cname] = inc
 	p.nameMapper.SetMapping(name, pubName)
 	return decl
 }
@@ -404,12 +409,12 @@ func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) *gogen.TypeD
 }
 
 func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
-	skip, _, err := p.cvt.handleSysType(typedefDecl.Name, typedefDecl.Loc, p.curFile.IncPath)
+	skip, _ := p.handleType(typedefDecl.Name, typedefDecl.Loc)
 	if skip {
 		if dbg.GetDebugLog() {
-			log.Printf("NewTypedefDecl: %v is a typedef of system header file\n", typedefDecl.Name)
+			log.Printf("NewTypedefDecl: %v is a typedef of third header file\n", typedefDecl.Name)
 		}
-		return err
+		return nil
 	}
 	if dbg.GetDebugLog() {
 		log.Printf("NewTypedefDecl: %v\n", typedefDecl.Name)
@@ -475,14 +480,9 @@ func (p *Package) handleTyperefIncomplete(typeRef ast.Expr, typeSpecdecl *gogen.
 		decl:  typeSpecdecl,
 		getType: func() (types.Type, error) {
 			typ, err := p.ToType(typeRef)
-			if err != nil {
-				return nil, err
-			}
-			return typ, nil
+			return typ, err
 		},
 	})
-	// p.incompletes = append(p.incompletes, incType)
-	// p.incomplete[incType.cname] = incType
 	return true
 }
 
@@ -500,12 +500,12 @@ func (p *Package) NewTypedefs(name string, typ types.Type) *gogen.TypeDecl {
 }
 
 func (p *Package) NewEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl) error {
-	skip, _, err := p.cvt.handleSysType(enumTypeDecl.Name, enumTypeDecl.Loc, p.curFile.IncPath)
+	skip, _ := p.handleType(enumTypeDecl.Name, enumTypeDecl.Loc)
 	if skip {
 		if dbg.GetDebugLog() {
 			log.Printf("NewEnumTypeDecl: %v is a enum type of system header file\n", enumTypeDecl.Name)
 		}
-		return err
+		return nil
 	}
 	if dbg.GetDebugLog() {
 		log.Printf("NewEnumTypeDecl: %v\n", enumTypeDecl.Name)
@@ -568,7 +568,7 @@ func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type) er
 }
 
 func (p *Package) NewMacro(macro *ast.Macro) error {
-	if p.curFile.IsSys {
+	if !p.curFile.InCurPkg() {
 		return nil
 	}
 
@@ -630,8 +630,7 @@ func (p *Package) WritePkgFiles() error {
 		return err
 	}
 	for _, file := range p.files {
-		// todo(zzy):file.IsSys will remove in new dependency execute logic
-		if file.IsHeaderFile && !file.IsSys && file.FileType == llcppg.Inter {
+		if file.InCurPkg() && file.FileType == llcppg.Inter {
 			err := p.Write(file.File)
 			if err != nil {
 				return err
@@ -684,16 +683,6 @@ func (p *Package) WriteLinkFile() (string, error) {
 		return "", fmt.Errorf("failed to write file: %w", err)
 	}
 	return filePath, nil
-}
-
-// WriteDefaultFileToBuffer writes the content of the default Go file to a buffer.
-// The default file is named after the package (p.Name() + ".go").
-// This method is particularly useful for testing type outputs, especially in package tests
-// where there typically isn't (and doesn't need to be) a corresponding header file.
-// Before calling SetCurFile, all type creations are written to this default gogen file.
-// It allows for easy inspection of generated types without the need for actual file I/O.
-func (p *Package) WriteDefaultFileToBuffer() (*bytes.Buffer, error) {
-	return p.WriteToBuffer(p.conf.Name + ".go")
 }
 
 // Write the corresponding files in gogen package to the file
@@ -754,6 +743,22 @@ func (p *Package) trimPrefixes() []string {
 	return []string{}
 }
 
+// typedecl,enumdecl,funcdecl,funcdecl
+// true determine continue execute the type gen
+// if this type is in a third header,skip the type gen & collect the type info
+func (p *Package) handleType(ident *ast.Ident, loc *ast.Location) (skip bool, anony bool) {
+	anony = ident == nil
+	if curPkg := p.curFile.InCurPkg(); curPkg || anony {
+		return !curPkg, anony
+	}
+	if _, ok := p.locMap.Lookup(ident.Name); ok {
+		// a third ident in multiple location is permit
+		return true, anony
+	}
+	p.locMap.Add(ident, loc)
+	return true, anony
+}
+
 // Collect the name mapping between origin name and pubname
 // if in current package, it will be collected in public symbol table
 func (p *Package) CollectNameMapping(originName, newName string) {
@@ -767,46 +772,23 @@ func (p *Package) CollectNameMapping(originName, newName string) {
 	}
 }
 
-// Return all include paths of dependent packages
-func (p *Package) DepIncPaths() []string {
-	visited := make(map[string]bool)
-	var paths []string
-	var collectPaths func(pkg *PkgInfo)
-	var notFounds map[string][]string // pkgpath -> include path
-	var allfailed []string            // which pkg's header file failed to find any include path
+type ThirdTypeLoc struct {
+	locMap map[string]string // type name from third package -> define location
+}
 
-	collectPaths = func(pkg *PkgInfo) {
-		for _, dep := range pkg.Deps {
-			incPaths, notFnds, err := dep.GetIncPaths()
-			if err != nil {
-				allfailed = append(allfailed, dep.PkgPath)
-			} else if len(notFnds) > 0 {
-				if notFounds == nil {
-					notFounds = make(map[string][]string)
-				}
-				notFounds[dep.PkgPath] = notFnds
-			}
-			for _, path := range incPaths {
-				if !visited[path] {
-					visited[path] = true
-					paths = append(paths, path)
-				}
-			}
-			collectPaths(dep)
-		}
+func NewThirdTypeLoc() *ThirdTypeLoc {
+	return &ThirdTypeLoc{
+		locMap: make(map[string]string),
 	}
-	collectPaths(p.PkgInfo)
+}
 
-	if len(notFounds) > 0 {
-		for pkgPath, notFnds := range notFounds {
-			log.Printf("failed to find some include paths: from %s\n", pkgPath)
-			log.Println(notFnds)
-		}
-	}
-	if len(allfailed) > 0 {
-		log.Println("failed to get any include paths from these package: \n", allfailed)
-	}
-	return paths
+func (p *ThirdTypeLoc) Add(ident *ast.Ident, loc *ast.Location) {
+	p.locMap[ident.Name] = loc.File
+}
+
+func (p *ThirdTypeLoc) Lookup(name string) (string, bool) {
+	loc, ok := p.locMap[name]
+	return loc, ok
 }
 
 type IncompleteTypes struct {
