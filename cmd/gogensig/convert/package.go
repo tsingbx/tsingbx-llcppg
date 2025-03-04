@@ -14,7 +14,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llcppg/ast"
-	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
 	"github.com/goplus/llcppg/llcppg"
@@ -57,7 +57,7 @@ type PackageConfig struct {
 	PkgBase
 	Name        string // current package name
 	OutputDir   string
-	SymbolTable *cfg.SymbolTable
+	SymbolTable *config.SymbolTable
 	GenConf     *gogen.Config
 }
 
@@ -100,15 +100,19 @@ func NewPackage(config *PackageConfig) *Package {
 		log.Panicf("failed to init deps: %s", err.Error())
 	}
 
-	clib := p.p.Import("github.com/goplus/llgo/c")
-	math := p.p.Import("math")
-	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, math, p.p.Unsafe())
-	p.cvt = NewConv(&TypeConfig{
-		TypeMap:     typeMap,
-		SymbolTable: config.SymbolTable,
-		Package:     p,
-	})
+	p.cvt = NewConv(p)
 	return p
+}
+
+func (p *Package) LookupSymbol(mangleName config.MangleNameType) (*GoFuncSpec, error) {
+	if p.conf == nil || p.conf.SymbolTable == nil {
+		return nil, fmt.Errorf("symbol table not initialized")
+	}
+	e, err := p.conf.SymbolTable.LookupSymbol(mangleName)
+	if err != nil {
+		return nil, err
+	}
+	return NewGoFuncSpec(e.GoName), nil
 }
 
 func (p *Package) SetCurFile(hfile *HeaderFile) {
@@ -258,7 +262,7 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		return errs.NewAnonymousFuncNotSupportError()
 	}
 
-	fnSpec, err := p.cvt.LookupSymbol(funcDecl.MangledName)
+	fnSpec, err := p.LookupSymbol(funcDecl.MangledName)
 	if err != nil {
 		// not gen the function not in the symbolmap
 		return err
@@ -721,7 +725,7 @@ func (p *Package) deferTypeBuild() error {
 }
 
 func (p *Package) WritePubFile() error {
-	return cfg.WritePubFile(filepath.Join(p.GetOutputDir(), "llcppg.pub"), p.Pubs)
+	return config.WritePubFile(filepath.Join(p.GetOutputDir(), "llcppg.pub"), p.Pubs)
 }
 
 // For a decl name, it should be unique

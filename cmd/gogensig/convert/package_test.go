@@ -11,7 +11,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/cmp"
-	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/llcppg"
@@ -332,7 +332,7 @@ func TestFuncDecl(t *testing.T) {
 					Ret:    &ast.BuiltinType{Kind: ast.Void},
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -359,7 +359,7 @@ func Foo()`,
 					Ret: &ast.BuiltinType{Kind: ast.Void},
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -401,7 +401,7 @@ func Foo(__llgo_va_list ...interface{})`,
 					Ret: nil,
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "invalidFunc",
 					MangleName: "invalidFunc",
@@ -420,7 +420,7 @@ func Foo(__llgo_va_list ...interface{})`,
 					Ret:    &ast.BuiltinType{Kind: ast.Void},
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -466,7 +466,7 @@ func Foo()`,
 				},
 			},
 
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -500,7 +500,7 @@ func Foo(a uint16, b bool) float64`,
 					Ret: &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned},
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -540,7 +540,7 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 					Ret: &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned},
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -589,7 +589,7 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 					},
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -629,7 +629,7 @@ func Foo(a *c.Uint, b *c.Long) *float64
 					},
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -683,7 +683,7 @@ func Foo(a unsafe.Pointer) unsafe.Pointer
 					},
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -723,7 +723,7 @@ func Foo(a *c.Uint, b *float64) **int8
 					Ret: nil,
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -742,7 +742,7 @@ func Foo(a *c.Uint, b *float64) **int8
 					Ret:    &ast.BuiltinType{Kind: ast.Bool, Flags: ast.Double},
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -765,7 +765,7 @@ func Foo(a *c.Uint, b *float64) **int8
 					Ret: nil,
 				},
 			},
-			symbs: []cfg.SymbolEntry{
+			symbs: []config.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -1147,8 +1147,8 @@ type Foo func(a c.Int, b c.Int) c.Int`,
 func TestRedef(t *testing.T) {
 	pkg := createTestPkg(t, &convert.PackageConfig{
 		OutputDir: "",
-		SymbolTable: cfg.CreateSymbolTable(
-			[]cfg.SymbolEntry{
+		SymbolTable: config.CreateSymbolTable(
+			[]config.SymbolEntry{
 				{CppName: "Bar", MangleName: "Bar", GoName: "Bar"},
 			},
 		),
@@ -1566,8 +1566,8 @@ func TestIdentRefer(t *testing.T) {
 func TestForwardDecl(t *testing.T) {
 	pkg := createTestPkg(t, &convert.PackageConfig{
 		OutputDir: "",
-		SymbolTable: cfg.CreateSymbolTable(
-			[]cfg.SymbolEntry{
+		SymbolTable: config.CreateSymbolTable(
+			[]config.SymbolEntry{
 				{CppName: "Bar", MangleName: "Bar", GoName: "Bar"},
 			},
 		),
@@ -1631,7 +1631,7 @@ type Foo struct {
 type genDeclTestCase struct {
 	name        string
 	decl        ast.Decl
-	symbs       []cfg.SymbolEntry
+	symbs       []config.SymbolEntry
 	cppgconf    *llcppg.Config
 	expected    string
 	expectedErr string
@@ -1640,7 +1640,7 @@ type genDeclTestCase struct {
 func testGenDecl(t *testing.T, tc genDeclTestCase) {
 	t.Helper()
 	pkg := createTestPkg(t, &convert.PackageConfig{
-		SymbolTable: cfg.CreateSymbolTable(tc.symbs),
+		SymbolTable: config.CreateSymbolTable(tc.symbs),
 		PkgBase: convert.PkgBase{
 			CppgConf: tc.cppgconf,
 		},
@@ -1684,30 +1684,30 @@ func compareError(t *testing.T, err error, expectErr string) {
 	}
 }
 
-func createTestPkg(t *testing.T, config *convert.PackageConfig) *convert.Package {
+func createTestPkg(t *testing.T, cfg *convert.PackageConfig) *convert.Package {
 	t.Helper()
-	if config.CppgConf == nil {
-		config.CppgConf = &llcppg.Config{}
+	if cfg.CppgConf == nil {
+		cfg.CppgConf = &llcppg.Config{}
 	}
-	if config.SymbolTable == nil {
-		config.SymbolTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
+	if cfg.SymbolTable == nil {
+		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
 	}
-	if config.CppgConf == nil {
-		config.CppgConf = &llcppg.Config{}
+	if cfg.CppgConf == nil {
+		cfg.CppgConf = &llcppg.Config{}
 	}
-	if config.SymbolTable == nil {
-		config.SymbolTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
+	if cfg.SymbolTable == nil {
+		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
 	}
 	pkg := convert.NewPackage(&convert.PackageConfig{
 		PkgBase: convert.PkgBase{
 			PkgPath:  ".",
-			CppgConf: config.CppgConf,
+			CppgConf: cfg.CppgConf,
 			Pubs:     make(map[string]string),
 		},
 		Name:        "testpkg",
 		GenConf:     &gogen.Config{},
-		OutputDir:   config.OutputDir,
-		SymbolTable: config.SymbolTable,
+		OutputDir:   cfg.OutputDir,
+		SymbolTable: cfg.SymbolTable,
 	})
 	if pkg == nil {
 		t.Fatal("NewPackage failed")
@@ -1734,8 +1734,8 @@ func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 func TestTypeClean(t *testing.T) {
 	pkg := createTestPkg(t, &convert.PackageConfig{
 		OutputDir: "",
-		SymbolTable: cfg.CreateSymbolTable(
-			[]cfg.SymbolEntry{
+		SymbolTable: config.CreateSymbolTable(
+			[]config.SymbolEntry{
 				{CppName: "Func1", MangleName: "Func1", GoName: "Func1"},
 				{CppName: "Func2", MangleName: "Func2", GoName: "Func2"},
 			},
@@ -1931,4 +1931,12 @@ func TestUnkownHfile(t *testing.T) {
 		}
 	}()
 	convert.NewHeaderFile("/path/to/foo.h", 0).ToGoFileName("Pkg")
+}
+
+func TestLookupSymbolError(t *testing.T) {
+	p := &convert.Package{}
+	_, err := p.LookupSymbol("")
+	if err == nil {
+		t.Fatal("Expect Error")
+	}
 }

@@ -19,14 +19,6 @@ func TestIdentRef(t *testing.T) {
 	}
 }
 
-func TestLookupSymbolError(t *testing.T) {
-	p := &TypeConv{}
-	_, err := p.LookupSymbol("")
-	if err == nil {
-		t.Fatal("Expect Error")
-	}
-}
-
 func TestSubstObj(t *testing.T) {
 	pkg := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
