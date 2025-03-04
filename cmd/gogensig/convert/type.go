@@ -14,7 +14,6 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/sizes"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
 )
@@ -32,25 +31,18 @@ const (
 )
 
 type TypeConv struct {
-	pkg         *Package
-	types       *types.Package
-	symbolTable *config.SymbolTable // llcppg.symb.json
-	typeMap     *BuiltinTypeMap
-	ctx         TypeContext
+	pkg     *Package
+	typeMap *BuiltinTypeMap
+	ctx     TypeContext
 }
 
-type TypeConfig struct {
-	Package     *Package
-	TypeMap     *BuiltinTypeMap
-	SymbolTable *config.SymbolTable
-}
-
-func NewConv(conf *TypeConfig) *TypeConv {
+func NewConv(p *Package) *TypeConv {
+	clib := p.p.Import("github.com/goplus/llgo/c")
+	math := p.p.Import("math")
+	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, math, p.p.Unsafe())
 	typeConv := &TypeConv{
-		symbolTable: conf.SymbolTable,
-		typeMap:     conf.TypeMap,
-		pkg:         conf.Package,
-		types:       conf.Package.p.Types,
+		typeMap: typeMap,
+		pkg:     p,
 	}
 	return typeConv
 }
@@ -132,6 +124,15 @@ func (p *TypeConv) handlePointerType(t *ast.PointerType) (types.Type, error) {
 	return types.NewPointer(baseType), nil
 }
 
+func (p *TypeConv) lookup(name string) types.Object {
+	obj := gogen.Lookup(p.pkg.p.Types.Scope(), name)
+	return obj
+}
+
+func (p *TypeConv) types() *types.Package {
+	return p.pkg.p.Types
+}
+
 func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 	lookup := func(name string) types.Type {
 		// For types defined in other packages, they should already be in current scope
@@ -139,7 +140,7 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		// for aliases like int8_t might be a built-in type (e.g., int8),
 
 		var typ types.Type
-		obj := gogen.Lookup(p.types.Scope(), name)
+		obj := p.lookup(name)
 		if obj == nil {
 			// in third hfile but not have converted go type
 			if path, ok := p.pkg.locMap.Lookup(name); ok {
@@ -244,7 +245,7 @@ func (p *TypeConv) retToResult(ret ast.Expr) (*types.Tuple, error) {
 	}
 	if typ != nil && !p.typeMap.IsVoidType(typ) {
 		// in c havent multiple return
-		return types.NewTuple(types.NewVar(token.NoPos, p.types, "", typ)), nil
+		return types.NewTuple(types.NewVar(token.NoPos, p.types(), "", typ)), nil
 	}
 	return types.NewTuple(), nil
 }
@@ -271,7 +272,7 @@ func (p *TypeConv) fieldListToVars(params *ast.FieldList, hasNamedParam bool) ([
 // todo(zzy): use  Unused [unsafe.Sizeof(0)]byte in the source code
 func (p *TypeConv) defaultRecordField() []*types.Var {
 	return []*types.Var{
-		types.NewVar(token.NoPos, p.types, "Unused", types.NewArray(types.Typ[types.Byte], int64(unsafe.Sizeof(0)))),
+		types.NewVar(token.NoPos, p.types(), "Unused", types.NewArray(types.Typ[types.Byte], int64(unsafe.Sizeof(0)))),
 	}
 }
 
@@ -303,7 +304,7 @@ func (p *TypeConv) fieldToVar(field *ast.Field, hasNamedParam bool, argIndex int
 			name = avoidKeyword(name)
 		}
 	}
-	return types.NewVar(token.NoPos, p.types, name, typ), nil
+	return types.NewVar(token.NoPos, p.types(), name, typ), nil
 }
 
 func (p *TypeConv) RecordTypeToStruct(recordType *ast.RecordType) (types.Type, error) {
@@ -346,17 +347,6 @@ func (p *TypeConv) ToDefaultEnumType() types.Type {
 // Should use recordType == nil to identify forward declarations, which requires llcppsigfetch support
 func (p *TypeConv) inComplete(recordType *ast.RecordType) bool {
 	return recordType.Fields != nil && len(recordType.Fields.List) == 0
-}
-
-func (p *TypeConv) LookupSymbol(mangleName config.MangleNameType) (*GoFuncSpec, error) {
-	if p.symbolTable == nil {
-		return nil, fmt.Errorf("symbol table not initialized")
-	}
-	e, err := p.symbolTable.LookupSymbol(mangleName)
-	if err != nil {
-		return nil, err
-	}
-	return NewGoFuncSpec(e.GoName), nil
 }
 
 // The field name should be public if it's a record field
