@@ -125,7 +125,7 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 	}
 
 	if curFile == nil {
-		curFile = NewHeaderFile(hfile.File, hfile.FileType)
+		curFile = hfile
 		p.files = append(p.files, curFile)
 	}
 
@@ -384,9 +384,6 @@ func (p *Package) handleCompleteType(incom *Incomplete, typ *ast.RecordType, nam
 // For such declarations, create a empty type decl and store it in the
 // incomplete map, but not in the public symbol table.
 func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
-	// if decl, ok := p.incomplete[name]; ok {
-	// 	return decl.decl
-	// }
 	if decl, ok := p.incompleteTypes.Lookup(name); ok {
 		return decl.decl
 	}
@@ -658,15 +655,6 @@ func (p *Package) Write(headerFile string) error {
 		log.Printf("Write HeaderFile [%s] from  gogen:[%s] to [%s]\n", headerFile, fileName, filePath)
 	}
 	return p.writeToFile(fileName, filePath)
-}
-
-// todo(zzy):insert in coresponding file
-func (p *Package) WriteMacrosFile() error {
-	err := p.Write(p.conf.Name + "_autogen_macros")
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (p *Package) WriteAutogenFile() error {

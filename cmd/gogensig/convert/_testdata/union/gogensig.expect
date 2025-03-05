@@ -11,5 +11,10 @@ type X__u struct {
 }
 type U X__u
 
+===== union_autogen_link.go =====
+package union
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
+
 ===== llcppg.pub =====
 u U
