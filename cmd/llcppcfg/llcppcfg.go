@@ -47,7 +47,7 @@ func main() {
 	if tab {
 		flag |= llcppgcfg.WithTab
 	}
-	buf, err := llcppgcfg.GenCfg(name, flag, exts, excludeSubdirs)
+	buf, err := llcppgcfg.GenCfg(llcppgcfg.NewGenConfig(name, flag, exts, excludeSubdirs))
 	if err != nil {
 		log.Fatal(err)
 	}

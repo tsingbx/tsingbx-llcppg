@@ -3,6 +3,7 @@ package llcppgcfg
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"log"
@@ -14,6 +15,17 @@ import (
 	"github.com/goplus/llcppg/cmdout"
 	"github.com/goplus/llcppg/llcppg"
 )
+
+type GenConfig struct {
+	name           string
+	flag           FlagMode
+	exts           []string
+	excludeSubdirs []string
+}
+
+func NewGenConfig(name string, flag FlagMode, exts, excludeSubdirs []string) *GenConfig {
+	return &GenConfig{name: name, flag: flag, exts: exts, excludeSubdirs: excludeSubdirs}
+}
 
 type llcppCfgKey string
 
@@ -104,9 +116,9 @@ func getClangArgs(cflags string, relpath string) []string {
 	return args
 }
 
-func parseFileEntry(cflags, trimCflag, path string, d fs.DirEntry, exts []string, excludeSubdirs []string) *ObjFile {
+func parseFileEntry(cflags, trimCflag, path string, d fs.DirEntry, exts []string, excludeSubdirs []string) (*ObjFile, error) {
 	if d.IsDir() || strings.HasPrefix(d.Name(), ".") {
-		return nil
+		return nil, errors.New("invalid file entry")
 	}
 	idx := len(exts)
 	for i, ext := range exts {
@@ -116,28 +128,28 @@ func parseFileEntry(cflags, trimCflag, path string, d fs.DirEntry, exts []string
 		}
 	}
 	if idx == len(exts) {
-		return nil
+		return nil, errors.New("invalid file ext")
 	}
 	relPath, err := filepath.Rel(trimCflag, path)
 	if err != nil {
 		relPath = path
 	}
 	if isExcludeDir(relPath, excludeSubdirs) {
-		return nil
+		return nil, errors.New("file in excluded directory")
 	}
 	args := getClangArgs(cflags, relPath)
 	clangCmd := cmdout.NewExecCommand("clang", args...)
 	outString, err := cmdout.GetOut(clangCmd, trimCflag)
 	if err != nil {
 		log.Println(outString)
-		return nil
+		return NewObjFile(relPath, relPath), errors.New(outString)
 	}
 	outString = strings.ReplaceAll(outString, "\\\n", "\n")
 	fields := strings.Fields(outString)
 	lines, objFileStr := findDepSlice(fields)
 	objFile := NewObjFileString(objFileStr)
 	objFile.Deps = append(objFile.Deps, lines...)
-	return objFile
+	return objFile, nil
 }
 
 func parseCFlagsEntry(cflags, cflag string, exts []string, excludeSubdirs []string) *CflagEntry {
@@ -151,11 +163,18 @@ func parseCFlagsEntry(cflags, cflag string, exts []string, excludeSubdirs []stri
 	var cflagEntry CflagEntry
 	cflagEntry.Include = trimCflag
 	cflagEntry.ObjFiles = make([]*ObjFile, 0)
+	cflagEntry.InvalidObjFiles = make([]*ObjFile, 0)
 	err := filepath.WalkDir(trimCflag, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		pObjFile := parseFileEntry(cflags, trimCflag, path, d, exts, excludeSubdirs)
+		pObjFile, err := parseFileEntry(cflags, trimCflag, path, d, exts, excludeSubdirs)
+		if err != nil {
+			if pObjFile != nil {
+				cflagEntry.InvalidObjFiles = append(cflagEntry.InvalidObjFiles, pObjFile)
+			}
+			return nil
+		}
 		if pObjFile != nil {
 			cflagEntry.ObjFiles = append(cflagEntry.ObjFiles, pObjFile)
 		}
@@ -204,19 +223,17 @@ func NormalizePackageName(name string) string {
 	return strings.Join(fields, "_")
 }
 
-func GenCfg(name string, flag FlagMode, exts []string, excludeSubdirs []string) (*bytes.Buffer, error) {
-	if len(name) == 0 {
+func GenCfg(genCfg *GenConfig) (*bytes.Buffer, error) {
+	if len(genCfg.name) == 0 {
 		return nil, newEmptyStringError("name")
 	}
-	cfg := NewLLCppgConfig(name, flag)
-	expandCFlags := ExpandName(name, "", cfgCflagsKey)
-	sortIncludes(expandCFlags, cfg, exts, excludeSubdirs)
-
+	cfg := NewLLCppgConfig(genCfg.name, genCfg.flag)
+	expandCFlags := ExpandName(genCfg.name, "", cfgCflagsKey)
+	sortIncludes(expandCFlags, cfg, genCfg.exts, genCfg.excludeSubdirs)
 	cfg.Name = NormalizePackageName(cfg.Name)
-
 	buf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(buf)
-	if flag&WithTab != 0 {
+	if genCfg.flag&WithTab != 0 {
 		jsonEncoder.SetIndent("", "\t")
 	}
 	err := jsonEncoder.Encode(cfg)

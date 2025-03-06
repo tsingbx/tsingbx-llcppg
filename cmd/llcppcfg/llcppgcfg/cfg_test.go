@@ -293,7 +293,7 @@ func Test_parseFileEntry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := parseFileEntry(tt.args.cflags, tt.args.trimStr, tt.args.path, tt.args.d, tt.args.exts, tt.args.excludeSubdirs)
+			got, _ := parseFileEntry(tt.args.cflags, tt.args.trimStr, tt.args.path, tt.args.d, tt.args.exts, tt.args.excludeSubdirs)
 			if tt.want != nil && got != nil && !got.IsEqual(tt.want) {
 				t.Errorf("parseFileEntry() = %v, want %v", got, tt.want)
 			}
@@ -643,7 +643,7 @@ func TestGenCfg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GenCfg(tt.args.name, tt.args.flag, tt.args.exts, tt.args.excludeSubdirs)
+			got, err := GenCfg(NewGenConfig(tt.args.name, tt.args.flag, tt.args.exts, tt.args.excludeSubdirs))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GenCfg() error = %v, wantErr %v", err, tt.wantErr)
 				return
