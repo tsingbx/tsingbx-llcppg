@@ -443,10 +443,7 @@ func Test_sortIncludes(t *testing.T) {
 				[]string{".h"},
 				[]string{},
 			},
-			[]string{
-				"a.h",
-				"b.h",
-			},
+			[]string{},
 		},
 		{
 			"deps/case4_recircle",

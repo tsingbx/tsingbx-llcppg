@@ -132,10 +132,6 @@ func parseFileEntry(cflags, trimCflag, path string, d fs.DirEntry, exts []string
 		log.Println(outString)
 		return nil
 	}
-	if outString == "" {
-		objFile := NewObjFile(relPath, relPath)
-		return objFile
-	}
 	outString = strings.ReplaceAll(outString, "\\\n", "\n")
 	fields := strings.Fields(outString)
 	lines, objFileStr := findDepSlice(fields)
