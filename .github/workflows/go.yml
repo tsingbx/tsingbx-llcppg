@@ -98,6 +98,12 @@ jobs:
       if: startsWith(matrix.os, 'macos')
       run: go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
 
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
+        slug: goplus/llcppg
+
     - name: Test demos
       run: |
         # TODO(lijie): force python3-embed to be linked with python-3.12-embed
@@ -137,12 +143,5 @@ jobs:
         llcppgtest -demo ./_llcppgtest/gmp -conf conf/linux
         llcppgtest -demo ./_llcppgtest/gpgerror -conf conf/linux
         llcppgtest -demo ./_llcppgtest/zlib -conf conf/linux
-        
-
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{secrets.CODECOV_TOKEN}}
-        slug: goplus/llcppg
 
 
