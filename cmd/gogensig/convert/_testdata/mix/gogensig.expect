@@ -34,5 +34,4 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== llcppg.pub =====
 Foo
-_mix_type X_mixType
 mix_type MixType

@@ -23,5 +23,4 @@ import _ "unsafe"
 type Foo X_foo
 
 ===== llcppg.pub =====
-_foo X_foo
 foo Foo
