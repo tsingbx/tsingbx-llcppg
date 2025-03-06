@@ -75,6 +75,17 @@ func (p *IncludeList) AddCflagEntry(index int, entry *CflagEntry) {
 			p.AddIncludeForObjFile(objFile, index)
 		}
 	}
+	lenInvalidObjFiles := len(entry.InvalidObjFiles)
+	if lenInvalidObjFiles > 0 {
+		fmt.Println("Invlid header files:")
+		for idx, objFile := range entry.InvalidObjFiles {
+			if idx < lenInvalidObjFiles-1 {
+				fmt.Printf("\t\t%q,\n", objFile.HFile)
+			} else {
+				fmt.Printf("\t\t%q\n", objFile.HFile)
+			}
+		}
+	}
 }
 
 func (p *IncludeList) AddIncludeForObjFile(objFile *ObjFile, index int) {
@@ -88,15 +99,16 @@ func (p *IncludeList) AddIncludeForObjFile(objFile *ObjFile, index int) {
 }
 
 type CflagEntry struct {
-	Include  string
-	ObjFiles []*ObjFile
+	Include         string
+	ObjFiles        []*ObjFile
+	InvalidObjFiles []*ObjFile
 }
 
 func (c *CflagEntry) IsEmpty() bool {
 	if len(c.Include) == 0 {
 		return true
 	}
-	if len(c.ObjFiles) == 0 {
+	if len(c.ObjFiles) == 0 && len(c.InvalidObjFiles) == 0 {
 		return true
 	}
 	return false

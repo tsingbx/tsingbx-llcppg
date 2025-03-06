@@ -12,15 +12,17 @@ func GetOut(cmd *exec.Cmd, dir string) (string, error) {
 		return "", newNilError()
 	}
 	outBuf := bytes.NewBufferString("")
+	errBuff := bytes.NewBufferString("")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = outBuf
+	cmd.Stderr = errBuff
 	cmd.Env = os.Environ()
 	if len(dir) > 0 {
 		cmd.Dir = dir
 	}
 	err := cmd.Run()
 	if err != nil {
-		return outBuf.String(), err
+		return errBuff.String(), err
 	}
 	return outBuf.String(), nil
 }
