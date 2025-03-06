@@ -333,6 +333,7 @@ func Test_parseCFlagsEntry(t *testing.T) {
 					{OFile: "cJSON_Utils.o", HFile: "cJSON_Utils.h", Deps: []string{"cJSON.h"}},
 					{OFile: "cJSON.o", HFile: "cJSON.h", Deps: []string{}},
 				},
+				InvalidObjFiles: []*ObjFile{},
 			},
 		},
 		{

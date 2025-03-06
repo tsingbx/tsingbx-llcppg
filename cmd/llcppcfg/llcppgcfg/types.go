@@ -108,7 +108,7 @@ func (c *CflagEntry) IsEmpty() bool {
 	if len(c.Include) == 0 {
 		return true
 	}
-	if len(c.ObjFiles) == 0 {
+	if len(c.ObjFiles) == 0 && len(c.InvalidObjFiles) == 0 {
 		return true
 	}
 	return false

@@ -271,6 +271,8 @@ func TestIncludeList_AddCflagEntry(t *testing.T) {
 	_, inc := newCflags("cfg_test_data/same_rel")
 	inc0 := filepath.Join(inc, "libcjson/include")
 	inc1 := filepath.Join(inc, "stdcjson/include")
+	_, depsInc := newCflags("cfg_test_data/deps")
+	case3Inc := filepath.Join(depsInc, "case3")
 	type fields struct {
 		include    []string
 		absPathMap map[string]struct{}
@@ -381,6 +383,29 @@ func TestIncludeList_AddCflagEntry(t *testing.T) {
 						Include: "",
 						ObjFiles: []*ObjFile{
 							{OFile: "cjson.o", HFile: "cjson.h", Deps: []string{}},
+						},
+					},
+				},
+			},
+			[]string{},
+		},
+		{
+			"deps/case3",
+			fields{
+				make([]string, 0),
+				make(map[string]struct{}),
+				make(map[string]struct{}),
+			},
+			[]args{
+				{
+					0,
+					&CflagEntry{
+						Include:  case3Inc,
+						ObjFiles: []*ObjFile{},
+						InvalidObjFiles: []*ObjFile{
+							{OFile: "a.h", HFile: "a.h", Deps: []string{}},
+							{OFile: "b.h", HFile: "b.h", Deps: []string{}},
+							{OFile: "c.h", HFile: "c.h", Deps: []string{}},
 						},
 					},
 				},
