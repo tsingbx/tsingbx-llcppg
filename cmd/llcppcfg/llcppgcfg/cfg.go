@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"log"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -127,7 +128,11 @@ func parseFileEntry(cflags, trimCflag, path string, d fs.DirEntry, exts []string
 	args := getClangArgs(cflags, relPath)
 	clangCmd := cmdout.NewExecCommand("clang", args...)
 	outString, err := cmdout.GetOut(clangCmd, trimCflag)
-	if err != nil || outString == "" {
+	if err != nil {
+		log.Println(outString)
+		return nil
+	}
+	if outString == "" {
 		objFile := NewObjFile(relPath, relPath)
 		return objFile
 	}
