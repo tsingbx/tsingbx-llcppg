@@ -115,7 +115,7 @@ func prepareEnv(wd, pkg string, deps []string) error {
 		}
 	}
 
-	return config.RunCommand(dir, "go", "get", "github.com/goplus/llgo@main")
+	return config.RunCommand(dir, "go", "get", "github.com/goplus/llgo@v0.10.0")
 }
 
 func printUsage() {
