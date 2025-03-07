@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 	"unsafe"
 
@@ -98,10 +99,15 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 // It returns a list of symbols that can be externally linked.
 func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*parse.SymbolInfo) []*llcppg.SymbolInfo {
 	var commonSymbols []*llcppg.SymbolInfo
+	processedSymbols := make(map[string]bool)
+
 	for _, dylibSym := range dylibSymbols {
 		symName := dylibSym.Name
 		if runtime.GOOS == "darwin" {
 			symName = strings.TrimPrefix(symName, "_")
+		}
+		if _, ok := processedSymbols[symName]; ok {
+			continue
 		}
 		if symInfo, ok := headerSymbols[symName]; ok {
 			symbolInfo := &llcppg.SymbolInfo{
@@ -110,8 +116,14 @@ func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*parse
 				Go:     symInfo.GoName,
 			}
 			commonSymbols = append(commonSymbols, symbolInfo)
+			processedSymbols[symName] = true
 		}
 	}
+
+	sort.Slice(commonSymbols, func(i, j int) bool {
+		return commonSymbols[i].Mangle < commonSymbols[j].Mangle
+	})
+
 	return commonSymbols
 }
 

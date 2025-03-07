@@ -23,6 +23,10 @@
 	}]
 === Test Case: lua ===
 [{
+		"mangle":	"lua_concat",
+		"c++":	"lua_concat(lua_State *, int)",
+		"go":	"(*State).Concat"
+	}, {
 		"mangle":	"lua_error",
 		"c++":	"lua_error(lua_State *)",
 		"go":	"(*State).Error"
@@ -31,27 +35,23 @@
 		"c++":	"lua_next(lua_State *, int)",
 		"go":	"(*State).Next"
 	}, {
-		"mangle":	"lua_concat",
-		"c++":	"lua_concat(lua_State *, int)",
-		"go":	"(*State).Concat"
-	}, {
 		"mangle":	"lua_stringtonumber",
 		"c++":	"lua_stringtonumber(lua_State *, const char *)",
 		"go":	"(*State).Stringtonumber"
 	}]
 === Test Case: cjson ===
 [{
-		"mangle":	"cJSON_Print",
-		"c++":	"cJSON_Print(const cJSON *)",
-		"go":	"(*CJSON).Print"
+		"mangle":	"cJSON_Delete",
+		"c++":	"cJSON_Delete(cJSON *)",
+		"go":	"(*CJSON).Delete"
 	}, {
 		"mangle":	"cJSON_ParseWithLength",
 		"c++":	"cJSON_ParseWithLength(const char *, size_t)",
 		"go":	"ParseWithLength"
 	}, {
-		"mangle":	"cJSON_Delete",
-		"c++":	"cJSON_Delete(cJSON *)",
-		"go":	"(*CJSON).Delete"
+		"mangle":	"cJSON_Print",
+		"c++":	"cJSON_Print(const cJSON *)",
+		"go":	"(*CJSON).Print"
 	}]
 === Test Case: isl ===
 [{
@@ -61,17 +61,17 @@
 	}]
 === Test Case: gpgerror ===
 [{
-		"mangle":	"gpg_strsource",
-		"c++":	"gpg_strsource(gpg_error_t)",
-		"go":	"ErrorT.Strsource"
+		"mangle":	"gpg_strerror",
+		"c++":	"gpg_strerror(gpg_error_t)",
+		"go":	"ErrorT.Strerror"
 	}, {
 		"mangle":	"gpg_strerror_r",
 		"c++":	"gpg_strerror_r(gpg_error_t, char *, size_t)",
 		"go":	"ErrorT.StrerrorR"
 	}, {
-		"mangle":	"gpg_strerror",
-		"c++":	"gpg_strerror(gpg_error_t)",
-		"go":	"ErrorT.Strerror"
+		"mangle":	"gpg_strsource",
+		"c++":	"gpg_strsource(gpg_error_t)",
+		"go":	"ErrorT.Strsource"
 	}]
 
 #stderr
