@@ -49,6 +49,8 @@ func TestParseHeaderFile() {
 				"cJSON_Print",
 				"cJSON_ParseWithLength",
 				"cJSON_Delete",
+				// mock multiple symbols
+				"cJSON_Delete",
 			},
 		},
 		{
