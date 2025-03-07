@@ -44,59 +44,33 @@ func init() {
 		"TypeDecl":     TypeDecl,
 		"EnumTypeDecl": EnumTypeDecl,
 
-		"File":      File,
-		"FileEntry": FileEntry,
+		"File": File,
 	}
 }
 
-func FileSet(data []byte) ([]*llcppg.FileEntry, error) {
-	type fileSetTemp []json.RawMessage
-
-	var fileSetData fileSetTemp
-	if err := json.Unmarshal(data, &fileSetData); err != nil {
-		return nil, newDeserializeError("FileSet", fileSetData, data, err)
+func Pkg(data []byte) (*llcppg.Pkg, error) {
+	type pkgTemp struct {
+		File    json.RawMessage
+		FileMap map[string]*llcppg.FileInfo
 	}
-	fileSet := []*llcppg.FileEntry{}
-	for _, fileData := range fileSetData {
-		fileNode, err := Node(fileData)
-		if err != nil {
-			return nil, newUnmarshalFieldError("FileSet", fileSetData, "Files", data, err)
-		}
-		file, ok := fileNode.(*llcppg.FileEntry)
-		if !ok {
-			return nil, newUnexpectType("FileSet", fileNode, &llcppg.FileEntry{})
-		}
-		fileSet = append(fileSet, file)
-	}
+	var pkgData pkgTemp
 
-	return fileSet, nil
-}
-
-func FileEntry(data []byte) (ast.Node, error) {
-	type fileEntryTemp struct {
-		Path     string          `json:"path"`
-		Doc      json.RawMessage `json:"doc"`
-		FileType llcppg.FileType `json:"fileType"`
+	if err := json.Unmarshal(data, &pkgData); err != nil {
+		return nil, newDeserializeError("Pkg", pkgData, data, err)
 	}
-	var fileEntryData fileEntryTemp
-	if err := json.Unmarshal(data, &fileEntryData); err != nil {
-		return nil, newDeserializeError("FileEntry", fileEntryData, data, err)
-	}
-
-	docNode, err := Node(fileEntryData.Doc)
+	fileNode, err := Node(pkgData.File)
 	if err != nil {
-		return nil, newFileEntryError(fileEntryData.Path, err)
+		return nil, newUnmarshalFieldError("Pkg", pkgData, "File", data, err)
 	}
 
-	file, ok := docNode.(*ast.File)
+	file, ok := fileNode.(*ast.File)
 	if !ok {
-		return nil, newUnexpectType("FileEntry", docNode, &ast.File{})
+		return nil, newUnexpectType("File", fileNode, &ast.File{})
 	}
 
-	return &llcppg.FileEntry{
-		Path:     fileEntryData.Path,
-		FileType: fileEntryData.FileType,
-		Doc:      file,
+	return &llcppg.Pkg{
+		File:    file,
+		FileMap: pkgData.FileMap,
 	}, nil
 }
 
@@ -771,21 +745,5 @@ func newUnexpectType(funcName string, gotType any, wantType any) *UnexpectType {
 		Func:     funcName,
 		GotType:  gotType,
 		WantType: wantType,
-	}
-}
-
-type FileEntryError struct {
-	Path string
-	Err  error
-}
-
-func (e *FileEntryError) Error() string {
-	return fmt.Sprintf("unmarshal FileEntry error in path %s: %v", e.Path, e.Err)
-}
-
-func newFileEntryError(path string, err error) *FileEntryError {
-	return &FileEntryError{
-		Path: path,
-		Err:  err,
 	}
 }

@@ -53,8 +53,11 @@ const (
 	Third
 )
 
-type FileEntry struct {
-	Path     string
+type FileInfo struct {
 	FileType FileType
-	Doc      *ast.File
+}
+
+type Pkg struct {
+	File    *ast.File
+	FileMap map[string]*FileInfo
 }

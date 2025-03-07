@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
@@ -27,6 +28,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 )
@@ -73,6 +75,12 @@ func main() {
 			isTemp = args.BoolArg(arg, false)
 		case strings.HasPrefix(arg, "-cpp="):
 			isCpp = args.BoolArg(arg, true)
+		case strings.HasPrefix(arg, "-ClangResourceDir="):
+			// temp to avoid call clang  in llcppsigfetch,will cause hang
+			parse.ClangResourceDir = args.StringArg(arg, "")
+		case strings.HasPrefix(arg, "-ClangSearchPath="):
+			// temp to avoid call clang  in llcppsigfetch,will cause hang
+			parse.ClangSearchPath = strings.Split(args.StringArg(arg, ""), ",")
 		default:
 			otherArgs = append(otherArgs, arg)
 		}
@@ -152,14 +160,20 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 		os.Exit(1)
 	}
 
-	context, err := parse.Do(conf.Config)
+	converter, err := parse.Do(&parse.ParseConfig{
+		Conf: conf.Config,
+	})
 	check(err)
-
-	outputInfo(context, outputToFile)
+	info := converter.Output()
+	str := info.Print()
+	defer cjson.FreeCStr(str)
+	defer info.Delete()
+	outputResult(str, outputToFile)
 }
 
 func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
 	var file string
+	cflags := otherArgs
 	if isTemp {
 		temp, err := os.Create(clangutils.TEMP_FILE)
 		if err != nil {
@@ -169,18 +183,16 @@ func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherAr
 		defer os.Remove(file)
 		temp.Write([]byte(content))
 		file = temp.Name()
+		cflags = append(cflags, "-I"+filepath.Dir(file))
 	} else {
 		file = content
 	}
-	cfg := &clangutils.Config{
-		File:  file,
-		Args:  otherArgs,
-		IsCpp: isCpp,
-		Temp:  false,
-	}
 
-	converter, err := parse.NewConverter(cfg, &config.PkgHfilesInfo{
-		Inters: []string{file},
+	converter, err := parse.Do(&parse.ParseConfig{
+		Conf: &llcppg.Config{
+			Include: []string{file},
+			CFlags:  strings.Join(cflags, ""),
+		},
 	})
 	check(err)
 	_, err = converter.Convert()
@@ -211,12 +223,4 @@ func outputResult(result *c.Char, outputToFile bool) {
 	} else {
 		c.Printf(c.Str("%s"), result)
 	}
-}
-
-func outputInfo(context *parse.Context, outputToFile bool) {
-	info := context.Output()
-	str := info.Print()
-	defer cjson.FreeCStr(str)
-	defer info.Delete()
-	outputResult(str, outputToFile)
 }

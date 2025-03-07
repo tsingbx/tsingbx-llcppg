@@ -91,6 +91,10 @@ type CallInfo struct {
 	Unused [8]uint8
 }
 
+type TestReferImplicateForward struct {
+	ICi *CallInfo
+}
+
 type Fts5ExtensionApi struct {
 	Unused [8]uint8
 }
@@ -137,4 +141,5 @@ sqlite3_pcache Pcache
 sqlite3_pcache_methods2 PcacheMethods2
 sqlite3_pcache_page PcachePage
 sqlite3_value Value
+testReferImplicateForward TestReferImplicateForward
 xmlParserCtxt XmlParserCtxt

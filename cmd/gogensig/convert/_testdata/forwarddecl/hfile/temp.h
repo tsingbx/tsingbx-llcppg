@@ -67,6 +67,10 @@ struct lua_Debug {
     struct CallInfo *i_ci; /* active function */
 };
 
+struct testReferImplicateForward {
+    struct CallInfo *i_ci; /* active function */
+};
+
 typedef struct Fts5ExtensionApi Fts5ExtensionApi;
 typedef struct Fts5Context Fts5Context;
 typedef struct Fts5PhraseIter Fts5PhraseIter;

@@ -1,0 +1,330 @@
+===== tree.go =====
+package xml2
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+
+type ElementType c.Int
+
+const (
+	ELEMENTNODE      ElementType = 1
+	ATTRIBUTENODE    ElementType = 2
+	TEXTNODE         ElementType = 3
+	CDATASECTIONNODE ElementType = 4
+	ENTITYREFNODE    ElementType = 5
+	ENTITYNODE       ElementType = 6
+	PINODE           ElementType = 7
+	COMMENTNODE      ElementType = 8
+	DOCUMENTNODE     ElementType = 9
+	DOCUMENTTYPENODE ElementType = 10
+	DOCUMENTFRAGNODE ElementType = 11
+	NOTATIONNODE     ElementType = 12
+	HTMLDOCUMENTNODE ElementType = 13
+	DTDNODE          ElementType = 14
+	ELEMENTDECL      ElementType = 15
+	ATTRIBUTEDECL    ElementType = 16
+	ENTITYDECL       ElementType = 17
+	NAMESPACEDECL    ElementType = 18
+	XINCLUDESTART    ElementType = 19
+	XINCLUDEEND      ElementType = 20
+)
+
+type AttributeType c.Int
+
+const (
+	ATTRIBUTECDATA       AttributeType = 1
+	ATTRIBUTEID          AttributeType = 2
+	ATTRIBUTEIDREF       AttributeType = 3
+	ATTRIBUTEIDREFS      AttributeType = 4
+	ATTRIBUTEENTITY      AttributeType = 5
+	ATTRIBUTEENTITIES    AttributeType = 6
+	ATTRIBUTENMTOKEN     AttributeType = 7
+	ATTRIBUTENMTOKENS    AttributeType = 8
+	ATTRIBUTEENUMERATION AttributeType = 9
+	ATTRIBUTENOTATION    AttributeType = 10
+)
+
+type NsType ElementType
+
+type X_xmlNs struct {
+	Next      *X_xmlNs
+	Type      NsType
+	Href      *Char
+	Prefix    *Char
+	X_private unsafe.Pointer
+	Context   *X_xmlDoc
+}
+type Ns X_xmlNs
+type NsPtr *Ns
+
+type X_xmlDoc struct {
+	X_private   unsafe.Pointer
+	Type        ElementType
+	Name        *int8
+	Children    *X_xmlNode
+	Last        *X_xmlNode
+	Parent      *X_xmlNode
+	Next        *X_xmlNode
+	Prev        *X_xmlNode
+	Doc         *X_xmlDoc
+	Compression c.Int
+	Standalone  c.Int
+	IntSubset   *X_xmlDtd
+	ExtSubset   *X_xmlDtd
+	OldNs       *X_xmlNs
+	Version     *Char
+	Encoding    *Char
+	Ids         unsafe.Pointer
+	Refs        unsafe.Pointer
+	URL         *Char
+	Charset     c.Int
+	Dict        *X_xmlDict
+	Psvi        unsafe.Pointer
+	ParseFlags  c.Int
+	Properties  c.Int
+}
+
+type X_xmlDtd struct {
+	X_private  unsafe.Pointer
+	Type       ElementType
+	Name       *Char
+	Children   *X_xmlNode
+	Last       *X_xmlNode
+	Parent     *X_xmlDoc
+	Next       *X_xmlNode
+	Prev       *X_xmlNode
+	Doc        *X_xmlDoc
+	Notations  unsafe.Pointer
+	Elements   unsafe.Pointer
+	Attributes unsafe.Pointer
+	Entities   unsafe.Pointer
+	ExternalID *Char
+	SystemID   *Char
+	Pentities  unsafe.Pointer
+}
+type Dtd X_xmlDtd
+type DtdPtr *Dtd
+
+type X_xmlNode struct {
+	X_private  unsafe.Pointer
+	Type       ElementType
+	Name       *Char
+	Children   *X_xmlNode
+	Last       *X_xmlNode
+	Parent     *X_xmlNode
+	Next       *X_xmlNode
+	Prev       *X_xmlNode
+	Doc        *X_xmlDoc
+	Ns         *Ns
+	Content    *Char
+	Properties *X_xmlAttr
+	NsDef      *Ns
+	Psvi       unsafe.Pointer
+	Line       uint16
+	Extra      uint16
+}
+
+type X_xmlAttr struct {
+	X_private unsafe.Pointer
+	Type      ElementType
+	Name      *Char
+	Children  *X_xmlNode
+	Last      *X_xmlNode
+	Parent    *X_xmlNode
+	Next      *X_xmlAttr
+	Prev      *X_xmlAttr
+	Doc       *X_xmlDoc
+	Ns        *Ns
+	Atype     AttributeType
+	Psvi      unsafe.Pointer
+	Id        *X_xmlID
+}
+type Attr X_xmlAttr
+type AttrPtr *Attr
+
+type X_xmlID struct {
+	Next   *X_xmlID
+	Value  *Char
+	Attr   AttrPtr
+	Name   *Char
+	Lineno c.Int
+	Doc    *X_xmlDoc
+}
+type ID X_xmlID
+type IDPtr *ID
+type Node X_xmlNode
+type NodePtr *Node
+type Doc X_xmlDoc
+type DocPtr *Doc
+
+type X_xmlDict struct {
+	Unused [8]uint8
+}
+
+===== xml2_autogen_link.go =====
+package xml2
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
+
+===== xmlexports.go =====
+package xml2
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+//go:linkname CheckVersion C.xmlCheckVersion
+func CheckVersion(version c.Int)
+
+===== xmlstring.go =====
+package xml2
+
+import (
+	"github.com/goplus/llgo/c"
+	"unsafe"
+)
+
+type Char int8
+// llgo:link (*Char).Strdup C.xmlStrdup
+func (recv_ *Char) Strdup() *Char {
+	return nil
+}
+// llgo:link (*Char).Strndup C.xmlStrndup
+func (recv_ *Char) Strndup(len c.Int) *Char {
+	return nil
+}
+//go:linkname CharStrndup C.xmlCharStrndup
+func CharStrndup(cur *int8, len c.Int) *Char
+//go:linkname CharStrdup C.xmlCharStrdup
+func CharStrdup(cur *int8) *Char
+// llgo:link (*Char).Strsub C.xmlStrsub
+func (recv_ *Char) Strsub(start c.Int, len c.Int) *Char {
+	return nil
+}
+// llgo:link (*Char).Strchr C.xmlStrchr
+func (recv_ *Char) Strchr(val Char) *Char {
+	return nil
+}
+// llgo:link (*Char).Strstr C.xmlStrstr
+func (recv_ *Char) Strstr(val *Char) *Char {
+	return nil
+}
+// llgo:link (*Char).Strcasestr C.xmlStrcasestr
+func (recv_ *Char) Strcasestr(val *Char) *Char {
+	return nil
+}
+// llgo:link (*Char).Strcmp C.xmlStrcmp
+func (recv_ *Char) Strcmp(str2 *Char) c.Int {
+	return 0
+}
+// llgo:link (*Char).Strncmp C.xmlStrncmp
+func (recv_ *Char) Strncmp(str2 *Char, len c.Int) c.Int {
+	return 0
+}
+// llgo:link (*Char).Strcasecmp C.xmlStrcasecmp
+func (recv_ *Char) Strcasecmp(str2 *Char) c.Int {
+	return 0
+}
+// llgo:link (*Char).Strncasecmp C.xmlStrncasecmp
+func (recv_ *Char) Strncasecmp(str2 *Char, len c.Int) c.Int {
+	return 0
+}
+// llgo:link (*Char).StrEqual C.xmlStrEqual
+func (recv_ *Char) StrEqual(str2 *Char) c.Int {
+	return 0
+}
+// llgo:link (*Char).StrQEqual C.xmlStrQEqual
+func (recv_ *Char) StrQEqual(name *Char, str *Char) c.Int {
+	return 0
+}
+// llgo:link (*Char).Strlen C.xmlStrlen
+func (recv_ *Char) Strlen() c.Int {
+	return 0
+}
+// llgo:link (*Char).Strcat C.xmlStrcat
+func (recv_ *Char) Strcat(add *Char) *Char {
+	return nil
+}
+// llgo:link (*Char).Strncat C.xmlStrncat
+func (recv_ *Char) Strncat(add *Char, len c.Int) *Char {
+	return nil
+}
+// llgo:link (*Char).StrncatNew C.xmlStrncatNew
+func (recv_ *Char) StrncatNew(str2 *Char, len c.Int) *Char {
+	return nil
+}
+// llgo:link (*Char).StrPrintf C.xmlStrPrintf
+func (recv_ *Char) StrPrintf(len c.Int, msg *int8, __llgo_va_list ...interface{}) c.Int {
+	return 0
+}
+// llgo:link (*Char).StrVPrintf C.xmlStrVPrintf
+func (recv_ *Char) StrVPrintf(len c.Int, msg *int8, ap unsafe.Pointer) c.Int {
+	return 0
+}
+//go:linkname GetUTF8Char C.xmlGetUTF8Char
+func GetUTF8Char(utf *int8, len *c.Int) c.Int
+//go:linkname CheckUTF8 C.xmlCheckUTF8
+func CheckUTF8(utf *int8) c.Int
+// llgo:link (*Char).UTF8Strsize C.xmlUTF8Strsize
+func (recv_ *Char) UTF8Strsize(len c.Int) c.Int {
+	return 0
+}
+// llgo:link (*Char).UTF8Strndup C.xmlUTF8Strndup
+func (recv_ *Char) UTF8Strndup(len c.Int) *Char {
+	return nil
+}
+// llgo:link (*Char).UTF8Strpos C.xmlUTF8Strpos
+func (recv_ *Char) UTF8Strpos(pos c.Int) *Char {
+	return nil
+}
+// llgo:link (*Char).UTF8Strloc C.xmlUTF8Strloc
+func (recv_ *Char) UTF8Strloc(utfchar *Char) c.Int {
+	return 0
+}
+// llgo:link (*Char).UTF8Strsub C.xmlUTF8Strsub
+func (recv_ *Char) UTF8Strsub(start c.Int, len c.Int) *Char {
+	return nil
+}
+// llgo:link (*Char).UTF8Strlen C.xmlUTF8Strlen
+func (recv_ *Char) UTF8Strlen() c.Int {
+	return 0
+}
+// llgo:link (*Char).UTF8Size C.xmlUTF8Size
+func (recv_ *Char) UTF8Size() c.Int {
+	return 0
+}
+// llgo:link (*Char).UTF8Charcmp C.xmlUTF8Charcmp
+func (recv_ *Char) UTF8Charcmp(utf2 *Char) c.Int {
+	return 0
+}
+
+===== xmlversion.go =====
+package xml2
+
+import _ "unsafe"
+
+const LIBXML_DOTTED_VERSION = "2.13.5"
+const LIBXML_VERSION = 21305
+const LIBXML_VERSION_STRING = "21305"
+const LIBXML_VERSION_EXTRA = ""
+const LIBXML_MODULE_EXTENSION = ".so"
+
+===== llcppg.pub =====
+xmlAttr Attr
+xmlAttrPtr AttrPtr
+xmlAttributeType AttributeType
+xmlChar Char
+xmlDoc Doc
+xmlDocPtr DocPtr
+xmlDtd Dtd
+xmlDtdPtr DtdPtr
+xmlElementType ElementType
+xmlID ID
+xmlIDPtr IDPtr
+xmlNode Node
+xmlNodePtr NodePtr
+xmlNs Ns
+xmlNsPtr NsPtr
+xmlNsType NsType

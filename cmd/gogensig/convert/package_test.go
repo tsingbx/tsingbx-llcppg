@@ -213,6 +213,16 @@ func TestToType(t *testing.T) {
 	}
 }
 
+func TestToTypeFail(t *testing.T) {
+	pkg := createTestPkg(t, &convert.PackageConfig{
+		OutputDir: "",
+	})
+	_, err := pkg.ToType(&ast.Comment{Text: "test"})
+	if err == nil {
+		t.Fatal("Expect error but got nil")
+	}
+}
+
 var tempFile = &convert.HeaderFile{
 	File:     "/path/to/temp.go",
 	FileType: llcppg.Inter,

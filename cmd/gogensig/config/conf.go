@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	"github.com/goplus/llcppg/llcppg"
 )
 
@@ -34,8 +33,16 @@ func GetPubFromPath(filePath string) (map[string]string, error) {
 	return ReadPubFile(filePath)
 }
 
-func GetCppgSigfetchFromByte(data []byte) ([]*llcppg.FileEntry, error) {
-	return unmarshal.FileSet(data)
+func ReadSigfetchFile(sigfetchFile string) ([]byte, error) {
+	_, file := filepath.Split(sigfetchFile)
+	var data []byte
+	var err error
+	if file == "-" {
+		data, err = io.ReadAll(os.Stdin)
+	} else {
+		data, err = os.ReadFile(sigfetchFile)
+	}
+	return data, err
 }
 
 type SigfetchExtractConfig struct {
@@ -58,16 +65,16 @@ func SigfetchExtract(cfg *SigfetchExtractConfig) ([]byte, error) {
 		args = append(args, "-cpp=false")
 	}
 
-	return executeSigfetch(args, cfg.Dir)
+	return executeSigfetch(args, cfg.Dir, cfg.IsCpp)
 }
 
-func SigfetchConfig(configFile string, dir string) ([]byte, error) {
+func SigfetchConfig(configFile string, dir string, isCpp bool) ([]byte, error) {
 	args := []string{configFile}
-	return executeSigfetch(args, dir)
+	return executeSigfetch(args, dir, isCpp)
 }
 
-func executeSigfetch(args []string, dir string) ([]byte, error) {
-	cmd := exec.Command("llcppsigfetch", args...)
+func executeSigfetch(args []string, dir string, isCpp bool) ([]byte, error) {
+	cmd := exec.Command("llcppsigfetch", append(args, "-ClangResourceDir="+ClangResourceDir())...)
 	if dir != "" {
 		cmd.Dir = dir
 	}
@@ -169,4 +176,13 @@ func CreateJSONFile(filepath string, data any) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(data)
+}
+
+// temp to avoid call exec.Command in llcppsigfetch
+func ClangResourceDir() string {
+	res, err := exec.Command("clang", "-print-resource-dir").Output()
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(string(res))
 }

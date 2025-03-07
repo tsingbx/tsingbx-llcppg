@@ -125,7 +125,7 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 	}
 
 	if curFile == nil {
-		curFile = NewHeaderFile(hfile.File, hfile.FileType)
+		curFile = hfile
 		p.files = append(p.files, curFile)
 	}
 
@@ -384,9 +384,6 @@ func (p *Package) handleCompleteType(incom *Incomplete, typ *ast.RecordType, nam
 // For such declarations, create a empty type decl and store it in the
 // incomplete map, but not in the public symbol table.
 func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
-	// if decl, ok := p.incomplete[name]; ok {
-	// 	return decl.decl
-	// }
 	if decl, ok := p.incompleteTypes.Lookup(name); ok {
 		return decl.decl
 	}
