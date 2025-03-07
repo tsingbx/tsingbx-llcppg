@@ -300,6 +300,8 @@ Otherwise, start with `v0.1.0`, until it releases a stable version. (libass@0.17
 
 #### Problem
 
+As the previous example shows, non-breaking changes introduced by upstream C library updates should be indicated by llpkg's **MINOR** update. But there's one exception:
+
 | C Library Version | llpkg Version | Issue |
 |--------------------|---------------|-------|
 | 1.5.1             | `1.0.0`       | Initial release |
@@ -307,7 +309,9 @@ Otherwise, start with `v0.1.0`, until it releases a stable version. (libass@0.17
 | 1.6               | `1.1.0`       | Minor increment |
 | 1.5.2             | ?             | Conflict: `1.1.0` already allocated |
 
-If we increment PATCH to `1.0.2` to represent `cjson@1.5.2`:
+In this case, upstream releases `1.5.2` targeting older `1.5.x` series, which should have been represented by **MINOR** update. However, we cannot simply assign `1.2.0` to `1.5.2`, because in that case, `1.6` would be less prioritized than `1.5.2` (breaking version ordering). We can't assign `1.1.0` either, because `1.1.0` is already allocated to `1.6`.
+
+The solution that keeps the version ordering is to update llpkg's **PATCH**. If we increment PATCH to `1.0.2` to represent `cjson@1.5.2`:
 
 | C Library Version | llpkg Version | Issue |
 |--------------------|---------------|-------|
@@ -317,7 +321,7 @@ If we increment PATCH to `1.0.2` to represent `cjson@1.5.2`:
 | 1.5.2             | `1.0.2`       | Conflict: `1.1.0` already allocated |
 | 1.5.1 (llpkg fix 2) | `1.0.3`       | Patch increment |
 
-`cjson@1.5.2` > `cjson@1.5.1` maps to `llpkg@1.0.2` < `llpkg@1.0.3` (breaking version ordering), which causes MVS to prioritize `1.0.3` (lower priority upstream version) over `1.0.2`.
+`cjson@1.5.2` > `cjson@1.5.1` maps to `llpkg@1.0.2` < `llpkg@1.0.3`, which causes MVS to prioritize `1.0.3` (lower priority upstream version) over `1.0.2`. llpkg's self patching for previous minor versions breaks the version ordering!
 
 #### Conflict resolution rule
 
@@ -418,10 +422,10 @@ Post-processing GitHub Action will tag the commit following the [Version Tag Rul
 
 1. Create an issue to discuss the package that requires maintenance.  
 2. The maintainer creates a label in the format `branch:release-branch.{CLibraryName}/{MappedVersion}` and adds it to the issue if the package needs maintenance.  
-3. A GitHub Action is triggered when the label is created. It searches for issues with the specified label and determines whether a branch should be created based on the [Branch Maintenance Strategy](#branch-maintenance-strategy).  
+3. A GitHub Action is triggered when the label is created. It determines whether a branch should be created based on the [Branch Maintenance Strategy](#branch-maintenance-strategy).  
 4. Open a pull request (PR) for maintenance. The maintainer **SHOULD** merge the PR with the commit message `fixed {IssueID}` to close the related issue.  
 5. When issues labeled with `branch:release-branch.` are closed, we need to determine whether to remove the branch. In the following case, the branch and label can be safely removed:  
-   - No commit contains `fix* {ThisIssueID}`.(* means the commit starting with `fix` prefix)
+   - No associated PR with commit containing `fix* {ThisIssueID}`.(* means the commit starting with `fix` prefix)
 
 ## llpkg.goplus.org
 
