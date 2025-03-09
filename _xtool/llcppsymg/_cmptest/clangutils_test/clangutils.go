@@ -15,6 +15,7 @@ func main() {
 	TestClangUtil()
 	TestComposeIncludes()
 	TestPreprocess()
+	TestComment()
 }
 
 func TestClangUtil() {
@@ -198,6 +199,39 @@ func TestPreprocess() {
 	})
 	outfile.Close()
 	os.Remove(outfile.Name())
+}
+
+func TestComment() {
+	fmt.Println("=== TestComment ===")
+	config := &clangutils.Config{
+		File: `
+		#include <comment.h>
+		`,
+		Temp:  true,
+		IsCpp: false,
+		Args:  []string{"-I./hfile", "-E", "-fparse-all-comments"},
+	}
+	index, unit, err := clangutils.CreateTranslationUnit(config)
+	if err != nil {
+		fmt.Printf("CreateTranslationUnit failed: %v\n", err)
+	}
+
+	cursor := unit.Cursor()
+
+	clangutils.VisitChildren(cursor, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
+		if cursor.Kind != clang.CursorMacroDefinition && cursor.Kind != clang.CursorInclusionDirective {
+			fmt.Println("cursor", clang.GoString(cursor.String()), "rawComment:", clang.GoString(cursor.RawCommentText()))
+			commentRange := cursor.CommentRange()
+			cursorRange := cursor.Extent()
+			fmt.Printf("commentRange %d:%d -> %d:%d\n", commentRange.RangeStart().Line(), commentRange.RangeStart().Column(), commentRange.RangeEnd().Line(), commentRange.RangeEnd().Column())
+			fmt.Printf("cursorRange %d:%d -> %d:%d\n", cursorRange.RangeStart().Line(), cursorRange.RangeStart().Column(), cursorRange.RangeEnd().Line(), cursorRange.RangeEnd().Column())
+			fmt.Println("--------------------------------")
+		}
+		return clang.ChildVisit_Recurse
+	})
+
+	index.Dispose()
+	unit.Dispose()
 }
 
 func outputInfoFromTranslationUnit(config *clangutils.Config, visitFunc func(cursor, parent clang.Cursor) clang.ChildVisitResult) {
