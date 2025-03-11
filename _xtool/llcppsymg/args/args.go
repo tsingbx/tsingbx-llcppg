@@ -16,6 +16,7 @@ type Args struct {
 	VerboseSigfetchParse bool //-vsp llcppsigfetch parse.go
 	VerboseParseIsMethod bool //-vpim
 	UseStdin             bool
+	ParseAllComment      bool
 	CfgFile              string
 }
 
@@ -31,6 +32,9 @@ func ParseArgs(args []string, defaultCfgFile string, swflags map[string]bool) (*
 				continue
 			case "-v":
 				result.Verbose = true
+				continue
+			case "-parse-all-comment":
+				result.ParseAllComment = true
 				continue
 			case "-vpim":
 				result.VerboseParseIsMethod = true

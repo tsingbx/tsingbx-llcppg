@@ -28,13 +28,13 @@ func RunTest(testName string, testCases []string) {
 				Include:   include,
 				CFlags:    cflags,
 			},
-		})
+		}, true)
 		os.Remove(tempIncFile)
 	}
 }
 
-func RunTestWithConfig(config *parse.ParseConfig) {
-	cvt, err := parse.Do(config)
+func RunTestWithConfig(config *parse.ParseConfig, parseAllComment bool) {
+	cvt, err := parse.Do(config, parseAllComment)
 	if err != nil {
 		panic(err)
 	}

@@ -54,6 +54,7 @@ func main() {
 	var extractFile string
 	isTemp := false
 	isCpp := true
+	parseAllComments := true
 	otherArgs := []string{}
 
 	for i := 0; i < len(remainArgs); i++ {
@@ -75,6 +76,8 @@ func main() {
 			isTemp = args.BoolArg(arg, false)
 		case strings.HasPrefix(arg, "-cpp="):
 			isCpp = args.BoolArg(arg, true)
+		case strings.HasPrefix(arg, "-parse-all-comment"):
+			parseAllComments = args.BoolArg(arg, true)
 		case strings.HasPrefix(arg, "-ClangResourceDir="):
 			// temp to avoid call clang  in llcppsigfetch,will cause hang
 			parse.ClangResourceDir = args.StringArg(arg, "")
@@ -91,17 +94,18 @@ func main() {
 			fmt.Fprintln(os.Stderr, "runExtract: extractFile:", extractFile)
 			fmt.Fprintln(os.Stderr, "isTemp:", isTemp)
 			fmt.Fprintln(os.Stderr, "isCpp:", isCpp)
+			fmt.Fprintln(os.Stderr, "parseAllComment:", parseAllComments)
 			fmt.Fprintln(os.Stderr, "out:", out)
 			fmt.Fprintln(os.Stderr, "otherArgs:", otherArgs)
 		}
-		runExtract(extractFile, isTemp, isCpp, out, otherArgs, ags.Verbose)
+		runExtract(extractFile, isTemp, isCpp, out, otherArgs, ags.Verbose, parseAllComments)
 	} else {
 		if ags.Verbose {
 			fmt.Fprintln(os.Stderr, "runFromConfig: config file:", ags.CfgFile)
 			fmt.Fprintln(os.Stderr, "use stdin:", ags.UseStdin)
 			fmt.Fprintln(os.Stderr, "output to file:", out)
 		}
-		runFromConfig(ags.CfgFile, ags.UseStdin, out, ags.Verbose)
+		runFromConfig(ags.CfgFile, ags.UseStdin, out, ags.Verbose, ags.ParseAllComment)
 	}
 
 }
@@ -134,7 +138,7 @@ func printUsage() {
 	fmt.Println("Note: The two usage modes are mutually exclusive. Use either [<config_file>] OR --extract, not both.")
 }
 
-func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose bool) {
+func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose bool, parseAllComment bool) {
 	var data []byte
 	var err error
 	if useStdin {
@@ -162,7 +166,8 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 
 	converter, err := parse.Do(&parse.ParseConfig{
 		Conf: conf.Config,
-	})
+	}, parseAllComment)
+
 	check(err)
 	info := converter.Output()
 	str := info.Print()
@@ -171,7 +176,7 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 	outputResult(str, outputToFile)
 }
 
-func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
+func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool, parseAllComment bool) {
 	var file string
 	cflags := otherArgs
 	if isTemp {
@@ -193,10 +198,12 @@ func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherAr
 			Include: []string{file},
 			CFlags:  strings.Join(cflags, ""),
 		},
-	})
+	}, parseAllComment)
 	check(err)
+
 	_, err = converter.Convert()
 	check(err)
+
 	result := converter.Output()
 	cstr := result.Print()
 	outputResult(cstr, outToFile)

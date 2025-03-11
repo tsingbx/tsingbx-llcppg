@@ -17,7 +17,7 @@ func TestForwardDecl() {
 			Include: []string{"forwarddecl.h"},
 			CFlags:  "-I./hfile/",
 		},
-	})
+	}, true)
 }
 
 func TestForwardDeclCrossFile() {
@@ -26,5 +26,5 @@ func TestForwardDeclCrossFile() {
 			Include: []string{"def.h"},
 			CFlags:  "-I./hfile/",
 		},
-	})
+	}, true)
 }

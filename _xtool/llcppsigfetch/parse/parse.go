@@ -23,7 +23,7 @@ type ParseConfig struct {
 	OutputFile       bool
 }
 
-func Do(cfg *ParseConfig) (*Converter, error) {
+func Do(cfg *ParseConfig, parseAllComment bool) (*Converter, error) {
 	if err := createTempIfNoExist(&cfg.CombinedFile, cfg.Conf.Name+"*.h"); err != nil {
 		return nil, err
 	}
@@ -46,6 +46,9 @@ func Do(cfg *ParseConfig) (*Converter, error) {
 	clangFlags := strings.Fields(cfg.Conf.CFlags)
 	clangFlags = append(clangFlags, "-C")  // keep comment
 	clangFlags = append(clangFlags, "-dD") // keep macro
+	if parseAllComment {
+		clangFlags = append(clangFlags, "-fparse-all-comments")
+	}
 
 	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
 		File:    cfg.CombinedFile,
@@ -63,6 +66,9 @@ func Do(cfg *ParseConfig) (*Converter, error) {
 	// Currently, directly calling exec.Command in the main flow of llcppsigfetch will cause hang and fail to execute correctly.
 	// As a solution, the resource directory is externally provided by llcppg.
 	libclangFlags := []string{}
+	if parseAllComment {
+		libclangFlags = append(libclangFlags, "-fparse-all-comments")
+	}
 	if ClangResourceDir != "" {
 		libclangFlags = append(libclangFlags, "-resource-dir="+ClangResourceDir, "-I"+path.Join(ClangResourceDir, "include"))
 	}

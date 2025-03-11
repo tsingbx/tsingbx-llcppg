@@ -86,7 +86,7 @@ func TestSigfetch(t *testing.T) {
 }
 
 func TestSigfetchConfig(t *testing.T) {
-	data, err := config.SigfetchConfig(llcppg.LLCPPG_CFG, "./_testinput", false)
+	data, err := config.SigfetchConfig(llcppg.LLCPPG_CFG, "./_testinput", false, false)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -33,7 +33,7 @@ func TestInclusionMap() {
 			Include: []string{"sys.h"},
 			CFlags:  "-I./testdata/sysinc",
 		},
-	})
+	}, true)
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +57,7 @@ func TestSystemHeader() {
 			Include: []string{"inc.h"},
 			CFlags:  "-I./testdata/sysinc",
 		},
-	})
+	}, true)
 	if err != nil {
 		panic(err)
 	}
@@ -78,5 +78,5 @@ func TestMacroExpansionOtherFile() {
 			Include: []string{"ref.h"},
 			CFlags:  "-I./testdata/macroexpan",
 		},
-	})
+	}, true)
 }

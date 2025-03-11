@@ -68,8 +68,11 @@ func SigfetchExtract(cfg *SigfetchExtractConfig) ([]byte, error) {
 	return executeSigfetch(args, cfg.Dir, cfg.IsCpp)
 }
 
-func SigfetchConfig(configFile string, dir string, isCpp bool) ([]byte, error) {
+func SigfetchConfig(configFile string, dir string, isCpp bool, parseAllComment bool) ([]byte, error) {
 	args := []string{configFile}
+	if parseAllComment {
+		args = append(args, "-parse-all-comment")
+	}
 	return executeSigfetch(args, dir, isCpp)
 }
 

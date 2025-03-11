@@ -39,5 +39,5 @@ func TestPreprocess() {
 		CombinedFile:     combinedFile.Name(),
 		PreprocessedFile: preprocessedFile.Name(),
 		OutputFile:       false,
-	})
+	}, true)
 }
