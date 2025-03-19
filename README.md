@@ -334,7 +334,8 @@ You can specify dependent package paths in the `deps` field of `llcppg.cfg` . Fo
   "name": "libxslt",
   "cflags": "$(pkg-config --cflags libxslt)",
   "libs": "$(pkg-config --libs libxslt)",
-  "deps": ["c/os","github.com/luoliwoshang/llcppg-libxml"],
+  "trimPrefixes": ["xslt"],
+  "deps": ["c/os","github.com/luoliwoshang/goplus-llpkg/libxml2"],
   "includes":["libxslt/xsltutils.h","libxslt/templates.h"]
 }
 ```
@@ -360,11 +361,15 @@ package libxslt
 
 import (
 	"github.com/goplus/llgo/c"
-	"github.com/luoliwoshang/llcppg-libxml"
+	"github.com/luoliwoshang/goplus-llpkg/libxml2"
 	"unsafe"
 )
-//go:linkname XsltGetNsProp C.xsltGetNsProp
-func XsltGetNsProp(node libxml_2_0.XmlNodePtr, name *libxml_2_0.XmlChar, nameSpace *libxml_2_0.XmlChar) *libxml_2_0.XmlChar
+
+/*
+ * Our own version of namespaced attributes lookup.
+ */
+//go:linkname GetNsProp C.xsltGetNsProp
+func GetNsProp(node libxml2.NodePtr, name *libxml2.Char, nameSpace *libxml2.Char) *libxml2.Char
 ```
 
 ### Important Note on Header File Ordering
