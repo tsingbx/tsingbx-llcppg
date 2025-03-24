@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/ast"
+
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/llcppg"
@@ -21,6 +22,28 @@ type Config struct {
 	OutputDir string
 
 	Pkg *llcppg.Pkg
+}
+
+func ModInit(deps []string, outputDir string, modulePath string) error {
+	err := cfg.RunCommand(outputDir, "go", "mod", "init", modulePath)
+	if err != nil {
+		return err
+	}
+	for _, dep := range deps {
+		_, std := IsDepStd(dep)
+		if std {
+			continue
+		}
+		err = cfg.RunCommand(outputDir, "go", "get", dep)
+		if err != nil {
+			return err
+		}
+	}
+	err = cfg.RunCommand(outputDir, "go", "get", "github.com/goplus/llgo@v0.10.0")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type Converter struct {

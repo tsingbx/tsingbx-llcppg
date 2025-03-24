@@ -183,7 +183,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 			t.Fatal(err)
 		}
 	}()
-	outputDir, err := ModInit(name)
+	outputDir, err := prepareEnv(name, cfg.Deps)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -285,7 +285,7 @@ func TestNewConvertReadPubFail(t *testing.T) {
 	}
 }
 
-func ModInit(name string) (string, error) {
+func prepareEnv(name string, deps []string) (string, error) {
 	tempDir, err := os.MkdirTemp("", "gogensig-test")
 	if err != nil {
 		return "", err
@@ -303,11 +303,7 @@ func ModInit(name string) (string, error) {
 		return "", err
 	}
 
-	err = config.RunCommand(outputDir, "go", "mod", "init", name)
-	if err != nil {
-		return "", err
-	}
-	err = config.RunCommand(outputDir, "go", "get", "github.com/goplus/llgo@v0.10.0")
+	err = convert.ModInit(deps, outputDir, name)
 	if err != nil {
 		return "", err
 	}

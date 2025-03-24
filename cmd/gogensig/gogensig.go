@@ -100,23 +100,7 @@ func prepareEnv(wd, pkg string, deps []string) error {
 		return err
 	}
 
-	err = config.RunCommand(dir, "go", "mod", "init", pkg)
-	if err != nil {
-		return err
-	}
-
-	for _, dep := range deps {
-		_, std := convert.IsDepStd(dep)
-		if std {
-			continue
-		}
-		err := config.RunCommand(dir, "go", "get", dep)
-		if err != nil {
-			return err
-		}
-	}
-
-	return config.RunCommand(dir, "go", "get", "github.com/goplus/llgo@v0.10.0")
+	return convert.ModInit(deps, dir, pkg)
 }
 
 func printUsage() {
