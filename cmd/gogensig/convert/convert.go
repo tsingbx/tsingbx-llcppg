@@ -3,8 +3,6 @@ package convert
 import (
 	"errors"
 	"log"
-	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/goplus/llcppg/ast"
@@ -102,6 +100,7 @@ func (p *Converter) Convert() {
 	p.Process()
 	p.Write()
 	p.Fmt()
+	p.Tidy()
 }
 
 func (p *Converter) Process() {
@@ -162,13 +161,16 @@ func (p *Converter) Write() {
 }
 
 func (p *Converter) Fmt() {
-	cmd := exec.Command("go", "fmt", ".")
-	cmd.Dir = p.Conf.OutputDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
+	err := cfg.RunCommand(p.Conf.OutputDir, "go", "fmt", ".")
 	if err != nil {
 		log.Panicf("go fmt: %v\n", err)
+	}
+}
+
+func (p *Converter) Tidy() {
+	err := cfg.RunCommand(p.Conf.OutputDir, "go", "mod", "tidy")
+	if err != nil {
+		log.Panicf("go mod tidy: %v\n", err)
 	}
 }
 

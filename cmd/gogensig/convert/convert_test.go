@@ -308,6 +308,27 @@ func TestModInitFail(t *testing.T) {
 	})
 }
 
+func TestTidyFail(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expect panic")
+		}
+	}()
+
+	tempDir, err := os.MkdirTemp("", "gogensig-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	cvt := &convert.Converter{
+		Conf: &convert.Config{
+			OutputDir: tempDir,
+		},
+	}
+	cvt.Tidy()
+}
+
 func prepareEnv(name string, deps []string) (string, error) {
 	tempDir, err := os.MkdirTemp("", "gogensig-test")
 	if err != nil {
