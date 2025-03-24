@@ -24,24 +24,29 @@ type Config struct {
 	Pkg *llcppg.Pkg
 }
 
+// if modulePath is not empty, init the module by modulePath
 func ModInit(deps []string, outputDir string, modulePath string) error {
-	err := cfg.RunCommand(outputDir, "go", "mod", "init", modulePath)
-	if err != nil {
-		return err
-	}
-	for _, dep := range deps {
-		_, std := IsDepStd(dep)
-		if std {
-			continue
-		}
-		err = cfg.RunCommand(outputDir, "go", "get", dep)
+	var err error
+	if modulePath != "" {
+		err = cfg.RunCommand(outputDir, "go", "mod", "init", modulePath)
 		if err != nil {
 			return err
 		}
 	}
-	err = cfg.RunCommand(outputDir, "go", "get", "github.com/goplus/llgo@v0.10.0")
-	if err != nil {
-		return err
+
+	loadDeps := []string{"github.com/goplus/llgo@v0.10.0"}
+
+	for _, dep := range deps {
+		_, std := IsDepStd(dep)
+		if !std {
+			loadDeps = append(loadDeps, dep)
+		}
+	}
+	for _, dep := range loadDeps {
+		err = cfg.RunCommand(outputDir, "go", "get", dep)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

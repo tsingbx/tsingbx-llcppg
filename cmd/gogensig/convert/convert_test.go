@@ -285,6 +285,29 @@ func TestNewConvertReadPubFail(t *testing.T) {
 	}
 }
 
+func TestModInitFail(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "gogensig-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	invalidMod := "github.com/user!name/project"
+
+	t.Run("mod init fail", func(t *testing.T) {
+		err = convert.ModInit([]string{}, tempDir, invalidMod)
+		if err == nil {
+			t.Fatal("no error")
+		}
+	})
+	t.Run("dep get fail", func(t *testing.T) {
+		err = convert.ModInit([]string{invalidMod}, tempDir, "")
+		if err == nil {
+			t.Fatal("no error")
+		}
+	})
+}
+
 func prepareEnv(name string, deps []string) (string, error) {
 	tempDir, err := os.MkdirTemp("", "gogensig-test")
 	if err != nil {
