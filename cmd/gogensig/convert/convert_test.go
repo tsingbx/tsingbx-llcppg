@@ -183,7 +183,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 			t.Fatal(err)
 		}
 	}()
-	outputDir, err := ModInit(name)
+	outputDir, err := prepareEnv(name, cfg.Deps)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -285,7 +285,51 @@ func TestNewConvertReadPubFail(t *testing.T) {
 	}
 }
 
-func ModInit(name string) (string, error) {
+func TestModInitFail(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "gogensig-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	invalidMod := "github.com/user!name/project"
+
+	t.Run("mod init fail", func(t *testing.T) {
+		err = convert.ModInit([]string{}, tempDir, invalidMod)
+		if err == nil {
+			t.Fatal("no error")
+		}
+	})
+	t.Run("dep get fail", func(t *testing.T) {
+		err = convert.ModInit([]string{invalidMod}, tempDir, "")
+		if err == nil {
+			t.Fatal("no error")
+		}
+	})
+}
+
+func TestTidyFail(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expect panic")
+		}
+	}()
+
+	tempDir, err := os.MkdirTemp("", "gogensig-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	cvt := &convert.Converter{
+		Conf: &convert.Config{
+			OutputDir: tempDir,
+		},
+	}
+	cvt.Tidy()
+}
+
+func prepareEnv(name string, deps []string) (string, error) {
 	tempDir, err := os.MkdirTemp("", "gogensig-test")
 	if err != nil {
 		return "", err
@@ -303,11 +347,7 @@ func ModInit(name string) (string, error) {
 		return "", err
 	}
 
-	err = config.RunCommand(outputDir, "go", "mod", "init", name)
-	if err != nil {
-		return "", err
-	}
-	err = config.RunCommand(outputDir, "go", "get", "github.com/goplus/llgo@v0.10.0")
+	err = convert.ModInit(deps, outputDir, name)
 	if err != nil {
 		return "", err
 	}
