@@ -25,6 +25,24 @@ func TestFromTestdata(t *testing.T) {
 	testFromDir(t, "./_testdata", false)
 }
 
+func TestDepWithVersion(t *testing.T) {
+	name := "_depwithversion"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
+		modFile := filepath.Join(cvt.Conf.OutputDir, "go.mod")
+		modContent, err := os.ReadFile(modFile)
+		if err != nil {
+			t.Fatal("Read go.mod failed:", err)
+		}
+		if !strings.Contains(string(modContent), "libxml2 v1.0.0") {
+			t.Fatal("go.mod does not contain libxml2 v1.0.0")
+		}
+	})
+}
+
 func TestSysToPkg(t *testing.T) {
 	name := "_systopkg"
 	dir, err := os.Getwd()
