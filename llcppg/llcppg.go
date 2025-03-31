@@ -23,16 +23,18 @@ func NewImplFiles() *ImplFiles {
 
 // Config represents a configuration for the llcppg tool.
 type Config struct {
-	Name           string      `json:"name"`
-	CFlags         string      `json:"cflags"`
-	Libs           string      `json:"libs"`
-	Include        []string    `json:"include"`
-	TrimPrefixes   []string    `json:"trimPrefixes"`
-	Cplusplus      bool        `json:"cplusplus"`
-	Deps           []string    `json:"deps"`
-	KeepUnderScore bool        `json:"keepUnderScore"`
-	Impl           []ImplFiles `json:"impl"`
-	Mix            bool        `json:"mix"`
+	Name           string            `json:"name"`
+	CFlags         string            `json:"cflags"`
+	Libs           string            `json:"libs"`
+	Include        []string          `json:"include"`
+	TrimPrefixes   []string          `json:"trimPrefixes"`
+	Cplusplus      bool              `json:"cplusplus"`
+	Deps           []string          `json:"deps"`
+	KeepUnderScore bool              `json:"keepUnderScore"`
+	Impl           []ImplFiles       `json:"impl"`
+	Mix            bool              `json:"mix"`
+	SymMap         map[string]string `json:"symMap,omitempty"`
+	TypeMap        map[string]string `json:"typeMap,omitempty"`
 }
 
 func NewDefaultConfig() *Config {
