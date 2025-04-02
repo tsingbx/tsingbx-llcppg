@@ -149,3 +149,19 @@ func TestTrimPrefixes(t *testing.T) {
 		t.Errorf("Expected Empty TrimPrefix")
 	}
 }
+
+func TestMarkUseFail(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("Expected panic, got nil")
+		}
+	}()
+	pkg := NewPackage(&PackageConfig{
+		PkgBase: PkgBase{
+			PkgPath:  ".",
+			CppgConf: &llcppg.Config{},
+			Pubs:     make(map[string]string),
+		},
+	})
+	pkg.markUseDeps(&PkgDepLoader{})
+}
