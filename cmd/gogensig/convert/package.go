@@ -267,6 +267,10 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		// not gen the function not in the symbolmap
 		return err
 	}
+	if fnSpec.IsIgnore() {
+		log.Printf("NewFuncDecl: %v is ignored\n", funcDecl.Name)
+		return nil
+	}
 
 	recv, err := p.funcIsDefined(fnSpec, funcDecl)
 	if err != nil {
