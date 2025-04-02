@@ -341,7 +341,7 @@ You can specify dependent package paths in the `deps` field of `llcppg.cfg` . Fo
   "cflags": "$(pkg-config --cflags libxslt)",
   "libs": "$(pkg-config --libs libxslt)",
   "trimPrefixes": ["xslt"],
-  "deps": ["c/os","github.com/luoliwoshang/goplus-llpkg/libxml2"],
+  "deps": ["c/os","github.com/goplus/llpkg/libxml2"],
   "includes":["libxslt/xsltutils.h","libxslt/templates.h"]
 }
 ```
@@ -367,7 +367,7 @@ package libxslt
 
 import (
 	"github.com/goplus/llgo/c"
-	"github.com/luoliwoshang/goplus-llpkg/libxml2"
+	"github.com/goplus/llpkg/libxml2"
 	"unsafe"
 )
 
