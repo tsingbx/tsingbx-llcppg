@@ -206,6 +206,7 @@ When you run llcppg directly with the above configuration, it will generate func
   You can customize this field to:
   1. Change function names (e.g. "CreateObject" to "Object" for simplicity)
   2. Remove the method receiver prefix to generate a function instead of a method
+  3. Set it to "-" to completely ignore this function
 
 For example, to convert `(*CJSON).PrintUnformatted` from a method to a function, simply remove the `(*CJSON).` prefix in the configuration file:
 
