@@ -62,17 +62,13 @@ func main() {
 		} else {
 			fmt.Println("Config From File", ags.CfgFile)
 		}
-		fmt.Println("Name:", conf.Name)
-		fmt.Println("CFlags:", conf.CFlags)
-		fmt.Println("Libs:", conf.Libs)
-		fmt.Println("Include:", conf.Include)
-		fmt.Println("TrimPrefixes:", conf.TrimPrefixes)
-		fmt.Println("Cplusplus:", conf.Cplusplus)
+		fmt.Printf("%s\n", conf.String())
 	}
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to parse config file:", ags.CfgFile)
 	}
+
 	symbols, err := symbol.ParseDylibSymbols(conf.Libs)
 	check(err)
 
@@ -85,7 +81,7 @@ func main() {
 	headerInfos, err := parse.ParseHeaderFile(pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.Cplusplus, false)
 	check(err)
 
-	symbolData, err := symbol.GenerateAndUpdateSymbolTable(symbols, headerInfos, llcppg.LLCPPG_SYMB)
+	symbolData, err := symbol.GenerateSymbolTable(symbols, headerInfos, llcppg.LLCPPG_SYMB)
 	check(err)
 
 	err = os.WriteFile(llcppg.LLCPPG_SYMB, symbolData, 0644)
