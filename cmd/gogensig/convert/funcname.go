@@ -34,3 +34,7 @@ func NewGoFuncSpec(name string) *GoFuncSpec {
 	}
 	return &GoFuncSpec{GoSymbName: name, RecvName: recvName, FnName: l[1], PtrRecv: ptrRecv, IsMethod: true}
 }
+
+func (g *GoFuncSpec) IsIgnore() bool {
+	return g.GoSymbName == "-"
+}

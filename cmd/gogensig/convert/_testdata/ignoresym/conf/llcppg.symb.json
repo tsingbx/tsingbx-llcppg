@@ -1,0 +1,12 @@
+[
+  {
+    "mangle": "foo",
+    "c++": "foo",
+    "go": "-"
+  },
+  {
+    "mangle": "bar",
+    "c++": "bar",
+    "go": "Bar"
+  }
+]
