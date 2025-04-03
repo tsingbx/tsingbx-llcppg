@@ -51,8 +51,6 @@ func main() {
 	check(err)
 	defer conf.Delete()
 
-	dbg.SetDebugEditSymMap()
-
 	if ags.Verbose {
 		dbg.SetDebugSymbol()
 		if ags.UseStdin {
