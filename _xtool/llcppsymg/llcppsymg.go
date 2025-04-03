@@ -51,9 +51,7 @@ func main() {
 	check(err)
 	defer conf.Delete()
 
-	if ags.VerboseParseIsMethod {
-		dbg.SetDebugParseIsMethod()
-	}
+	dbg.SetDebugEditSymMap()
 
 	if ags.Verbose {
 		dbg.SetDebugSymbol()
@@ -78,7 +76,10 @@ func main() {
 		fmt.Println("implements", pkgHfiles.Impls)
 		fmt.Println("thirdhfile", pkgHfiles.Thirds)
 	}
-	headerInfos, err := parse.ParseHeaderFile(pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.Cplusplus, false)
+
+	config := parse.NewConfig(pkgHfiles.CurPkgFiles(),
+		conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.Cplusplus, conf.SymMap)
+	headerInfos, err := parse.ParseHeaderFile(config, false)
 	check(err)
 
 	symbolData, err := symbol.GenerateSymbolTable(symbols, headerInfos, llcppg.LLCPPG_SYMB)
