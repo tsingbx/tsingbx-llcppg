@@ -4,7 +4,7 @@ import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/cjson"
+	"github.com/goplus/llpkg/cjson"
 )
 
 func MarshalPkg(pkg *llcppg.Pkg) *cjson.JSON {

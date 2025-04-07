@@ -10,8 +10,8 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/c/clang"
+	"github.com/goplus/llpkg/cjson"
 )
 
 type Conf struct {
@@ -20,7 +20,7 @@ type Conf struct {
 }
 
 func GetConf(data []byte) (Conf, error) {
-	parsedConf := cjson.ParseBytes(data)
+	parsedConf := ParseBytes(data)
 	if parsedConf == nil {
 		return Conf{}, errors.New("failed to parse config")
 	}
@@ -194,4 +194,8 @@ func commonParentDir(paths []string) string {
 		}
 	}
 	return filepath.Dir(paths[0])
+}
+
+func ParseBytes(value []byte) *cjson.JSON {
+	return cjson.ParseWithLength((*c.Char)(unsafe.Pointer(unsafe.SliceData(value))), uintptr(len(value)))
 }

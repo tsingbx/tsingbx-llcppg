@@ -16,8 +16,8 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/xtool/nm"
+	"github.com/goplus/llpkg/cjson"
 )
 
 // ParseDylibSymbols parses symbols from dynamic libraries specified in the lib string.
@@ -137,7 +137,7 @@ func ReadExistingSymbolTable(fileName string) (map[string]llcppg.SymbolInfo, boo
 		return nil, false
 	}
 
-	parsedJSON := cjson.ParseBytes(data)
+	parsedJSON := config.ParseBytes(data)
 	if parsedJSON == nil {
 		return nil, false
 	}

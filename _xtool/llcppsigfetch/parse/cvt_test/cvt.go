@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"unsafe"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/c/clang"
+	"github.com/goplus/llpkg/cjson"
 )
 
 func RunTest(testName string, testCases []string) {
@@ -41,7 +42,7 @@ func RunTestWithConfig(config *parse.ParseConfig) {
 	result := MarshalPkg(cvt.Pkg)
 	str := result.Print()
 	c.Printf(c.Str("%s\n\n"), str)
-	cjson.FreeCStr(str)
+	cjson.FreeCStr(unsafe.Pointer(str))
 	result.Delete()
 }
 

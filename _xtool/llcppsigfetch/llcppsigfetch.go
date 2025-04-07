@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unsafe"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
@@ -30,7 +31,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/cjson"
+	"github.com/goplus/llpkg/cjson"
 )
 
 func main() {
@@ -166,7 +167,7 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 	check(err)
 	info := converter.Output()
 	str := info.Print()
-	defer cjson.FreeCStr(str)
+	defer cjson.FreeCStr(unsafe.Pointer(str))
 	defer info.Delete()
 	outputResult(str, outputToFile)
 }
@@ -200,7 +201,7 @@ func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherAr
 	result := converter.Output()
 	cstr := result.Print()
 	outputResult(cstr, outToFile)
-	cjson.FreeCStr(cstr)
+	cjson.FreeCStr(unsafe.Pointer(cstr))
 	result.Delete()
 	converter.Dispose()
 }
