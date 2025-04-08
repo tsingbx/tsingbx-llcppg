@@ -1,10 +1,10 @@
-===== _depwithversion_autogen_link.go =====
-package _depwithversion
+===== depwithversion_autogen_link.go =====
+package depwithversion
 
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== temp.go =====
-package _depwithversion
+package depwithversion
 
 import (
 	"github.com/goplus/llpkg/libxml2"

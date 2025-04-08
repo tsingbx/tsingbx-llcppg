@@ -1,10 +1,10 @@
-===== _systopkg_autogen_link.go =====
-package _systopkg
+===== systopkg_autogen_link.go =====
+package systopkg
 
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== temp.go =====
-package _systopkg
+package systopkg
 
 import (
 	"github.com/goplus/llgo/c"
