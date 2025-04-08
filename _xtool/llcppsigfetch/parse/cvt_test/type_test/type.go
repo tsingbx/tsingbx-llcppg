@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"unsafe"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	test "github.com/goplus/llcppg/_xtool/llcppsigfetch/parse/cvt_test"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/c/clang"
+	"github.com/goplus/llpkg/cjson"
 )
 
 func main() {
@@ -166,7 +167,7 @@ func TestNonBuiltinTypes() {
 		c.Printf(c.Str("%s\n"), str)
 
 		typstr.Dispose()
-		cjson.FreeCStr(str)
+		cjson.FreeCStr(unsafe.Pointer(str))
 		json.Delete()
 		index.Dispose()
 		unit.Dispose()

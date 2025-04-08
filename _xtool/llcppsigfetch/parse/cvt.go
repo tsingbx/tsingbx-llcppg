@@ -14,8 +14,8 @@ import (
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llcppg/token"
 	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/c/clang"
+	"github.com/goplus/llpkg/cjson"
 )
 
 type Converter struct {
