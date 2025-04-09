@@ -1,8 +1,9 @@
 package main
 
 import (
-	"cjson"
 	"fmt"
+
+	"github.com/goplus/llpkg/cjson"
 
 	"github.com/goplus/llgo/c"
 )
