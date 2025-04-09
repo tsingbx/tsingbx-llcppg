@@ -8,6 +8,7 @@ const (
 	DbgSymbol        dbgFlags = 1 << iota
 	DbgParseIsMethod          //print parse.go isMethod debug log info
 	DbgEditSymMap             //print user edit sym map info
+	DbgVisitTop               //print visitTop
 	DbgFlagAll       = DbgSymbol | DbgParseIsMethod
 )
 
@@ -33,4 +34,12 @@ func SetDebugEditSymMap() {
 
 func GetDebugEditSymMap() bool {
 	return flags&DbgEditSymMap != 0
+}
+
+func SetDebugVisitTop() {
+	flags |= DbgVisitTop
+}
+
+func GetDebugVisitTop() bool {
+	return flags&DbgVisitTop != 0
 }

@@ -5,8 +5,9 @@ type dbgFlags = int
 var flags dbgFlags
 
 const (
-	DbgParse   dbgFlags = 1 << iota
-	DbgFlagAll          = DbgParse
+	DbgParse dbgFlags = 1 << iota
+	DbgVisitTop
+	DbgFlagAll = DbgParse
 )
 
 func SetDebugParse() {
@@ -19,4 +20,12 @@ func GetDebugParse() bool {
 
 func SetDebugAll() {
 	flags = DbgFlagAll
+}
+
+func SetDebugVisitTop() {
+	flags |= DbgVisitTop
+}
+
+func GetDebugVisitTop() bool {
+	return flags&DbgVisitTop != 0
 }

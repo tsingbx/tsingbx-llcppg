@@ -55,6 +55,7 @@ func TestParseHeaderFile() {
 				"cJSON_Delete",
 				"cJSON_AddArrayToObject",
 				"cJSON_AddBoolToObject",
+				"cJSON_AddNumberToObject",
 			},
 		},
 		{

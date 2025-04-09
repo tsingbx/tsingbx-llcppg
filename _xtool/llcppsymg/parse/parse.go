@@ -207,6 +207,7 @@ func (p *SymbolProcessor) userEditGoName(manglingName string) (goName string, is
 func (p *SymbolProcessor) genGoName(cursor clang.Cursor, mangleName string) string {
 
 	edittedGoName, isEdittedGoName, isEdittedMethodName := p.userEditGoName(mangleName)
+
 	if dbg.GetDebugEditSymMap() && isEdittedGoName {
 		fmt.Println("edittedGoName:", edittedGoName)
 		fmt.Println("isEdittedGoName", isEdittedGoName)
@@ -295,8 +296,14 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 		return
 	}
 
+	// ignore
+	goName := p.genGoName(cursor, manglingName)
+	if goName == "-" || len(goName) == 0 {
+		return
+	}
+
 	p.SymbolMap[manglingName] = &SymbolInfo{
-		GoName:    p.genGoName(cursor, manglingName),
+		GoName:    goName,
 		ProtoName: p.genProtoName(cursor),
 	}
 }
@@ -304,7 +311,7 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResult {
 	filename := clang.GoString(cursor.Location().File().FileName())
 	if _, ok := p.processedFiles[filename]; ok {
-		if dbg.GetDebugSymbol() {
+		if dbg.GetDebugVisitTop() && p.isSelfFile(filename) {
 			fmt.Printf("visitTop: %s has been processed: \n", filename)
 		}
 		return clang.ChildVisit_Continue
@@ -313,7 +320,7 @@ func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisit
 		return clang.ChildVisit_Continue
 	}
 	p.processingFiles[filename] = struct{}{}
-	if dbg.GetDebugSymbol() && filename != "" {
+	if dbg.GetDebugVisitTop() && p.isSelfFile(filename) {
 		fmt.Printf("visitTop: %s\n", filename)
 	}
 	switch cursor.Kind {
@@ -334,12 +341,12 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
 		filename = clangutils.TEMP_FILE
 	}
 	if _, ok := p.processedFiles[filename]; ok {
-		if dbg.GetDebugSymbol() {
+		if dbg.GetDebugSymbol() && p.isSelfFile(filename) {
 			fmt.Printf("%s has been processed: \n", filename)
 		}
 		return nil
 	}
-	if dbg.GetDebugSymbol() {
+	if dbg.GetDebugSymbol() && p.isSelfFile(filename) {
 		fmt.Printf("create translation unit: \nfile:%s\nIsCpp:%v\nTemp:%v\nArgs:%v\n", filename, cfg.IsCpp, cfg.Temp, cfg.Args)
 	}
 	_, unit, err := clangutils.CreateTranslationUnit(cfg)
@@ -347,7 +354,7 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
 		return errors.New("Unable to parse translation unit for file " + filename)
 	}
 	cursor := unit.Cursor()
-	if dbg.GetDebugSymbol() {
+	if dbg.GetDebugVisitTop() && p.isSelfFile(filename) {
 		fmt.Printf("%s start collect \n", filename)
 	}
 	clangutils.VisitChildren(cursor, p.visitTop)

@@ -229,7 +229,9 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 	inFile := ct.InFile(cursor)
 
 	name := toStr(cursor.String())
-	ct.logf("visitTop: Cursor: %s\n", name)
+	if dbg.GetDebugVisitTop() {
+		ct.logf("visitTop: Cursor: %s\n", name)
+	}
 
 	if !inFile {
 		return clang.ChildVisit_Continue
@@ -243,17 +245,23 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 			return clang.ChildVisit_Continue
 		}
 		ct.Pkg.File.Includes = append(ct.Pkg.File.Includes, include)
-		ct.logln("visitTop: ProcessInclude END ", include.Path)
+		if dbg.GetDebugVisitTop() {
+			ct.logln("visitTop: ProcessInclude END ", include.Path)
+		}
 	case clang.CursorMacroDefinition:
 		macro := ct.ProcessMacro(cursor)
 		if cursor.IsMacroBuiltin() == 0 {
 			ct.Pkg.File.Macros = append(ct.Pkg.File.Macros, macro)
 		}
-		ct.logln("visitTop: ProcessMacro END ", macro.Name, "Tokens Length:", len(macro.Tokens))
+		if dbg.GetDebugVisitTop() {
+			ct.logln("visitTop: ProcessMacro END ", macro.Name, "Tokens Length:", len(macro.Tokens))
+		}
 	case clang.CursorEnumDecl:
 		enum := ct.ProcessEnumDecl(cursor)
 		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, enum)
-		ct.logf("visitTop: ProcessEnumDecl END")
+		if dbg.GetDebugVisitTop() {
+			ct.logf("visitTop: ProcessEnumDecl END")
+		}
 		if enum.Name != nil {
 			ct.logln(enum.Name.Name)
 		} else {
@@ -264,11 +272,15 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 		classDecl := ct.ProcessClassDecl(cursor)
 		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, classDecl)
 		// class havent anonymous situation
-		ct.logln("visitTop: ProcessClassDecl END", classDecl.Name.Name)
+		if dbg.GetDebugVisitTop() {
+			ct.logln("visitTop: ProcessClassDecl END", classDecl.Name.Name)
+		}
 	case clang.CursorStructDecl:
 		structDecl := ct.ProcessStructDecl(cursor)
 		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, structDecl)
-		ct.logf("visitTop: ProcessStructDecl END")
+		if dbg.GetDebugVisitTop() {
+			ct.logf("visitTop: ProcessStructDecl END")
+		}
 		if structDecl.Name != nil {
 			ct.logln(structDecl.Name.Name)
 		} else {
@@ -277,7 +289,9 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 	case clang.CursorUnionDecl:
 		unionDecl := ct.ProcessUnionDecl(cursor)
 		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, unionDecl)
-		ct.logf("visitTop: ProcessUnionDecl END")
+		if dbg.GetDebugVisitTop() {
+			ct.logf("visitTop: ProcessUnionDecl END")
+		}
 		if unionDecl.Name != nil {
 			ct.logln(unionDecl.Name.Name)
 		} else {
@@ -288,14 +302,18 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 		// Example: void MyClass::myMethod() { ... } out-of-class method
 		funcDecl := ct.ProcessFuncDecl(cursor)
 		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, funcDecl)
-		ct.logln("visitTop: ProcessFuncDecl END", funcDecl.Name.Name, funcDecl.MangledName, "isStatic:", funcDecl.IsStatic, "isInline:", funcDecl.IsInline)
+		if dbg.GetDebugVisitTop() {
+			ct.logln("visitTop: ProcessFuncDecl END", funcDecl.Name.Name, funcDecl.MangledName, "isStatic:", funcDecl.IsStatic, "isInline:", funcDecl.IsInline)
+		}
 	case clang.CursorTypedefDecl:
 		typedefDecl := ct.ProcessTypeDefDecl(cursor)
 		if typedefDecl == nil {
 			return clang.ChildVisit_Continue
 		}
 		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, typedefDecl)
-		ct.logln("visitTop: ProcessTypeDefDecl END", typedefDecl.Name.Name)
+		if dbg.GetDebugVisitTop() {
+			ct.logln("visitTop: ProcessTypeDefDecl END", typedefDecl.Name.Name)
+		}
 	case clang.CursorNamespace:
 		clangutils.VisitChildren(cursor, ct.visitTop)
 	}
