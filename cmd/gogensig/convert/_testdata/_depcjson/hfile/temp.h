@@ -16,3 +16,18 @@ cJSON_bool serialize_response(cJSON *response, char *buffer, const int length, c
 third_dep third_depfn(third_dep *a, third_dep2 *b, _depcjson_type c, basic_dep d);
 
 third_dep3 third_type(third_dep3 *a);
+    
+// This struct demonstrates the handling of same llcppg.pub names across different packages:
+//
+// 1. Basic_stream (from basicdep.h)
+//    - Indirect dependency
+//    - llcppg.pub mapping: Basic_stream -> Stream
+//
+// 2. third_dep_stream (from thirddep.h)
+//    - Direct dependency
+//    - llcppg.pub mapping: third_dep_stream -> Stream
+typedef struct samePubStream {
+    Basic_stream basic_stream;
+    third_dep_stream third_dep_stream;
+} samePubStream;
+
