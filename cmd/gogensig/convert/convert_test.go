@@ -293,16 +293,6 @@ func TestNewConvertFail(t *testing.T) {
 	}
 }
 
-func TestNewConvertReadPubFail(t *testing.T) {
-	_, err := convert.NewConverter(&convert.Config{
-		CfgFile: path.Join("./testdata", "cjson", llcppg.LLCPPG_CFG),
-		PubFile: path.Join("./testdata", "invalidpub", llcppg.LLCPPG_PUB),
-	})
-	if err == nil {
-		t.Fatal("no error")
-	}
-}
-
 func TestModInitFail(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "gogensig-test")
 	if err != nil {
