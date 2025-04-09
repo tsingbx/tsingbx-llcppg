@@ -31,7 +31,7 @@ func TestDepWithVersion(t *testing.T) {
 	if err != nil {
 		t.Fatal("Getwd failed:", err)
 	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
+	testFrom(t, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
 		modFile := filepath.Join(cvt.Conf.OutputDir, "go.mod")
 		modContent, err := os.ReadFile(modFile)
 		if err != nil {
@@ -49,7 +49,7 @@ func TestSysToPkg(t *testing.T) {
 	if err != nil {
 		t.Fatal("Getwd failed:", err)
 	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
+	testFrom(t, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
 		// check FileMap's info is right
 		inFileMap := func(file string) {
 			_, ok := cvt.Pkg.FileMap[file]
@@ -132,7 +132,7 @@ func TestDepPkg(t *testing.T) {
 		defer cleanups[i]()
 	}
 
-	testFrom(t, name, depcjson, false, nil)
+	testFrom(t, depcjson, false, nil)
 }
 
 func testFromDir(t *testing.T, relDir string, gen bool) {
@@ -151,12 +151,12 @@ func testFromDir(t *testing.T, relDir string, gen bool) {
 			continue
 		}
 		t.Run(name, func(t *testing.T) {
-			testFrom(t, name, dir+"/"+name, gen, nil)
+			testFrom(t, dir+"/"+name, gen, nil)
 		})
 	}
 }
 
-func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *testing.T, pkg *convert.Package, converter *convert.Converter)) {
+func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T, pkg *convert.Package, converter *convert.Converter)) {
 	confPath := filepath.Join(dir, "conf")
 	cfgPath := filepath.Join(confPath, llcppg.LLCPPG_CFG)
 	symbPath := filepath.Join(confPath, llcppg.LLCPPG_SYMB)
@@ -201,7 +201,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 			t.Fatal(err)
 		}
 	}()
-	outputDir, err := prepareEnv(name, cfg.Deps)
+	outputDir, err := prepareEnv(cfg.Name, cfg.Deps)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -218,7 +218,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 	}
 
 	cvt, err := convert.NewConverter(&convert.Config{
-		PkgName:   name,
+		PkgName:   cfg.Name,
 		SymbFile:  symbPath,
 		CfgFile:   flagedCfgPath,
 		OutputDir: outputDir,

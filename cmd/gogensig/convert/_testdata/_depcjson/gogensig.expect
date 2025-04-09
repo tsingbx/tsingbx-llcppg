@@ -1,5 +1,5 @@
-===== _depcjson_autogen.go =====
-package _depcjson
+===== depcjson_autogen.go =====
+package depcjson
 
 import (
 	"github.com/goplus/llgo/c"
@@ -8,13 +8,13 @@ import (
 
 type X_depcjsonType c.Int
 
-===== _depcjson_autogen_link.go =====
-package _depcjson
+===== depcjson_autogen_link.go =====
+package depcjson
 
 const LLGoPackage string = "link: $(pkg-config --libs libcjson);"
 
 ===== temp.go =====
-package _depcjson
+package depcjson
 
 import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/basicdep"
