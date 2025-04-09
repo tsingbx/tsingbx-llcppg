@@ -58,7 +58,7 @@ func main() {
 		} else {
 			fmt.Println("Config From File", ags.CfgFile)
 		}
-		fmt.Printf("%s\n", conf.String())
+		fmt.Printf("%s\n", conf.Config.String())
 	}
 
 	if err != nil {

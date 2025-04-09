@@ -118,7 +118,7 @@ func TestGenDylibPaths() {
 	tempDir := os.TempDir()
 	tempDefaultPath, err := os.MkdirTemp(tempDir, "symblib")
 	if err != nil {
-		fmt.Printf(err)
+		fmt.Println(err)
 		return
 	}
 	affix := ".dylib"

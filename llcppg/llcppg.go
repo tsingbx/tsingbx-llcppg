@@ -38,12 +38,12 @@ type Config struct {
 	KeepUnderScore bool              `json:"keepUnderScore"`
 	Impl           []ImplFiles       `json:"impl"`
 	Mix            bool              `json:"mix"`
-	SymMap         []string          `json:"symMap"`
+	SymMap         map[string]string `json:"symMap"`
 	TypeMap        map[string]string `json:"typeMap"`
 }
 
 func NewDefaultConfig() *Config {
-	cfg := &Config{SymMap: make([]string, 0), TypeMap: make(map[string]string), Impl: []ImplFiles{*NewImplFiles()}}
+	cfg := &Config{SymMap: make(map[string]string), TypeMap: make(map[string]string), Impl: []ImplFiles{*NewImplFiles()}}
 	return cfg
 }
 

@@ -500,7 +500,7 @@ func TestNewLLCppConfig(t *testing.T) {
 				Cplusplus:      false,
 				Impl:           []llcppg.ImplFiles{*llcppg.NewImplFiles()},
 				KeepUnderScore: false,
-				SymMap:         []string{},
+				SymMap:         map[string]string{},
 				TypeMap:        map[string]string{},
 			},
 		},

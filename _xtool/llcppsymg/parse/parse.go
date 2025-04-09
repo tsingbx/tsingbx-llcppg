@@ -28,17 +28,11 @@ type Config struct {
 
 func NewConfig(files, prefixes, cflags []string,
 	isCpp bool,
-	symMap []string) *Config {
-	m := make(map[string]string)
-	for _, keyVal := range symMap {
-		strs := strings.Split(keyVal, ":")
-		if len(strs) == 2 {
-			key := strings.TrimSpace(strs[0])
-			val := strings.TrimSpace(strs[1])
-			m[key] = val
-		}
+	symMap map[string]string) *Config {
+	if symMap == nil {
+		symMap = make(map[string]string)
 	}
-	return &Config{Files: files, Prefixes: prefixes, Cflags: cflags, IsCpp: isCpp, SymMap: m}
+	return &Config{Files: files, Prefixes: prefixes, Cflags: cflags, IsCpp: isCpp, SymMap: symMap}
 }
 
 func (p *Config) String() string {
