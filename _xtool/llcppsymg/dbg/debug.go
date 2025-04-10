@@ -10,6 +10,7 @@ const (
 	DbgEditSymMap             //print user edit sym map info
 	DbgVisitTop               //print visitTop
 	DbgCollectFuncInfo
+	DbgNewSymbol
 	DbgFlagAll = DbgSymbol | DbgParseIsMethod
 )
 
@@ -51,4 +52,12 @@ func SetDebugCollectFuncInfo() {
 
 func GetDebugCollectFuncInfo() bool {
 	return false&DbgCollectFuncInfo != 0
+}
+
+func SetDebugNewSymbol() {
+	flags |= DbgNewSymbol
+}
+
+func GetDebugNewSymbol() bool {
+	return flags&DbgNewSymbol != 0
 }

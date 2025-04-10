@@ -159,7 +159,7 @@ func ReadExistingSymbolTable(fileName string) (map[string]llcppg.SymbolInfo, boo
 }
 
 func GenSymbolTableData(commonSymbols []*llcppg.SymbolInfo) ([]byte, error) {
-	if dbg.GetDebugSymbol() {
+	if dbg.GetDebugNewSymbol() {
 		fmt.Println("GenSymbolTableData:generate symbol table without symbol table")
 		for _, symbol := range commonSymbols {
 			fmt.Println("new symbol", symbol.Mangle, "-", symbol.CPP, "-", symbol.Go)

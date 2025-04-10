@@ -732,7 +732,9 @@ func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
 	typ := cursor.Type()
 	typeName, typeKind := getTypeDesc(typ)
 
-	ct.logf("createBaseField: ProcessType %s TypeKind: %s", typeName, typeKind)
+	if dbg.GetDebugProcess() {
+		ct.logf("createBaseField: ProcessType %s TypeKind: %s", typeName, typeKind)
+	}
 
 	field := &ast.Field{
 		Type: ct.ProcessType(typ),
