@@ -333,7 +333,9 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 	defer ct.decIndent()
 
 	typeName, typeKind := getTypeDesc(t)
-	ct.logln("ProcessType: TypeName:", typeName, "TypeKind:", typeKind)
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessType: TypeName:", typeName, "TypeKind:", typeKind)
+	}
 
 	if t.Kind >= clang.TypeFirstBuiltin && t.Kind <= clang.TypeLastBuiltin {
 		return ct.ProcessBuiltinType(t)
@@ -351,21 +353,29 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 	switch t.Kind {
 	case clang.TypePointer:
 		name, kind := getTypeDesc(t.PointeeType())
-		ct.logln("ProcessType: PointerType  Pointee TypeName:", name, "TypeKind:", kind)
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessType: PointerType  Pointee TypeName:", name, "TypeKind:", kind)
+		}
 		expr = &ast.PointerType{X: ct.ProcessType(t.PointeeType())}
 	case clang.TypeLValueReference:
 		name, kind := getTypeDesc(t.NonReferenceType())
-		ct.logln("ProcessType: LvalueRefType  NonReference TypeName:", name, "TypeKind:", kind)
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessType: LvalueRefType  NonReference TypeName:", name, "TypeKind:", kind)
+		}
 		expr = &ast.LvalueRefType{X: ct.ProcessType(t.NonReferenceType())}
 	case clang.TypeRValueReference:
 		name, kind := getTypeDesc(t.NonReferenceType())
-		ct.logln("ProcessType: RvalueRefType  NonReference TypeName:", name, "TypeKind:", kind)
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessType: RvalueRefType  NonReference TypeName:", name, "TypeKind:", kind)
+		}
 		expr = &ast.RvalueRefType{X: ct.ProcessType(t.NonReferenceType())}
 	case clang.TypeFunctionProto, clang.TypeFunctionNoProto:
 		// treating TypeFunctionNoProto as a general function without parameters
 		// function type will only collect return type, params will be collected in ProcessFuncDecl
 		name, kind := getTypeDesc(t)
-		ct.logln("ProcessType: FunctionType  TypeName:", name, "TypeKind:", kind)
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessType: FunctionType  TypeName:", name, "TypeKind:", kind)
+		}
 		expr = ct.ProcessFunctionType(t)
 	case clang.TypeConstantArray, clang.TypeIncompleteArray, clang.TypeVariableArray, clang.TypeDependentSizedArray:
 		if t.Kind == clang.TypeConstantArray {
@@ -384,7 +394,9 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 		}
 	default:
 		name, kind := getTypeDesc(t)
-		ct.logln("ProcessType: Unknown Type TypeName:", name, "TypeKind:", kind)
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessType: Unknown Type TypeName:", name, "TypeKind:", kind)
+		}
 	}
 	return expr
 }
@@ -396,15 +408,18 @@ func (ct *Converter) ProcessFunctionType(t clang.Type) *ast.FuncType {
 	ct.incIndent()
 	defer ct.decIndent()
 	typeName, typeKind := getTypeDesc(t)
-	ct.logln("ProcessFunctionType: TypeName:", typeName, "TypeKind:", typeKind)
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessFunctionType: TypeName:", typeName, "TypeKind:", typeKind)
+	}
 	// Note: Attempting to get the type declaration for a function type will result in CursorNoDeclFound
 	// cursor := t.TypeDeclaration()
 	// This would return CursorNoDeclFound
 	resType := t.ResultType()
 
 	name, kind := getTypeDesc(resType)
-	ct.logln("ProcessFunctionType: ResultType TypeName:", name, "TypeKind:", kind)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessFunctionType: ResultType TypeName:", name, "TypeKind:", kind)
+	}
 	ret := ct.ProcessType(resType)
 	params := &ast.FieldList{}
 	numArgs := t.NumArgTypes()
@@ -430,8 +445,9 @@ func (ct *Converter) ProcessTypeDefDecl(cursor clang.Cursor) *ast.TypedefDecl {
 	ct.incIndent()
 	defer ct.decIndent()
 	name, kind := getCursorDesc(cursor)
-	ct.logln("ProcessTypeDefDecl: CursorName:", name, "CursorKind:", kind, "CursorTypeKind:", toStr(cursor.Type().Kind.String()))
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessTypeDefDecl: CursorName:", name, "CursorKind:", kind, "CursorTypeKind:", toStr(cursor.Type().Kind.String()))
+	}
 	typ := ct.ProcessUnderlyingType(cursor)
 	// For cases like: typedef struct { int x; } Name;
 	// libclang incorrectly reports the anonymous structure as a named structure
@@ -454,15 +470,18 @@ func (ct *Converter) ProcessUnderlyingType(cursor clang.Cursor) ast.Expr {
 	underlyingTyp := cursor.TypedefDeclUnderlyingType()
 
 	if underlyingTyp.Kind != clang.TypeElaborated {
-		ct.logln("ProcessUnderlyingType: not elaborated")
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessUnderlyingType: not elaborated")
+		}
 		return ct.ProcessType(underlyingTyp)
 	}
 
 	referTypeCursor := underlyingTyp.TypeDeclaration()
 	defName := toStr(cursor.String())
 	underName := toStr(referTypeCursor.String())
-	ct.logln("ProcessUnderlyingType: defName:", defName, "underName:", underName)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessUnderlyingType: defName:", defName, "underName:", underName)
+	}
 	// For a typedef like "typedef struct xxx xxx;", the underlying type declaration
 	// can appear in two locations:
 	// 1. Inside the typedef itself when the struct is defined inline
@@ -471,7 +490,9 @@ func (ct *Converter) ProcessUnderlyingType(cursor clang.Cursor) ast.Expr {
 	// Therefore, we shouldn't use declaration location to determine whether to remove
 	// extra typedef nodes
 	if defName == underName {
-		ct.logln("ProcessUnderlyingType: is self reference")
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessUnderlyingType: is self reference")
+		}
 		return nil
 	}
 
@@ -516,27 +537,34 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	defer ct.decIndent()
 	name, kind := getCursorDesc(cursor)
 	mangledName := toStr(cursor.Mangling())
-	ct.logln("ProcessFuncDecl: CursorName:", name, "CursorKind:", kind, "mangledName:", mangledName)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessFuncDecl: CursorName:", name, "CursorKind:", kind, "mangledName:", mangledName)
+	}
 	// function type will only collect return type
 	// ProcessType can't get the field names,will collect in follows
 	fnType := cursor.Type()
 	typName, typKind := getTypeDesc(fnType)
-	ct.logln("ProcessFuncDecl: TypeName:", typName, "TypeKind:", typKind)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessFuncDecl: TypeName:", typName, "TypeKind:", typKind)
+	}
 	typeToProcess := fnType
 	if fnType.Kind == clang.TypeElaborated {
 		typeToProcess = ct.getActualType(fnType)
 		actualTypeName, actualTypeKind := getTypeDesc(typeToProcess)
-		ct.logln("ProcessFuncDecl: ActualType TypeName:", actualTypeName, "TypeKind:", actualTypeKind)
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessFuncDecl: ActualType TypeName:", actualTypeName, "TypeKind:", actualTypeKind)
+		}
 	}
 	funcType, ok := ct.ProcessType(typeToProcess).(*ast.FuncType)
 	if !ok {
-		ct.logln("ProcessFuncDecl: failed to process function type")
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessFuncDecl: failed to process function type")
+		}
 		return nil
 	}
-	ct.logln("ProcessFuncDecl: ProcessFieldList")
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessFuncDecl: ProcessFieldList")
+	}
 	// For function type references (e.g. `typedef void (fntype)(); fntype foo;`),
 	// params are already processed in ProcessType via CanonicalType
 	if fnType.Kind != clang.TypeElaborated {
@@ -569,7 +597,9 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	}
 
 	if isMethod(cursor) {
-		ct.logln("ProcessFuncDecl: is method, ProcessMethodAttributes")
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessFuncDecl: is method, ProcessMethodAttributes")
+		}
 		ct.ProcessMethodAttributes(cursor, funcDecl)
 	} else {
 		if cursor.StorageClass() == clang.SCStatic {
@@ -646,8 +676,9 @@ func (ct *Converter) ProcessEnumType(cursor clang.Cursor) *ast.EnumType {
 
 func (ct *Converter) ProcessEnumDecl(cursor clang.Cursor) *ast.EnumTypeDecl {
 	cursorName, cursorKind := getCursorDesc(cursor)
-	ct.logln("ProcessEnumDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessEnumDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
+	}
 	decl := &ast.EnumTypeDecl{
 		DeclBase: ct.CreateDeclBase(cursor),
 		Type:     ct.ProcessEnumType(cursor),
@@ -656,9 +687,13 @@ func (ct *Converter) ProcessEnumDecl(cursor clang.Cursor) *ast.EnumTypeDecl {
 	anony := cursor.IsAnonymous()
 	if anony == 0 {
 		decl.Name = &ast.Ident{Name: cursorName}
-		ct.logln("ProcessEnumDecl: has name", cursorName)
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessEnumDecl: has name", cursorName)
+		}
 	} else {
-		ct.logln("ProcessRecordDecl: is anonymous")
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessRecordDecl: is anonymous")
+		}
 	}
 
 	return decl
@@ -718,7 +753,9 @@ func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 	ct.incIndent()
 	defer ct.decIndent()
 	flds := &ast.FieldList{}
-	ct.logln("ProcessFieldList: VisitChildren")
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessFieldList: VisitChildren")
+	}
 	clangutils.VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
 		switch subcsr.Kind {
 		case clang.CursorFieldDecl:
@@ -729,7 +766,9 @@ func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 			// struct A {
 			// 	int a, b;
 			// };
-			ct.logln("ProcessFieldList: CursorFieldDecl")
+			if dbg.GetDebugProcess() {
+				ct.logln("ProcessFieldList: CursorFieldDecl")
+			}
 			field := ct.createBaseField(subcsr)
 			field.Access = ast.AccessSpecifier(subcsr.CXXAccessSpecifier())
 			flds.List = append(flds.List, field)
@@ -766,8 +805,9 @@ func (ct *Converter) ProcessRecordDecl(cursor clang.Cursor) *ast.TypeDecl {
 	ct.incIndent()
 	defer ct.decIndent()
 	cursorName, cursorKind := getCursorDesc(cursor)
-	ct.logln("ProcessRecordDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessRecordDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
+	}
 	decl := &ast.TypeDecl{
 		DeclBase: ct.CreateDeclBase(cursor),
 		Type:     ct.ProcessRecordType(cursor),
@@ -776,9 +816,13 @@ func (ct *Converter) ProcessRecordDecl(cursor clang.Cursor) *ast.TypeDecl {
 	anony := cursor.IsAnonymousRecordDecl()
 	if anony == 0 {
 		decl.Name = &ast.Ident{Name: cursorName}
-		ct.logln("ProcessRecordDecl: has name", cursorName)
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessRecordDecl: has name", cursorName)
+		}
 	} else {
-		ct.logln("ProcessRecordDecl: is anonymous")
+		if dbg.GetDebugProcess() {
+			ct.logln("ProcessRecordDecl: is anonymous")
+		}
 	}
 
 	return decl
@@ -794,8 +838,9 @@ func (ct *Converter) ProcessUnionDecl(cursor clang.Cursor) *ast.TypeDecl {
 
 func (ct *Converter) ProcessClassDecl(cursor clang.Cursor) *ast.TypeDecl {
 	cursorName, cursorKind := getCursorDesc(cursor)
-	ct.logln("ProcessClassDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessClassDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
+	}
 	// Pushing class scope before processing its type and popping after
 	base := ct.CreateDeclBase(cursor)
 	typ := ct.ProcessRecordType(cursor)
@@ -814,15 +859,20 @@ func (ct *Converter) ProcessRecordType(cursor clang.Cursor) *ast.RecordType {
 	defer ct.decIndent()
 
 	cursorName, cursorKind := getCursorDesc(cursor)
-	ct.logln("ProcessRecordType: CursorName:", cursorName, "CursorKind:", cursorKind)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessRecordType: CursorName:", cursorName, "CursorKind:", cursorKind)
+	}
 	tag := toTag(cursor.Kind)
-	ct.logln("ProcessRecordType: toTag", tag)
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessRecordType: toTag", tag)
+		ct.logln("ProcessRecordType: ProcessFieldList")
+	}
 
-	ct.logln("ProcessRecordType: ProcessFieldList")
 	fields := ct.ProcessFieldList(cursor)
 
-	ct.logln("ProcessRecordType: ProcessMethods")
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessRecordType: ProcessMethods")
+	}
 	methods := ct.ProcessMethods(cursor)
 
 	return &ast.RecordType{
@@ -845,8 +895,9 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 	ct.incIndent()
 	defer ct.decIndent()
 	typeName, typeKind := getTypeDesc(t)
-	ct.logln("ProcessElaboratedType: TypeName:", typeName, "TypeKind:", typeKind)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessElaboratedType: TypeName:", typeName, "TypeKind:", typeKind)
+	}
 	decl := t.TypeDeclaration()
 
 	if decl.IsAnonymous() != 0 {
@@ -874,11 +925,15 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 
 func (ct *Converter) ProcessTypeDefType(t clang.Type) ast.Expr {
 	cursor := t.TypeDeclaration()
-	ct.logln("ProcessTypeDefType: Typedef TypeDeclaration", toStr(cursor.String()), toStr(t.String()))
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessTypeDefType: Typedef TypeDeclaration", toStr(cursor.String()), toStr(t.String()))
+	}
 	if name := toStr(cursor.String()); name != "" {
 		return &ast.Ident{Name: name}
 	}
-	ct.logln("ProcessTypeDefType: typedef type have no name")
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessTypeDefType: typedef type have no name")
+	}
 	return nil
 }
 
@@ -886,8 +941,9 @@ func (ct *Converter) ProcessBuiltinType(t clang.Type) *ast.BuiltinType {
 	ct.incIndent()
 	defer ct.decIndent()
 	typeName, typeKind := getTypeDesc(t)
-	ct.logln("ProcessBuiltinType: TypeName:", typeName, "TypeKind:", typeKind)
-
+	if dbg.GetDebugProcess() {
+		ct.logln("ProcessBuiltinType: TypeName:", typeName, "TypeKind:", typeKind)
+	}
 	kind := ast.Void
 	var flags ast.TypeFlag
 
