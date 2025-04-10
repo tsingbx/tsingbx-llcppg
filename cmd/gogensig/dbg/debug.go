@@ -11,6 +11,7 @@ const (
 	DbgSetCurFile
 	DbgNew
 	DbgWrite
+	DbgUnmarshalling
 	DbgFlagAll = 0 | DbgError | DbgLog
 )
 
@@ -64,4 +65,12 @@ func SetDebugWrite() {
 
 func GetDebugWrite() bool {
 	return flags&DbgWrite != 0
+}
+
+func SetDebugUnmarshalling() {
+	flags |= DbgUnmarshalling
+}
+
+func GetDebugUnmarshalling() bool {
+	return flags&DbgUnmarshalling != 0
 }
