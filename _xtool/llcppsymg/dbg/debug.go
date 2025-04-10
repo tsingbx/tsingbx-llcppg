@@ -51,7 +51,7 @@ func SetDebugCollectFuncInfo() {
 }
 
 func GetDebugCollectFuncInfo() bool {
-	return false&DbgCollectFuncInfo != 0
+	return flags&DbgCollectFuncInfo != 0
 }
 
 func SetDebugNewSymbol() {

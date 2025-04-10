@@ -9,6 +9,7 @@ const (
 	DbgVisitTop
 	DbgProcess
 	DbgGetCurFile
+	DbgMacro
 	DbgFlagAll = DbgParse
 )
 
@@ -46,4 +47,12 @@ func SetDebugGetCurFile() {
 
 func GetDebugGetCurFile() bool {
 	return flags&DbgGetCurFile != 0
+}
+
+func SetDebugMacro() {
+	flags |= DbgMacro
+}
+
+func GetDebugMacro() bool {
+	return flags&DbgMacro != 0
 }
