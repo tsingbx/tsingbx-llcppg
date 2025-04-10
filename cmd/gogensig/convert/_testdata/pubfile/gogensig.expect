@@ -18,6 +18,11 @@ type Point struct {
 	Y c.Int
 }
 
+type Keep_Under_Score struct {
+	X c.Int
+	Y c.Int
+}
+
 type Capital struct {
 	X c.Int
 	Y c.Int
@@ -38,6 +43,7 @@ type X_privateTyp c.Long
 
 ===== llcppg.pub =====
 Capital
+Keep_Under_Score
 color Color
 data CustomData
 point Point

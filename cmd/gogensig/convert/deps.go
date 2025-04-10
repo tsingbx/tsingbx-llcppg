@@ -48,6 +48,9 @@ type PkgBase struct {
 }
 
 func NewPkgInfo(pkgPath string, pkgDir string, conf *llcppg.Config, pubs map[string]string) *PkgInfo {
+	if pubs == nil {
+		pubs = make(map[string]string)
+	}
 	return &PkgInfo{
 		PkgBase: PkgBase{PkgPath: pkgPath, Pubs: pubs, CppgConf: conf},
 		Dir:     pkgDir,

@@ -2,6 +2,10 @@ struct point {
     int x;
     int y;
 };
+struct Keep_Under_Score {
+    int x;
+    int y;
+};
 struct Capital {
     int x;
     int y;

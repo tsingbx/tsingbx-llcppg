@@ -75,15 +75,11 @@ func NewConverter(config *Config) (*Converter, error) {
 		conf = llcppg.NewDefaultConfig()
 	}
 
-	pubs, err := cfg.GetPubFromPath(config.PubFile)
-	if err != nil {
-		return nil, err
-	}
 	pkg := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath:  ".",
 			CppgConf: conf,
-			Pubs:     pubs,
+			Pubs:     conf.TypeMap,
 		},
 		Name:        config.PkgName,
 		OutputDir:   config.OutputDir,
