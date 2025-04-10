@@ -8,7 +8,9 @@ const (
 	DbgSymbolNotFound dbgFlags = 1 << iota
 	DbgError                   // print when error ocur
 	DbgLog                     // print log info
-	DbgFlagAll        = 0 | DbgError | DbgLog
+	DbgSetCurFile
+	DbgNewFuncDecl
+	DbgFlagAll = 0 | DbgError | DbgLog
 )
 
 func SetDebugSymbolNotFound() {
@@ -37,4 +39,20 @@ func GetDebugLog() bool {
 
 func SetDebugAll() {
 	flags = DbgFlagAll
+}
+
+func SetDebugSetCurFile() {
+	flags |= DbgSetCurFile
+}
+
+func GetDebugSetCurFile() bool {
+	return flags&DbgSetCurFile != 0
+}
+
+func SetDebugNewFuncDecl() {
+	flags |= DbgNewFuncDecl
+}
+
+func GetDebugNewFuncDecl() bool {
+	return flags&DbgNewFuncDecl != 0
 }

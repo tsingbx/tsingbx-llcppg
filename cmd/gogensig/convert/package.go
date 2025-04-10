@@ -146,7 +146,7 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 	// for third hfile not register to gogen.Package
 	if curFile.FileType != llcppg.Third {
 		fileName := curFile.ToGoFileName(p.conf.Name)
-		if dbg.GetDebugLog() {
+		if dbg.GetDebugSetCurFile() {
 			log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, curFile.FileType)
 		}
 		p.p.SetCurFile(fileName, true)
@@ -263,12 +263,12 @@ func pubMethodName(recv types.Type, fnSpec *GoFuncSpec) string {
 func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 	isThird, anony := p.handleType(funcDecl.Name, funcDecl.Loc)
 	if isThird {
-		if dbg.GetDebugLog() {
+		if dbg.GetDebugNewFuncDecl() {
 			log.Printf("NewFuncDecl: %v is a function of third header file\n", funcDecl.Name)
 		}
 		return nil
 	}
-	if dbg.GetDebugLog() {
+	if dbg.GetDebugNewFuncDecl() {
 		log.Printf("NewFuncDecl: %v\n", funcDecl.Name)
 	}
 	if anony {
@@ -281,7 +281,9 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		return err
 	}
 	if fnSpec.IsIgnore() {
-		log.Printf("NewFuncDecl: %v is ignored\n", funcDecl.Name)
+		if dbg.GetDebugNewFuncDecl() {
+			log.Printf("NewFuncDecl: %v is ignored\n", funcDecl.Name)
+		}
 		return nil
 	}
 
