@@ -9,7 +9,8 @@ const (
 	DbgParseIsMethod          //print parse.go isMethod debug log info
 	DbgEditSymMap             //print user edit sym map info
 	DbgVisitTop               //print visitTop
-	DbgFlagAll       = DbgSymbol | DbgParseIsMethod
+	DbgCollectFuncInfo
+	DbgFlagAll = DbgSymbol | DbgParseIsMethod
 )
 
 func SetDebugSymbol() {
@@ -42,4 +43,12 @@ func SetDebugVisitTop() {
 
 func GetDebugVisitTop() bool {
 	return flags&DbgVisitTop != 0
+}
+
+func SetDebugCollectFuncInfo() {
+	flags |= DbgCollectFuncInfo
+}
+
+func GetDebugCollectFuncInfo() bool {
+	return false&DbgCollectFuncInfo != 0
 }

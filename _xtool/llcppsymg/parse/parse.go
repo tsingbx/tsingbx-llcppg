@@ -279,7 +279,7 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 	// On Linux, C++ symbols typically have one leading underscore
 	// On macOS, C++ symbols may have two leading underscores
 	// For consistency, we remove the first leading underscore on macOS
-	if dbg.GetDebugSymbol() {
+	if dbg.GetDebugCollectFuncInfo() {
 		fmt.Printf("collectFuncInfo: %s %s\n", clang.GoString(cursor.Mangling()), clang.GoString(cursor.String()))
 	}
 
