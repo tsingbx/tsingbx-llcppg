@@ -10,6 +10,7 @@ const (
 	DbgLog                     // print log info
 	DbgSetCurFile
 	DbgNew
+	DbgWrite
 	DbgFlagAll = 0 | DbgError | DbgLog
 )
 
@@ -55,4 +56,12 @@ func SetDebugNew() {
 
 func GetDebugNew() bool {
 	return flags&DbgNew != 0
+}
+
+func SetDebugWrite() {
+	flags |= DbgWrite
+}
+
+func GetDebugWrite() bool {
+	return flags&DbgWrite != 0
 }

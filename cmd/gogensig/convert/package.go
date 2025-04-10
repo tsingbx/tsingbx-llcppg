@@ -670,7 +670,7 @@ func (p *Package) WritePkgFiles() error {
 func (p *Package) Write(headerFile string) error {
 	fileName := names.HeaderFileToGo(headerFile)
 	filePath := filepath.Join(p.GetOutputDir(), fileName)
-	if dbg.GetDebugLog() {
+	if dbg.GetDebugWrite() {
 		log.Printf("Write HeaderFile [%s] from  gogen:[%s] to [%s]\n", headerFile, fileName, filePath)
 	}
 	return p.writeToFile(fileName, filePath)
