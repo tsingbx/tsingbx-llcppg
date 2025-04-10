@@ -9,7 +9,7 @@ const (
 	DbgError                   // print when error ocur
 	DbgLog                     // print log info
 	DbgSetCurFile
-	DbgNewFuncDecl
+	DbgNew
 	DbgFlagAll = 0 | DbgError | DbgLog
 )
 
@@ -49,10 +49,10 @@ func GetDebugSetCurFile() bool {
 	return flags&DbgSetCurFile != 0
 }
 
-func SetDebugNewFuncDecl() {
-	flags |= DbgNewFuncDecl
+func SetDebugNew() {
+	flags |= DbgNew
 }
 
-func GetDebugNewFuncDecl() bool {
-	return flags&DbgNewFuncDecl != 0
+func GetDebugNew() bool {
+	return flags&DbgNew != 0
 }

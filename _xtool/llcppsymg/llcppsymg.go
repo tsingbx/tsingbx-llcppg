@@ -69,7 +69,7 @@ func main() {
 	check(err)
 
 	pkgHfiles := config.PkgHfileInfo(conf.Config, []string{})
-	if dbg.GetDebugSymbol() {
+	if dbg.GetDebugFileType() {
 		fmt.Println("interfaces", pkgHfiles.Inters)
 		fmt.Println("implements", pkgHfiles.Impls)
 		fmt.Println("thirdhfile", pkgHfiles.Thirds)

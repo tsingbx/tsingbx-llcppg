@@ -10,6 +10,7 @@ const (
 	DbgProcess
 	DbgGetCurFile
 	DbgMacro
+	DbgFileType
 	DbgFlagAll = DbgParse
 )
 
@@ -55,4 +56,12 @@ func SetDebugMacro() {
 
 func GetDebugMacro() bool {
 	return flags&DbgMacro != 0
+}
+
+func SetDebugFileType() {
+	flags |= DbgFileType
+}
+
+func GetDebugFileType() bool {
+	return flags&DbgFileType != 0
 }

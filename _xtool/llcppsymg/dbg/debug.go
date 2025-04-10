@@ -11,6 +11,7 @@ const (
 	DbgVisitTop               //print visitTop
 	DbgCollectFuncInfo
 	DbgNewSymbol
+	DbgFileType
 	DbgFlagAll = DbgSymbol | DbgParseIsMethod
 )
 
@@ -60,4 +61,12 @@ func SetDebugNewSymbol() {
 
 func GetDebugNewSymbol() bool {
 	return flags&DbgNewSymbol != 0
+}
+
+func SetDebugFileType() {
+	flags |= DbgFileType
+}
+
+func GetDebugFileType() bool {
+	return flags&DbgFileType != 0
 }

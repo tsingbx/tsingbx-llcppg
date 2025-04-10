@@ -68,7 +68,7 @@ func Do(cfg *ParseConfig) (*Converter, error) {
 		libclangFlags = append(libclangFlags, "-resource-dir="+ClangResourceDir, "-I"+path.Join(ClangResourceDir, "include"))
 	}
 	pkgHfiles := config.PkgHfileInfo(cfg.Conf, libclangFlags)
-	if dbg.GetDebugParse() {
+	if dbg.GetDebugFileType() {
 		fmt.Fprintln(os.Stderr, "interfaces", pkgHfiles.Inters)
 		fmt.Fprintln(os.Stderr, "implements", pkgHfiles.Impls)
 		fmt.Fprintln(os.Stderr, "thirdhfile", pkgHfiles.Thirds)
