@@ -8,6 +8,7 @@ const (
 	DbgParse dbgFlags = 1 << iota
 	DbgVisitTop
 	DbgProcess
+	DbgGetCurFile
 	DbgFlagAll = DbgParse
 )
 
@@ -37,4 +38,12 @@ func SetDebugProcess() {
 
 func GetDebugProcess() bool {
 	return flags&DbgProcess != 0
+}
+
+func SetDebugGetCurFile() {
+	flags |= DbgGetCurFile
+}
+
+func GetDebugGetCurFile() bool {
+	return flags&DbgGetCurFile != 0
 }

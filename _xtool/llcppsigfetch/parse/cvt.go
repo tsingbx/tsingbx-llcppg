@@ -155,10 +155,14 @@ func (ct *Converter) InFile(cursor clang.Cursor) bool {
 	var file clang.String
 	loc.PresumedLocation(&file, nil, nil)
 	filePath := clang.GoString(file)
-	ct.logf("GetCurFile: PresumedLocation %s cursor.Location() %s\n", filePath, clang.GoString(loc.File().FileName()))
+	if dbg.GetDebugGetCurFile() {
+		ct.logf("GetCurFile: PresumedLocation %s cursor.Location() %s\n", filePath, clang.GoString(loc.File().FileName()))
+	}
 	if filePath == "<built-in>" || filePath == "<command line>" {
 		//todo(zzy): For some built-in macros, there is no file.
-		ct.logln("GetCurFile: NO FILE")
+		if dbg.GetDebugGetCurFile() {
+			ct.logln("GetCurFile: NO FILE")
+		}
 		return false
 	}
 	return true
