@@ -74,6 +74,13 @@ func TestParseHeaderFile() {
 				"gpg_strerror",
 			},
 		},
+		{
+			name: "sqlite",
+			path: "./sqlite3",
+			dylibSymbols: []string{
+				"sqlite3_finalize",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

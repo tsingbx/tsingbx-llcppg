@@ -81,6 +81,12 @@
 		"c++":	"gpg_strsource(gpg_error_t)",
 		"go":	"ErrorT.Strsource"
 	}]
+=== Test Case: sqlite ===
+[{
+		"mangle":	"sqlite3_finalize",
+		"c++":	"sqlite3_finalize(sqlite3_stmt *)",
+		"go":	"(*Stmt).Close"
+	}]
 
 #stderr
 
