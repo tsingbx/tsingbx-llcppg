@@ -12,8 +12,12 @@ const (
 	DbgCollectFuncInfo
 	DbgNewSymbol
 	DbgFileType
-	DbgFlagAll = DbgSymbol | DbgParseIsMethod
+	DbgFlagAll = 0
 )
+
+func SetDebugAll() {
+	flags = DbgFlagAll
+}
 
 func SetDebugSymbol() {
 	flags |= DbgSymbol

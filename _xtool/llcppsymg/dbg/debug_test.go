@@ -129,3 +129,21 @@ func TestSetDebugFileType(t *testing.T) {
 		})
 	}
 }
+
+func TestSetDebugAll(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "TestSetDebugAll",
+		}
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetDebugAll()
+			if dbgFlags != DbgFlagAll {
+				t.Errorf("dbgFlags = %v, want %v", dbgFlags, DbgFlagAll)
+			}
+		})
+	}
+}

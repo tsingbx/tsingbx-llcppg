@@ -12,7 +12,7 @@ const (
 	DbgNew
 	DbgWrite
 	DbgUnmarshalling
-	DbgFlagAll = 0 | DbgError | DbgLog
+	DbgFlagAll = 0
 )
 
 func SetDebugSymbolNotFound() {

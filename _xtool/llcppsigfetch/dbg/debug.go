@@ -11,7 +11,7 @@ const (
 	DbgGetCurFile
 	DbgMacro
 	DbgFileType
-	DbgFlagAll = DbgParse
+	DbgFlagAll = 0
 )
 
 func SetDebugParse() {
