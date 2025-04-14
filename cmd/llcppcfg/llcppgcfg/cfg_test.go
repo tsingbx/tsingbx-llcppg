@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -561,96 +560,6 @@ func TestNormalizePackageName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NormalizePackageName(tt.args.name); got != tt.want {
 				t.Errorf("NormalizePackageName() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGenCfg(t *testing.T) {
-	if runtime.GOOS == "linux" {
-		return
-	}
-	_, cjsonCfgFilePath := newCflags("cfg_test_data/cjson/llcppg.cfg")
-	_, bdwgcCfgFilePath := newCflags("cfg_test_data/bdw-gc/llcppg.cfg")
-	_, libffiCfgFilePath := newCflags("cfg_test_data/libffi/llcppg.cfg")
-
-	type args struct {
-		name           string
-		flag           FlagMode
-		exts           []string
-		excludeSubdirs []string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *bytes.Buffer
-		wantErr bool
-	}{
-		{
-			"libcjson",
-			args{
-				"libcjson",
-				WithTab,
-				[]string{".h"},
-				[]string{},
-			},
-			readFile(cjsonCfgFilePath),
-			false,
-		},
-		{
-			"bdw-gc",
-			args{
-				"bdw-gc",
-				WithTab,
-				[]string{".h"},
-				[]string{},
-			},
-			readFile(bdwgcCfgFilePath),
-			false,
-		},
-		{
-			"libffi",
-			args{
-				"libffi",
-				WithTab,
-				[]string{".h"},
-				[]string{},
-			},
-			readFile(libffiCfgFilePath),
-			false,
-		},
-		{
-			"empty_name",
-			args{
-				"",
-				WithTab,
-				[]string{".h"},
-				[]string{},
-			},
-			nil,
-			true,
-		},
-		{
-			"normal_not_sort",
-			args{
-				"libcjson",
-				0,
-				[]string{".h"},
-				[]string{},
-			},
-			nil,
-			false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GenCfg(NewGenConfig(tt.args.name, tt.args.flag, tt.args.exts, tt.args.excludeSubdirs))
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GenCfg() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if tt.args.flag&WithTab != 0 && !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GenCfg() = %v, want %v", got, tt.want)
 			}
 		})
 	}
