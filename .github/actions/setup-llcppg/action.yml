@@ -50,7 +50,7 @@ runs:
     run: |
       cd compiler
       go install -v ./cmd/...
-      export LLGO_ROOT=$GITHUB_WORKSPACE/llgo
+      export LLGO_ROOT=$GITHUB_WORKSPACE/.llgo
       echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
   - name: Build
     shell: bash
