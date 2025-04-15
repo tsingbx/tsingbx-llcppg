@@ -26,9 +26,9 @@ jobs:
     - name: Setup llcppg environment
       uses: ./.github/actions/setup-llcppg
       with:
-        go-version: ${{ matrix.go }}
-        llvm-version: ${{ matrix.llvm }}
-        llgo-version: ${{ matrix.llgo }}
+        go: ${{ matrix.go }}
+        llvm: ${{ matrix.llvm }}
+        llgo: ${{ matrix.llgo }}
 
     - name: Test llcppsymg & llcppsigfetch
       run: |

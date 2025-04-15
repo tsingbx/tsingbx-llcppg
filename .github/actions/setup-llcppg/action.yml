@@ -1,13 +1,13 @@
 name: "Setup llcppg"
 description: "Install dependencies, set up Go, set up LLGo, install llcppg"
 inputs:
-  go-version:
+  go:
     description: "Go version to install"
     default: "1.23"
-  llvm-version:
+  llvm:
     description: "LLVM version to install (e.g. 18)"
     default: "18"
-  llgo-version:
+  llgo:
     description: "LLGo git ref or tag"
     default: "v0.10.0"
 runs:
@@ -19,11 +19,11 @@ runs:
     with:
       repository: 'goplus/llgo'
       path: '.llgo'
-      ref: ${{inputs.llgo-version}}
+      ref: ${{inputs.llgo}}
   - name: Set up Go
     uses: actions/setup-go@v4
     with:
-      go-version: ${{inputs.go-version}}
+      go-version: ${{inputs.go}}
   - name: Install dependencies
     if: runner.os == 'macOS'
     shell: bash
