@@ -26,6 +26,7 @@ runs:
       go-version: ${{inputs.go-version}}
   - name: Install dependencies
     if: startsWith(matrix.os, 'macos')
+    shell: bash
     run: |
       brew update
       brew install llvm@${{matrix.llvm}} bdw-gc openssl libffi libuv
@@ -35,6 +36,7 @@ runs:
       # llcppg dependencies
       brew install cjson
   - name: Install dependencies
+    shell: bash
     if: startsWith(matrix.os, 'ubuntu')
     run: |
       echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{matrix.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
@@ -43,6 +45,7 @@ runs:
       sudo apt-get install -y llvm-${{matrix.llvm}}-dev clang-${{matrix.llvm}} libunwind-dev libclang-${{matrix.llvm}}-dev lld-${{matrix.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev libuv1-dev
       echo "/usr/lib/llvm-${{matrix.llvm}}/bin" >> $GITHUB_PATH
   - name: Install LLGo
+    shell: bash
     working-directory: .llgo
     run: |
       cd compiler
@@ -50,9 +53,11 @@ runs:
       export LLGO_ROOT=$GITHUB_WORKSPACE/llgo
       echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
   - name: Build
+    shell: bash
     run: go build -v ./...
 
   - name: Install llcppg modules
+    shell: bash
     run: |
       echo "Using LLGO_ROOT: $LLGO_ROOT"
       bash ./install.sh
