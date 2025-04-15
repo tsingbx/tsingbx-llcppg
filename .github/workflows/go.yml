@@ -22,6 +22,7 @@ jobs:
         go: [1.23]
     runs-on: ${{matrix.os}}
     steps:
+    - uses: actions/checkout@v4
     - name: Setup llcppg environment
       uses: ./.github/actions/setup-llcppg
       with:
