@@ -2,7 +2,7 @@
 package sqlite
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -714,7 +714,7 @@ type Fts5Api struct {
 package sqlite
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -724,7 +724,7 @@ type LoadextEntry func(*Sqlite3, **c.Char, *ApiRoutines) c.Int
 ===== sqlite_autogen_link.go =====
 package sqlite
 
-import _ "github.com/goplus/llgo/c"
+import _ "github.com/goplus/lib/c"
 
 const LLGoPackage string = "link: $(pkg-config --libs sqlite3);"
 

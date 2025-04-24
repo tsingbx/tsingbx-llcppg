@@ -87,9 +87,10 @@ func TestUnionDecl(t *testing.T) {
 			},
 			expected: `package testpkg
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
+
 type U struct {
 	B c.Long
 }`,
@@ -183,23 +184,23 @@ func TestToType(t *testing.T) {
 		input    *ast.BuiltinType
 		expected string
 	}{
-		{"Void", &ast.BuiltinType{Kind: ast.Void}, "github.com/goplus/llgo/c.Void"},
+		{"Void", &ast.BuiltinType{Kind: ast.Void}, "github.com/goplus/lib/c.Void"},
 		{"Bool", &ast.BuiltinType{Kind: ast.Bool}, "bool"},
-		{"Char_S", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Signed}, "github.com/goplus/llgo/c.Char"},
-		{"Char_U", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Unsigned}, "github.com/goplus/llgo/c.Char"},
+		{"Char_S", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Signed}, "github.com/goplus/lib/c.Char"},
+		{"Char_U", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Unsigned}, "github.com/goplus/lib/c.Char"},
 		{"WChar", &ast.BuiltinType{Kind: ast.WChar}, "int16"},
 		{"Char16", &ast.BuiltinType{Kind: ast.Char16}, "int16"},
 		{"Char32", &ast.BuiltinType{Kind: ast.Char32}, "int32"},
 		{"Short", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Short}, "int16"},
 		{"UShort", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Short | ast.Unsigned}, "uint16"},
-		{"Int", &ast.BuiltinType{Kind: ast.Int}, "github.com/goplus/llgo/c.Int"},
-		{"UInt", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Unsigned}, "github.com/goplus/llgo/c.Uint"},
-		{"Long", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long}, "github.com/goplus/llgo/c.Long"},
-		{"ULong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned}, "github.com/goplus/llgo/c.Ulong"},
-		{"LongLong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.LongLong}, "github.com/goplus/llgo/c.LongLong"},
-		{"ULongLong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.LongLong | ast.Unsigned}, "github.com/goplus/llgo/c.UlongLong"},
-		{"Float", &ast.BuiltinType{Kind: ast.Float}, "github.com/goplus/llgo/c.Float"},
-		{"Double", &ast.BuiltinType{Kind: ast.Float, Flags: ast.Double}, "github.com/goplus/llgo/c.Double"},
+		{"Int", &ast.BuiltinType{Kind: ast.Int}, "github.com/goplus/lib/c.Int"},
+		{"UInt", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Unsigned}, "github.com/goplus/lib/c.Uint"},
+		{"Long", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long}, "github.com/goplus/lib/c.Long"},
+		{"ULong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned}, "github.com/goplus/lib/c.Ulong"},
+		{"LongLong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.LongLong}, "github.com/goplus/lib/c.LongLong"},
+		{"ULongLong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.LongLong | ast.Unsigned}, "github.com/goplus/lib/c.UlongLong"},
+		{"Float", &ast.BuiltinType{Kind: ast.Float}, "github.com/goplus/lib/c.Float"},
+		{"Double", &ast.BuiltinType{Kind: ast.Float, Flags: ast.Double}, "github.com/goplus/lib/c.Double"},
 		{"ComplexFloat", &ast.BuiltinType{Kind: ast.Complex}, "complex64"},
 		{"ComplexDouble", &ast.BuiltinType{Kind: ast.Complex, Flags: ast.Double}, "complex128"},
 	}
@@ -486,7 +487,7 @@ func Foo()`,
 			expected: `
 package testpkg
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 //go:linkname Foo C.foo
@@ -524,8 +525,8 @@ func Foo(a uint16, b bool) c.Double`,
 package testpkg
 
 import (
-"github.com/goplus/llgo/c"
-_ "unsafe"
+	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
 
 //go:linkname Foo C.foo
@@ -564,8 +565,8 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 package testpkg
 
 import (
-"github.com/goplus/llgo/c"
-_ "unsafe"
+	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
 
 //go:linkname Foo C.foo
@@ -613,8 +614,8 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 package testpkg
 
 import (
-"github.com/goplus/llgo/c"
-_ "unsafe"
+	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
 
 //go:linkname Foo C.foo
@@ -653,7 +654,7 @@ func Foo(a *c.Uint, b *c.Long) *c.Double
 package testpkg
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -713,8 +714,8 @@ func Foo(a c.Pointer) c.Pointer
 package testpkg
 
 import (
-"github.com/goplus/llgo/c"
-_ "unsafe"
+	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
 
 //go:linkname Foo C.foo
@@ -873,8 +874,8 @@ type Foo struct {
 package testpkg
 
 import (
-"github.com/goplus/llgo/c"
-_ "unsafe"
+	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
 
 type Foo struct {
@@ -932,7 +933,7 @@ type Foo struct {
 package testpkg
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -984,8 +985,8 @@ type Foo struct {
 package testpkg
 
 import (
-"github.com/goplus/llgo/c"
-_ "unsafe"
+	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
 
 type Foo struct {
@@ -1033,8 +1034,8 @@ type Foo struct {
 package testpkg
 
 import (
-"github.com/goplus/llgo/c"
-_ "unsafe"
+	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
 
 type Foo struct {
@@ -1145,9 +1146,10 @@ func TestTypedefFunc(t *testing.T) {
 package testpkg
 
 import (
-"github.com/goplus/llgo/c"
-_ "unsafe"
+	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
+
 // llgo:type C
 type Foo func(a c.Int, b c.Int) c.Int`,
 		},
@@ -1256,7 +1258,7 @@ func TestRedef(t *testing.T) {
 package testpkg
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -1285,7 +1287,7 @@ func TestTypedef(t *testing.T) {
 package testpkg
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -1316,8 +1318,8 @@ type DOUBLE c.Double`,
 package testpkg
 
 import (
-"github.com/goplus/llgo/c"
-_ "unsafe"
+	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
 
 type INT c.Int
@@ -1339,7 +1341,7 @@ type INT c.Int
 package testpkg
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -1360,7 +1362,7 @@ type Name [5]c.Char`,
 package testpkg
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -1382,7 +1384,7 @@ type Ctx c.Pointer`,
 			expected: `
 package testpkg
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 type Name *c.Char`,
@@ -1427,7 +1429,7 @@ func TestEnumDecl(t *testing.T) {
 package testpkg
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -1454,7 +1456,7 @@ const (
 package testpkg
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -1583,7 +1585,7 @@ func TestIdentRefer(t *testing.T) {
 		comparePackageOutput(t, pkg, `
 		package testpkg
 		import (
-			"github.com/goplus/llgo/c"
+			"github.com/goplus/lib/c"
 			_ "unsafe"
 		)
 		type TypInt8T c.Char
@@ -1648,7 +1650,7 @@ func TestForwardDecl(t *testing.T) {
 package testpkg
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 

@@ -2,7 +2,7 @@
 package depcjson
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -12,11 +12,11 @@ type X_depcjsonType c.Int
 package depcjson
 
 import (
+	_ "github.com/goplus/lib/c"
 	_ "github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjson"
 	_ "github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep"
 	_ "github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep2"
 	_ "github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep3"
-	_ "github.com/goplus/llgo/c"
 )
 
 const LLGoPackage string = "link: $(pkg-config --libs libcjson);"
@@ -25,12 +25,12 @@ const LLGoPackage string = "link: $(pkg-config --libs libcjson);"
 package depcjson
 
 import (
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/basicdep"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjson"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep2"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep3"
-	"github.com/goplus/llgo/c"
 	_ "unsafe"
 )
 
