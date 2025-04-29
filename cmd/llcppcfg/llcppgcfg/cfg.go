@@ -12,7 +12,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 type GenConfig struct {
@@ -200,7 +200,7 @@ func sortIncludes(expandCflags string, cfg *llcppg.Config, exts []string, exclud
 }
 
 func NewLLCppgConfig(name string, flag FlagMode) *llcppg.Config {
-	cfg := llcppg.NewDefaultConfig()
+	cfg := llcppg.NewDefault()
 	cfg.Name = name
 	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
