@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
@@ -582,14 +581,6 @@ func joinPath(dir, rel string) string {
 		path += string(filepath.Separator)
 	}
 	return path
-}
-
-func readFile(filepath string) *bytes.Buffer {
-	buf, err := os.ReadFile(filepath)
-	if err != nil {
-		return bytes.NewBufferString("")
-	}
-	return bytes.NewBuffer(buf)
 }
 
 func Test_getDir(t *testing.T) {

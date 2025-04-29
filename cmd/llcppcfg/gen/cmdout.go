@@ -8,8 +8,8 @@ import (
 )
 
 func GetOut(cmd *exec.Cmd, dir string) (string, error) {
-	outBuf := bytes.NewBufferString("")
-	errBuff := bytes.NewBufferString("")
+	outBuf := new(bytes.Buffer)
+	errBuff := new(bytes.Buffer)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = outBuf
 	cmd.Stderr = errBuff
