@@ -199,7 +199,7 @@ func sortIncludes(expandCflags string, cfg *llcppg.Config, exts []string, exclud
 	cfg.Include = includeList.include
 }
 
-func NewLLCppgConfig(name string, flag FlagMode) *llcppg.Config {
+func newLLCppgConfig(name string, flag FlagMode) *llcppg.Config {
 	cfg := llcppg.NewDefault()
 	cfg.Name = name
 	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
@@ -227,7 +227,7 @@ func Do(genCfg *Config) (*bytes.Buffer, error) {
 	if len(genCfg.name) == 0 {
 		return nil, newEmptyStringError("name")
 	}
-	cfg := NewLLCppgConfig(genCfg.name, genCfg.flag)
+	cfg := newLLCppgConfig(genCfg.name, genCfg.flag)
 	expandCFlags := ExpandName(genCfg.name, "", cfgCflagsKey)
 	sortIncludes(expandCFlags, cfg, genCfg.exts, genCfg.excludeSubdirs)
 	cfg.Name = NormalizePackageName(cfg.Name)
