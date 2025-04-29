@@ -8,9 +8,6 @@ import (
 )
 
 func GetOut(cmd *exec.Cmd, dir string) (string, error) {
-	if cmd == nil {
-		return "", newNilError()
-	}
 	outBuf := bytes.NewBufferString("")
 	errBuff := bytes.NewBufferString("")
 	cmd.Stdin = os.Stdin
@@ -47,15 +44,4 @@ func ExpandString(str string, dir string) string {
 		return outString
 	})
 	return strings.TrimSpace(expandStr)
-}
-
-type nilError struct {
-}
-
-func (p *nilError) Error() string {
-	return "nil error"
-}
-
-func newNilError() *nilError {
-	return &nilError{}
 }
