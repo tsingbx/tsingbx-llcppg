@@ -223,7 +223,7 @@ func NormalizePackageName(name string) string {
 	return strings.Join(fields, "_")
 }
 
-func Do(genCfg *Config) (*bytes.Buffer, error) {
+func Do(genCfg *Config) ([]byte, error) {
 	if len(genCfg.name) == 0 {
 		return nil, newEmptyStringError("name")
 	}
@@ -242,5 +242,5 @@ func Do(genCfg *Config) (*bytes.Buffer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return buf, nil
+	return buf.Bytes(), nil
 }

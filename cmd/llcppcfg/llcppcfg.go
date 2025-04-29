@@ -56,7 +56,7 @@ func main() {
 		panic(err)
 	}
 	outFile := "./llcppg.cfg"
-	err = os.WriteFile(outFile, buf.Bytes(), 0600)
+	err = os.WriteFile(outFile, buf, 0600)
 	if err != nil {
 		panic(err)
 	}
