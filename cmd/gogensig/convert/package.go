@@ -51,6 +51,7 @@ type Package struct {
 	incompleteTypes *IncompleteTypes
 
 	nameMapper *names.NameMapper // handles name mapping and uniqueness
+	symbols    *ProcessSymbol    // record the processed node
 }
 
 type PackageConfig struct {
@@ -75,6 +76,7 @@ func NewPackage(config *PackageConfig) *Package {
 		incompleteTypes: NewIncompleteTypes(),
 		locMap:          NewThirdTypeLoc(),
 		nameMapper:      names.NewNameMapper(),
+		symbols:         NewProcessSymbol(),
 	}
 
 	// default have load llgo/c
@@ -305,9 +307,16 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		return nil
 	}
 
-	recv, err := p.funcIsDefined(fnSpec, funcDecl)
+	recv, exist, err := p.funcIsDefined(fnSpec, funcDecl)
 	if err != nil {
+		log.Panicf("NewFuncDecl: %s fail : %s", funcDecl.Name.Name, err.Error())
 		return err
+	}
+	if exist {
+		if dbg.GetDebugLog() {
+			log.Printf("NewFuncDecl: %s is processed\n", funcDecl.Name.Name)
+		}
+		return nil
 	}
 
 	sig, err := p.ToSigSignature(recv, funcDecl)
@@ -317,7 +326,16 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 	return p.handleFuncDecl(fnSpec, sig, funcDecl)
 }
 
-func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (recv *types.Var, err error) {
+func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (recv *types.Var, exist bool, err error) {
+	node := Node{
+		name: funcDecl.Name.Name,
+		kind: FuncDecl,
+	}
+	// if already processed,return
+	exist = p.symbols.Lookup(node)
+	if exist {
+		return nil, true, nil
+	}
 	if fnSpec.IsMethod &&
 		funcDecl.Type.Params.List != nil &&
 		len(funcDecl.Type.Params.List) > 0 {
@@ -325,15 +343,17 @@ func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (rec
 		var namedType = getNamedType(recv.Type())
 		methodName := fnSpec.FnName
 		for i := 0; i < namedType.NumMethods(); i++ {
-			if namedType.Method(i).Name() == methodName {
-				return nil, errs.NewFuncAlreadyDefinedError(fnSpec.GoSymbName)
+			if namedType.Method(i).Name() == methodName { // unreachable,because if have the same method name,will return in p.symbols.Lookup(node)
+				return nil, true, errs.NewFuncAlreadyDefinedError(fnSpec.GoSymbName)
 			}
 		}
 	} else {
 		if obj := p.Lookup(fnSpec.FnName); obj != nil {
-			return nil, errs.NewFuncAlreadyDefinedError(fnSpec.GoSymbName)
+			return nil, true, errs.NewFuncAlreadyDefinedError(fnSpec.GoSymbName)
 		}
 	}
+	// register the function
+	p.symbols.Register(node)
 	return
 }
 
@@ -362,17 +382,23 @@ func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 
 	cname := typeDecl.Name.Name
 	isForward := p.cvt.inComplete(typeDecl.Type)
-	name, changed, err := p.DeclName(cname, true)
+	name, changed, exist, err := p.RegisterNode(Node{name: cname, kind: TypeDecl}, p.declName)
 	if err != nil {
-		if isForward {
-			return nil
-		}
 		return err
 	}
+
+	// if the type is already defined,we don't need to process again
+	// but if the previous processed node is a forward declaration,we need to complete the type
+	_, isIncom := p.incompleteTypes.Lookup(typeDecl.Name.Name)
+	if exist && (isForward || !isIncom) {
+		if dbg.GetDebugLog() {
+			log.Printf("NewTypeDecl: %s is processed\n", typeDecl.Name.Name)
+		}
+		return nil
+	}
+
 	p.CollectNameMapping(cname, name)
-
 	incom := p.handleTypeDecl(name, cname, typeDecl)
-
 	if changed {
 		substObj(p.p.Types, p.p.Types.Scope(), cname, incom.decl.Type().Obj())
 	}
@@ -425,7 +451,7 @@ func (p *Package) handleImplicitForwardDecl(name string) *gogen.TypeDecl {
 		return decl.decl
 	}
 
-	pubName, _ := p.nameMapper.GetUniqueGoName(name, p.trimPrefixes(), true)
+	pubName, _ := p.nameMapper.GetUniqueGoName(name, p.declName)
 	decl := p.emptyTypeDecl(pubName, nil)
 	inc := &Incomplete{
 		cname: name,
@@ -457,10 +483,17 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 	if dbg.GetDebugLog() {
 		log.Printf("NewTypedefDecl: %v\n", typedefDecl.Name)
 	}
-	name, changed, err := p.DeclName(typedefDecl.Name.Name, true)
+
+	node := Node{name: typedefDecl.Name.Name, kind: TypedefDecl}
+	name, changed, exist, err := p.RegisterNode(node, p.declName)
 	if err != nil {
 		return err
 	}
+	if exist {
+		log.Printf("NewTypedefDecl: %s is processed\n", typedefDecl.Name.Name)
+		return nil
+	}
+
 	p.CollectNameMapping(typedefDecl.Name.Name, name)
 
 	genDecl := p.p.NewTypeDefs()
@@ -547,9 +580,15 @@ func (p *Package) NewEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl) error {
 	if dbg.GetDebugLog() {
 		log.Printf("NewEnumTypeDecl: %v\n", enumTypeDecl.Name)
 	}
-	enumType, err := p.createEnumType(enumTypeDecl.Name)
+	enumType, exist, err := p.createEnumType(enumTypeDecl.Name)
 	if err != nil {
 		return err
+	}
+	if exist {
+		if dbg.GetDebugLog() {
+			log.Printf("NewEnumTypeDecl: %v is processed\n", enumTypeDecl.Name)
+		}
+		return nil
 	}
 	if len(enumTypeDecl.Type.Items) > 0 {
 		err = p.createEnumItems(enumTypeDecl.Type.Items, enumType)
@@ -560,15 +599,20 @@ func (p *Package) NewEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl) error {
 	return nil
 }
 
-func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, error) {
+func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, bool, error) {
 	var name string
 	var changed bool
 	var err error
+	var exist bool
 	var t *gogen.TypeDecl
 	if enumName != nil {
-		name, changed, err = p.DeclName(enumName.Name, true)
+		node := Node{name: enumName.Name, kind: EnumTypeDecl}
+		name, changed, exist, err = p.RegisterNode(node, p.declName)
 		if err != nil {
-			return nil, errs.NewTypeDefinedError(name, enumName.Name)
+			return nil, false, errs.NewTypeDefinedError(name, enumName.Name)
+		}
+		if exist {
+			return nil, true, nil
 		}
 		p.CollectNameMapping(enumName.Name, name)
 	}
@@ -580,15 +624,21 @@ func (p *Package) createEnumType(enumName *ast.Ident) (types.Type, error) {
 	if changed {
 		substObj(p.p.Types, p.p.Types.Scope(), enumName.Name, t.Type().Obj())
 	}
-	return enumType, nil
+	return enumType, false, nil
 }
 
 func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type) error {
 	defs := p.NewConstGroup()
 	for _, item := range items {
-		name, changed, err := p.DeclName(item.Name.Name, true)
+		name, changed, exist, err := p.RegisterNode(Node{name: item.Name.Name, kind: EnumItem}, p.declName)
 		if err != nil {
 			return errs.NewTypeDefinedError(name, item.Name.Name)
+		}
+		if exist {
+			if dbg.GetDebugLog() {
+				log.Printf("NewEnumTypeDecl: %v is processed\n", item.Name.Name)
+			}
+			continue
 		}
 		val, err := Expr(item.Value).ToInt()
 		if err != nil {
@@ -613,9 +663,16 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 	if len(macro.Tokens) == 2 && macro.Tokens[1].Token == ctoken.LITERAL {
 		value := macro.Tokens[1].Lit
 		defs := p.NewConstGroup()
-		name, _, err := p.DeclName(macro.Name, false)
+		node := Node{name: macro.Name, kind: Macro}
+		name, _, exist, err := p.RegisterNode(node, p.macroName)
 		if err != nil {
 			return err
+		}
+		if exist {
+			if dbg.GetDebugLog() {
+				log.Printf("NewMacro: %s is processed\n", macro.Name)
+			}
+			return nil
 		}
 		if dbg.GetDebugLog() {
 			log.Printf("NewMacro: %s = %s\n", name, value)
@@ -764,16 +821,26 @@ func (p *Package) WritePubFile() error {
 	return config.WritePubFile(filepath.Join(p.GetOutputDir(), llcppg.LLCPPG_PUB), p.Pubs)
 }
 
-// For a decl name, it should be unique
-func (p *Package) DeclName(name string, toCamel bool) (pubName string, changed bool, err error) {
-	pubName, changed = p.nameMapper.GetUniqueGoName(name, p.trimPrefixes(), toCamel)
-	// if the type is incomplete,it's ok to have the same name
-	obj := p.Lookup(name)
-	_, ok := p.incompleteTypes.Lookup(name)
-	if obj != nil && !ok {
-		return "", false, errs.NewTypeDefinedError(pubName, name)
+func (p *Package) RegisterNode(node Node, nameMethod names.NameMethod) (pubName string, changed bool, exist bool, err error) {
+	pubName, changed = p.nameMapper.GetUniqueGoName(node.name, nameMethod)
+	exist = p.symbols.Lookup(node)
+	if exist {
+		return pubName, changed, exist, nil
 	}
-	return pubName, changed, nil
+	obj := p.Lookup(node.name)
+	if obj != nil {
+		return "", false, exist, errs.NewTypeDefinedError(pubName, node.name)
+	}
+	p.symbols.Register(node)
+	return pubName, changed, exist, nil
+}
+
+func (p *Package) declName(name string) string {
+	return names.PubName(names.RemovePrefixedName(name, p.trimPrefixes()))
+}
+
+func (p *Package) macroName(name string) string {
+	return names.ExportName(names.RemovePrefixedName(name, p.trimPrefixes()))
 }
 
 func (p *Package) trimPrefixes() []string {
@@ -883,4 +950,40 @@ func (it *IncompleteTypes) IterateIncomplete(fn func(*Incomplete) error) error {
 		}
 	}
 	return nil
+}
+
+type nodeKind int
+
+const (
+	FuncDecl nodeKind = iota + 1
+	TypeDecl
+	TypedefDecl
+	EnumTypeDecl
+	EnumItem
+	Macro
+)
+
+type Node struct {
+	name string
+	kind nodeKind
+}
+
+type ProcessSymbol struct {
+	// not same node can have same name,so use the Node as key
+	info map[Node]struct{}
+}
+
+func NewProcessSymbol() *ProcessSymbol {
+	return &ProcessSymbol{
+		info: make(map[Node]struct{}),
+	}
+}
+
+func (p *ProcessSymbol) Lookup(node Node) bool {
+	_, ok := p.info[node]
+	return ok
+}
+
+func (p *ProcessSymbol) Register(node Node) {
+	p.info[node] = struct{}{}
 }
