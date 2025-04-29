@@ -1,4 +1,4 @@
-package llcppgcfg
+package gen
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 )
 
-type GenConfig struct {
+type Config struct {
 	name           string
 	flag           FlagMode
 	exts           []string
@@ -23,8 +23,8 @@ type GenConfig struct {
 	excludeSubdirs []string
 }
 
-func NewGenConfig(name string, flag FlagMode, exts, deps, excludeSubdirs []string) *GenConfig {
-	return &GenConfig{name: name, flag: flag, exts: exts, deps: deps, excludeSubdirs: excludeSubdirs}
+func NewConfig(name string, flag FlagMode, exts, deps, excludeSubdirs []string) *Config {
+	return &Config{name: name, flag: flag, exts: exts, deps: deps, excludeSubdirs: excludeSubdirs}
 }
 
 type llcppCfgKey string
@@ -223,7 +223,7 @@ func NormalizePackageName(name string) string {
 	return strings.Join(fields, "_")
 }
 
-func GenCfg(genCfg *GenConfig) (*bytes.Buffer, error) {
+func Do(genCfg *Config) (*bytes.Buffer, error) {
 	if len(genCfg.name) == 0 {
 		return nil, newEmptyStringError("name")
 	}

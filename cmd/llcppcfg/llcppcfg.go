@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/goplus/llcppg/cmd/llcppcfg/llcppgcfg"
+	"github.com/goplus/llcppg/cmd/llcppcfg/gen"
 )
 
 func printHelp() {
@@ -44,14 +44,14 @@ func main() {
 	if len(excludes) > 0 {
 		excludeSubdirs = strings.Fields(excludes)
 	}
-	var flag llcppgcfg.FlagMode
+	var flag gen.FlagMode
 	if cpp {
-		flag |= llcppgcfg.WithCpp
+		flag |= gen.WithCpp
 	}
 	if tab {
-		flag |= llcppgcfg.WithTab
+		flag |= gen.WithTab
 	}
-	buf, err := llcppgcfg.GenCfg(llcppgcfg.NewGenConfig(name, flag, exts, deps, excludeSubdirs))
+	buf, err := gen.Do(gen.NewConfig(name, flag, exts, deps, excludeSubdirs))
 	if err != nil {
 		panic(err)
 	}
