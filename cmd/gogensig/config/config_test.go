@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 func TestLookupSymbolOK(t *testing.T) {
@@ -207,7 +207,7 @@ func TestGetCppgCfgFromPath(t *testing.T) {
 			t.Fatal("Expected non-nil config")
 		}
 
-		expectedConfig := llcppg.NewDefaultConfig()
+		expectedConfig := llcppg.NewDefault()
 		expectedConfig.Name = "lua"
 		expectedConfig.CFlags = "$(pkg-config --cflags lua5.4)"
 		expectedConfig.Include = []string{"litelua.h"}
