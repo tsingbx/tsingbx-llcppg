@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
@@ -169,13 +169,13 @@ func TestMarkUseFail(t *testing.T) {
 
 func TestProcessSymbol(t *testing.T) {
 	toCamel := func(trimprefix []string) NameMethod {
-		return func(name string) string {
-			return names.PubName(names.RemovePrefixedName(name, trimprefix))
+		return func(cname string) string {
+			return name.PubName(name.RemovePrefixedName(cname, trimprefix))
 		}
 	}
 	toExport := func(trimprefix []string) NameMethod {
-		return func(name string) string {
-			return names.ExportName(names.RemovePrefixedName(name, trimprefix))
+		return func(cname string) string {
+			return name.ExportName(name.RemovePrefixedName(cname, trimprefix))
 		}
 	}
 	sym := NewProcessSymbol()
