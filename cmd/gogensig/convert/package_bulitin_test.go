@@ -15,7 +15,7 @@ import (
 )
 
 func emptyPkg() *Package {
-	return NewPackage(&PackageConfig{
+	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath:  ".",
 			CppgConf: &llcppg.Config{},
@@ -26,6 +26,10 @@ func emptyPkg() *Package {
 		OutputDir:   "",
 		SymbolTable: cfg.CreateSymbolTable([]cfg.SymbolEntry{}),
 	})
+	if err != nil {
+		panic(err)
+	}
+	return pkg
 }
 
 func TestTypeRefIncompleteFail(t *testing.T) {
@@ -48,11 +52,6 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 	})
 
 	t.Run("defer write third type not found", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Fatal("Expected panic, got nil")
-			}
-		}()
 		pkg.locMap.Add(&ast.Ident{Name: "Bar"}, &ast.Location{File: "Bar"})
 		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
 		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
@@ -65,7 +64,10 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 			t.Fatal("NewTypedefDecl failed:", err)
 		}
 		pkg.incompleteTypes.Complete("Bar")
-		pkg.WritePkgFiles()
+		err = pkg.WritePkgFiles()
+		if err == nil {
+			t.Fatal("expect a error")
+		}
 	})
 	t.Run("ref tag incomplete fail", func(t *testing.T) {
 		defer func() {
@@ -92,28 +94,32 @@ func TestRedefPubName(t *testing.T) {
 	// mock a function name which is not register in processsymbol
 	pkg.p.NewFuncDecl(token.NoPos, "Foo", types.NewSignatureType(nil, nil, nil, types.NewTuple(), types.NewTuple(), false))
 	pkg.p.NewFuncDecl(token.NoPos, "Bar", types.NewSignatureType(nil, nil, nil, types.NewTuple(), types.NewTuple(), false))
-	err := pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
-		DeclBase: ast.DeclBase{
-			Loc: &ast.Location{File: "temp.h"},
-		},
-		Name: nil,
-		Type: &ast.EnumType{
-			Items: []*ast.EnumItem{
-				{Name: &ast.Ident{Name: "Foo"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
+	t.Run("enum type redefine pubname", func(t *testing.T) {
+		err := pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
+			DeclBase: ast.DeclBase{
+				Loc: &ast.Location{File: "temp.h"},
 			},
-		},
+			Name: nil,
+			Type: &ast.EnumType{
+				Items: []*ast.EnumItem{
+					{Name: &ast.Ident{Name: "Foo"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
+				},
+			},
+		})
+		if err == nil {
+			t.Fatal("expect a error")
+		}
 	})
-	if err == nil {
-		t.Fatal("Expect a redefine err")
-	}
-	err = pkg.NewMacro(&ast.Macro{
-		Loc:    &ast.Location{File: "temp.h"},
-		Name:   "Bar",
-		Tokens: []*ast.Token{{Token: ctoken.IDENT, Lit: "Bar"}, {Token: ctoken.LITERAL, Lit: "1"}},
+	t.Run("macro redefine pubname", func(t *testing.T) {
+		err := pkg.NewMacro(&ast.Macro{
+			Loc:    &ast.Location{File: "temp.h"},
+			Name:   "Bar",
+			Tokens: []*ast.Token{{Token: ctoken.IDENT, Lit: "Bar"}, {Token: ctoken.LITERAL, Lit: "1"}},
+		})
+		if err == nil {
+			t.Fatal("expect a error")
+		}
 	})
-	if err == nil {
-		t.Fatal("Expect a redefine err")
-	}
 }
 
 func TestPubMethodName(t *testing.T) {
@@ -160,7 +166,7 @@ func TestGetNameType(t *testing.T) {
 }
 
 func TestTrimPrefixes(t *testing.T) {
-	pkg := NewPackage(&PackageConfig{
+	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: ".",
 			CppgConf: &llcppg.Config{
@@ -173,6 +179,9 @@ func TestTrimPrefixes(t *testing.T) {
 		OutputDir:   "",
 		SymbolTable: &cfg.SymbolTable{},
 	})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 
 	pkg.curFile = &HeaderFile{
 		FileType: llcppg.Inter,
@@ -197,13 +206,16 @@ func TestMarkUseFail(t *testing.T) {
 			t.Fatal("Expected panic, got nil")
 		}
 	}()
-	pkg := NewPackage(&PackageConfig{
+	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath:  ".",
 			CppgConf: &llcppg.Config{},
 			Pubs:     make(map[string]string),
 		},
 	})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 	pkg.markUseDeps(&PkgDepLoader{})
 }
 

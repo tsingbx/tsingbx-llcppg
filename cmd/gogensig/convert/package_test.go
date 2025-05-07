@@ -111,7 +111,7 @@ func TestLinkFileOK(t *testing.T) {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
 	defer os.RemoveAll(tempDir)
-	pkg := createTestPkg(t, &convert.PackageConfig{
+	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: tempDir,
 		PkgBase: convert.PkgBase{
 			CppgConf: &llcppg.Config{
@@ -119,6 +119,9 @@ func TestLinkFileOK(t *testing.T) {
 			},
 		},
 	})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 	filePath, _ := pkg.WriteLinkFile()
 	_, err = os.Stat(filePath)
 	if os.IsNotExist(err) {
@@ -133,13 +136,15 @@ func TestLinkFileFail(t *testing.T) {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
 		defer os.RemoveAll(tempDir)
-		pkg := createTestPkg(t, &convert.PackageConfig{
+		pkg, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: tempDir,
 			PkgBase: convert.PkgBase{
 				CppgConf: &llcppg.Config{},
 			},
 		})
-
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 		_, err = pkg.WriteLinkFile()
 		if err == nil {
 			t.FailNow()
@@ -151,7 +156,7 @@ func TestLinkFileFail(t *testing.T) {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
 		defer os.RemoveAll(tempDir)
-		pkg := createTestPkg(t, &convert.PackageConfig{
+		pkg, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: tempDir,
 			PkgBase: convert.PkgBase{
 				CppgConf: &llcppg.Config{
@@ -159,6 +164,9 @@ func TestLinkFileFail(t *testing.T) {
 				},
 			},
 		})
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 		err = os.Chmod(tempDir, 0555)
 		if err != nil {
 			t.Fatalf("Failed to change directory permissions: %v", err)
@@ -177,9 +185,12 @@ func TestLinkFileFail(t *testing.T) {
 }
 
 func TestToType(t *testing.T) {
-	pkg := createTestPkg(t, &convert.PackageConfig{
+	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
 	})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 
 	testCases := []struct {
 		name     string
@@ -217,10 +228,13 @@ func TestToType(t *testing.T) {
 }
 
 func TestToTypeFail(t *testing.T) {
-	pkg := createTestPkg(t, &convert.PackageConfig{
+	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
 	})
-	_, err := pkg.ToType(&ast.Comment{Text: "test"})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
+	_, err = pkg.ToType(&ast.Comment{Text: "test"})
 	if err == nil {
 		t.Fatal("Expect error but got nil")
 	}
@@ -232,7 +246,10 @@ var tempFile = &convert.HeaderFile{
 }
 
 func TestNewPackage(t *testing.T) {
-	pkg := createTestPkg(t, &convert.PackageConfig{})
+	pkg, err := createTestPkg(&convert.PackageConfig{})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 	pkg.SetCurFile(tempFile)
 	comparePackageOutput(t, pkg, `
 package testpkg
@@ -272,9 +289,12 @@ func TestPackageWrite(t *testing.T) {
 		}
 		defer os.RemoveAll(tempDir)
 
-		pkg := createTestPkg(t, &convert.PackageConfig{
+		pkg, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: tempDir,
 		})
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 
 		pkg.SetCurFile(headerFile)
 		err = pkg.Write(filePath)
@@ -297,11 +317,14 @@ func TestPackageWrite(t *testing.T) {
 			os.RemoveAll(testpkgDir)
 		}()
 
-		pkg := createTestPkg(t, &convert.PackageConfig{
+		pkg, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: testpkgDir,
 		})
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 		pkg.SetCurFile(headerFile)
-		err := pkg.Write(filePath)
+		err = pkg.Write(filePath)
 		if err != nil {
 			t.Fatalf("Write method failed: %v", err)
 		}
@@ -311,23 +334,32 @@ func TestPackageWrite(t *testing.T) {
 	})
 
 	t.Run("InvalidOutputDir", func(t *testing.T) {
+		testpkgDir := filepath.Join(dir, "testpkg")
+		if err := os.MkdirAll(testpkgDir, 0755); err != nil {
+			t.Fatalf("Failed to create testpkg directory: %v", err)
+		}
 		defer func() {
-			if r := recover(); r == nil {
-				t.Fatal("Expected an error for invalid output directory, but got nil")
-			}
+			os.RemoveAll(testpkgDir)
 		}()
-		pkg := createTestPkg(t, &convert.PackageConfig{
-			OutputDir: "/nonexistent/directory",
+		pkg, err := createTestPkg(&convert.PackageConfig{
+			OutputDir: testpkgDir,
 		})
-		err := pkg.Write(incPath)
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
+		pkg.Config().OutputDir = "/nonexistent/directory"
+		err = pkg.Write(incPath)
 		if err == nil {
 			t.Fatal("Expected an error for invalid output directory, but got nil")
 		}
 	})
 
 	t.Run("WriteUnexistFile", func(t *testing.T) {
-		pkg := createTestPkg(t, &convert.PackageConfig{})
-		err := pkg.Write("test1.h")
+		pkg, err := createTestPkg(&convert.PackageConfig{})
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
+		err = pkg.Write("test1.h")
 		if err == nil {
 			t.Fatal("Expected an error for invalid output directory, but got nil")
 		}
@@ -400,7 +432,11 @@ func Foo(__llgo_va_list ...interface{})
 					Ret:    nil,
 				},
 			},
-			expectedErr: "symbol not found",
+			expected: `
+package testpkg
+
+import _ "unsafe"
+			`,
 		},
 		{
 			name: "invalid function type",
@@ -426,7 +462,7 @@ func Foo(__llgo_va_list ...interface{})
 					GoName:     "InvalidFunc",
 				},
 			},
-			expectedPanic: "NewFuncDecl: fail convert signature invalidFunc : not found in type map",
+			expectedErr: "NewFuncDecl: fail convert signature invalidFunc: not found in type map",
 		},
 		{
 			name: "explict void return",
@@ -753,7 +789,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					GoName:     "Foo",
 				},
 			},
-			expectedPanic: "NewFuncDecl: fail convert signature foo : error convert elem type: not found in type map",
+			expectedErr: "NewFuncDecl: fail convert signature foo: error convert elem type: not found in type map",
 		},
 		{
 			name: "error return type",
@@ -772,7 +808,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					GoName:     "Foo",
 				},
 			},
-			expectedPanic: "NewFuncDecl: fail convert signature foo : error convert return type: not found in type map",
+			expectedErr: "NewFuncDecl: fail convert signature foo: error convert return type: not found in type map",
 		},
 		{
 			name: "error nil param",
@@ -795,7 +831,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					GoName:     "Foo",
 				},
 			},
-			expectedPanic: "NewFuncDecl: fail convert signature foo : error convert type: unexpected nil field",
+			expectedErr: "NewFuncDecl: fail convert signature foo: error convert type: unexpected nil field",
 		},
 		{
 			name: "error receiver",
@@ -822,26 +858,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					GoName:     "(*Foo).foo",
 				},
 			},
-			expectedPanic: "newReceiver:failed to convert type",
-		},
-		{
-			name: "anony func",
-			decl: &ast.FuncDecl{
-				Name:        nil,
-				MangledName: "foo",
-				Type: &ast.FuncType{
-					Params: nil,
-					Ret:    &ast.BuiltinType{Kind: ast.Void},
-				},
-			},
-			symbs: []config.SymbolEntry{
-				{
-					CppName:    "foo",
-					MangleName: "foo",
-					GoName:     "Foo",
-				},
-			},
-			expectedPanic: "NewFuncDecl: fail convert anonymous function",
+			expectedErr: "NewFuncDecl: foo fail: newReceiver:failed to convert type: not found in type map",
 		},
 	}
 	for _, tc := range testCases {
@@ -888,7 +905,7 @@ type Foo struct {
 					},
 				},
 			},
-			expectedPanic: "NewTypeDecl: fail to complete type InvalidStruct : not found in type map",
+			expectedErr: "NewTypeDecl: fail to complete type InvalidStruct: not found in type map",
 		},
 		// struct Foo { int a; double b; bool c; }
 		{
@@ -1095,17 +1112,6 @@ type Foo struct {
 	B [3][4]c.Int
 }`},
 		{
-			name: "anonymous struct",
-			decl: &ast.TypeDecl{
-				Name: nil,
-				Type: &ast.RecordType{
-					Tag:    ast.Struct,
-					Fields: &ast.FieldList{},
-				},
-			},
-			expectedPanic: "NewFuncDecl: fail convert anonymous type",
-		},
-		{
 			name: "struct array field without len",
 			decl: &ast.TypeDecl{
 				Name: &ast.Ident{Name: "Foo"},
@@ -1126,7 +1132,7 @@ type Foo struct {
 					},
 				},
 			},
-			expectedPanic: "NewTypeDecl: fail to complete type Foo : unsupport field with array without length",
+			expectedErr: "NewTypeDecl: fail to complete type Foo: unsupport field with array without length",
 		},
 		{
 			name: "struct array field without len",
@@ -1150,7 +1156,7 @@ type Foo struct {
 					},
 				},
 			},
-			expectedPanic: "NewTypeDecl: fail to complete type Foo : can't determine the array length",
+			expectedErr: "NewTypeDecl: fail to complete type Foo: can't determine the array length",
 		},
 	}
 
@@ -1213,7 +1219,7 @@ type Foo func(a c.Int, b c.Int) c.Int
 
 // Test Redefine error
 func TestRedef(t *testing.T) {
-	pkg := createTestPkg(t, &convert.PackageConfig{
+	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
 		SymbolTable: config.CreateSymbolTable(
 			[]config.SymbolEntry{
@@ -1221,6 +1227,9 @@ func TestRedef(t *testing.T) {
 			},
 		),
 	})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 	pkg.SetCurFile(tempFile)
 
 	flds := &ast.FieldList{
@@ -1238,7 +1247,7 @@ func TestRedef(t *testing.T) {
 		},
 	})
 
-	err := pkg.NewTypeDecl(&ast.TypeDecl{
+	err = pkg.NewTypeDecl(&ast.TypeDecl{
 		Name: &ast.Ident{Name: "Foo"},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
@@ -1262,24 +1271,13 @@ func TestRedef(t *testing.T) {
 		t.Fatal("NewFuncDecl failed", err)
 	}
 
-	err = pkg.NewTypedefDecl(&ast.TypedefDecl{
-		Name: &ast.Ident{Name: "Bar"},
-		Type: &ast.Ident{Name: "Bar"},
+	err = pkg.NewFuncDecl(&ast.FuncDecl{
+		Name:        &ast.Ident{Name: "Bar"},
+		MangledName: "Bar",
+		Type:        &ast.FuncType{},
 	})
-	if err == nil {
-		t.Fatal("expect a redefine err")
-	}
-
-	err = pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Bar"},
-		Type: &ast.RecordType{
-			Tag:    ast.Struct,
-			Fields: flds,
-		},
-	})
-
-	if err == nil {
-		t.Fatal("expect a redefine err")
+	if err != nil {
+		t.Fatal("unexpect redefine err")
 	}
 
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
@@ -1344,20 +1342,26 @@ func TestRedefEnum(t *testing.T) {
 		},
 	}
 	t.Run("redefine enum type", func(t *testing.T) {
-		pkg := createTestPkg(t, &convert.PackageConfig{})
+		pkg, err := createTestPkg(&convert.PackageConfig{})
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 		pkg.SetCurFile(tempFile)
 		pkg.NewTypeDecl(typDecl)
-		err := pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
+		err = pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
 			Name: &ast.Ident{Name: "Foo"},
 			Type: &ast.EnumType{},
 		})
 		if err == nil {
-			t.Fatal("expect a redefine err")
+			t.Fatalf("expect a redefine error")
 		}
 	})
 
 	t.Run("redefine enum item", func(t *testing.T) {
-		pkg := createTestPkg(t, &convert.PackageConfig{})
+		pkg, err := createTestPkg(&convert.PackageConfig{})
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 		pkg.SetCurFile(tempFile)
 		pkg.NewTypeDecl(typDecl)
 		pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
@@ -1385,25 +1389,22 @@ type Foo struct {
 const Foo__1 c.Int = 0
 `)
 	})
-
 }
 
-func TestRedefineFunc(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fatalf("expected Panic")
-		}
-	}()
-	pkg := createTestPkg(t, &convert.PackageConfig{
+func TestRedefTypedef(t *testing.T) {
+	pkg, err := createTestPkg(&convert.PackageConfig{
 		SymbolTable: config.CreateSymbolTable(
 			[]config.SymbolEntry{
 				{CppName: "Foo", MangleName: "Foo", GoName: "Foo"},
 			},
 		),
 	})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 	pkg.SetCurFile(tempFile)
 
-	err := pkg.NewTypeDecl(&ast.TypeDecl{
+	err = pkg.NewTypeDecl(&ast.TypeDecl{
 		Name: &ast.Ident{Name: "Foo"},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
@@ -1413,11 +1414,46 @@ func TestRedefineFunc(t *testing.T) {
 	if err != nil {
 		t.Fatal("NewTypeDecl failed", err)
 	}
-	pkg.NewFuncDecl(&ast.FuncDecl{
+	err = pkg.NewTypedefDecl(&ast.TypedefDecl{
+		Name: &ast.Ident{Name: "Foo"},
+		Type: &ast.Ident{Name: "Foo"},
+	})
+	if err == nil {
+		t.Fatal("expect a redefine error")
+	}
+}
+
+func TestRedefineFunc(t *testing.T) {
+	pkg, err := createTestPkg(&convert.PackageConfig{
+		SymbolTable: config.CreateSymbolTable(
+			[]config.SymbolEntry{
+				{CppName: "Foo", MangleName: "Foo", GoName: "Foo"},
+			},
+		),
+	})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
+	pkg.SetCurFile(tempFile)
+
+	err = pkg.NewTypeDecl(&ast.TypeDecl{
+		Name: &ast.Ident{Name: "Foo"},
+		Type: &ast.RecordType{
+			Tag:    ast.Struct,
+			Fields: &ast.FieldList{},
+		},
+	})
+	if err != nil {
+		t.Fatal("NewTypeDecl failed", err)
+	}
+	err = pkg.NewFuncDecl(&ast.FuncDecl{
 		Name:        &ast.Ident{Name: "Foo"},
 		MangledName: "Foo",
 		Type:        &ast.FuncType{},
 	})
+	if err == nil {
+		t.Fatal("expect a redefine error")
+	}
 }
 
 func TestTypedef(t *testing.T) {
@@ -1452,7 +1488,7 @@ type DOUBLE c.Double`,
 					Flags: ast.Double,
 				},
 			},
-			expectedPanic: "NewTypedefDecl:fail to convert type INVALID : not found in type map",
+			expectedErr: "NewTypedefDecl:fail to convert type INVALID: not found in type map",
 		},
 		// typedef int INT;
 		{
@@ -1552,7 +1588,7 @@ type Name *c.Char
 					},
 				},
 			},
-			expectedPanic: "NewTypedefDecl:fail to convert type name : error convert baseType: not found in type map",
+			expectedErr: "NewTypedefDecl:fail to convert type name: error convert baseType: not found in type map",
 		},
 	}
 
@@ -1630,7 +1666,7 @@ const (
 					},
 				},
 			},
-			expectedPanic: "createEnumItems:fail to convert *ast.ArrayType to int",
+			expectedErr: "NewEnumTypeDecl: <nil> fail: createEnumItems:fail to convert *ast.ArrayType to int",
 		},
 	}
 	for _, tc := range testCases {
@@ -1641,7 +1677,10 @@ const (
 }
 
 func TestIdentRefer(t *testing.T) {
-	pkg := createTestPkg(t, &convert.PackageConfig{})
+	pkg, err := createTestPkg(&convert.PackageConfig{})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 	pkg.SetCurFile(&convert.HeaderFile{
 		File:     "/path/to/stdio.h",
 		FileType: llcppg.Third,
@@ -1661,12 +1700,7 @@ func TestIdentRefer(t *testing.T) {
 		FileType: llcppg.Inter,
 	})
 	t.Run("undef sys ident ref", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Fatalf("expected Panic")
-			}
-		}()
-		pkg.NewTypeDecl(&ast.TypeDecl{
+		err := pkg.NewTypeDecl(&ast.TypeDecl{
 			DeclBase: ast.DeclBase{
 				Loc: &ast.Location{File: "/path/to/notsys.h"},
 			},
@@ -1685,14 +1719,12 @@ func TestIdentRefer(t *testing.T) {
 				},
 			},
 		})
+		if err == nil {
+			t.Fatal("expect a error")
+		}
 	})
 	t.Run("undef tag ident ref", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Fatalf("expected Panic")
-			}
-		}()
-		pkg.NewTypeDecl(&ast.TypeDecl{
+		err := pkg.NewTypeDecl(&ast.TypeDecl{
 			Name: &ast.Ident{Name: "Bar"},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
@@ -1711,15 +1743,21 @@ func TestIdentRefer(t *testing.T) {
 				},
 			},
 		})
+		if err == nil {
+			t.Fatal("expect a error")
+		}
 	})
 	t.Run("type alias", func(t *testing.T) {
-		pkg := createTestPkg(t, &convert.PackageConfig{
+		pkg, err := createTestPkg(&convert.PackageConfig{
 			PkgBase: convert.PkgBase{
 				CppgConf: &llcppg.Config{},
 			},
 		})
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 		pkg.SetCurFile(tempFile)
-		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
+		err = pkg.NewTypedefDecl(&ast.TypedefDecl{
 			Name: &ast.Ident{Name: "typ_int8_t"},
 			Type: &ast.BuiltinType{
 				Kind:  ast.Char,
@@ -1767,7 +1805,7 @@ type Foo struct {
 }
 
 func TestForwardDecl(t *testing.T) {
-	pkg := createTestPkg(t, &convert.PackageConfig{
+	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
 		SymbolTable: config.CreateSymbolTable(
 			[]config.SymbolEntry{
@@ -1775,6 +1813,9 @@ func TestForwardDecl(t *testing.T) {
 			},
 		),
 	})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 	pkg.SetCurFile(tempFile)
 
 	forwardDecl := &ast.TypeDecl{
@@ -1785,7 +1826,7 @@ func TestForwardDecl(t *testing.T) {
 		},
 	}
 	// forward decl
-	err := pkg.NewTypeDecl(forwardDecl)
+	err = pkg.NewTypeDecl(forwardDecl)
 	if err != nil {
 		t.Fatalf("Forward decl failed: %v", err)
 	}
@@ -1832,39 +1873,34 @@ type Foo struct {
 }
 
 type genDeclTestCase struct {
-	name          string
-	decl          ast.Decl
-	symbs         []config.SymbolEntry
-	cppgconf      *llcppg.Config
-	expected      string
-	expectedErr   string
-	expectedPanic string
+	name        string
+	decl        ast.Decl
+	symbs       []config.SymbolEntry
+	cppgconf    *llcppg.Config
+	expected    string
+	expectedErr string
 }
 
 func testGenDecl(t *testing.T, tc genDeclTestCase) {
 	t.Helper()
 	defer func() {
 		if r := recover(); r != nil {
-			if tc.expectedPanic != "" {
-				if !strings.HasPrefix(r.(string), tc.expectedPanic) {
-					t.Errorf("Expected panic %s, but got: %v", tc.expectedPanic, r)
-				}
-			} else {
-				t.Fatal("unexpect panic", r)
-			}
+			t.Fatal("unexpect panic", r)
 		}
 	}()
-	pkg := createTestPkg(t, &convert.PackageConfig{
+	pkg, err := createTestPkg(&convert.PackageConfig{
 		SymbolTable: config.CreateSymbolTable(tc.symbs),
 		PkgBase: convert.PkgBase{
 			CppgConf: tc.cppgconf,
 		},
 	})
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 	if pkg == nil {
 		t.Fatal("NewPackage failed")
 	}
 	pkg.SetCurFile(tempFile)
-	var err error
 	switch d := tc.decl.(type) {
 	case *ast.TypeDecl:
 		err = pkg.NewTypeDecl(d)
@@ -1899,8 +1935,7 @@ func compareError(t *testing.T, err error, expectErr string) {
 	}
 }
 
-func createTestPkg(t *testing.T, cfg *convert.PackageConfig) *convert.Package {
-	t.Helper()
+func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 	if cfg.CppgConf == nil {
 		cfg.CppgConf = &llcppg.Config{}
 	}
@@ -1913,7 +1948,7 @@ func createTestPkg(t *testing.T, cfg *convert.PackageConfig) *convert.Package {
 	if cfg.SymbolTable == nil {
 		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
 	}
-	pkg := convert.NewPackage(&convert.PackageConfig{
+	return convert.NewPackage(&convert.PackageConfig{
 		PkgBase: convert.PkgBase{
 			PkgPath:  ".",
 			CppgConf: cfg.CppgConf,
@@ -1924,10 +1959,6 @@ func createTestPkg(t *testing.T, cfg *convert.PackageConfig) *convert.Package {
 		OutputDir:   cfg.OutputDir,
 		SymbolTable: cfg.SymbolTable,
 	})
-	if pkg == nil {
-		t.Fatal("NewPackage failed")
-	}
-	return pkg
 }
 
 // compares the output of a gogen.Package with the expected
@@ -1948,7 +1979,7 @@ func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 /** multiple package test **/
 
 func TestTypeClean(t *testing.T) {
-	pkg := createTestPkg(t, &convert.PackageConfig{
+	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
 		SymbolTable: config.CreateSymbolTable(
 			[]config.SymbolEntry{
@@ -1957,7 +1988,9 @@ func TestTypeClean(t *testing.T) {
 			},
 		),
 	})
-
+	if err != nil {
+		t.Fatal("NewPackage failed:", err)
+	}
 	testCases := []struct {
 		addType    func()
 		headerFile string
@@ -2059,14 +2092,6 @@ func TestHeaderFileToGo(t *testing.T) {
 }
 
 func TestImport(t *testing.T) {
-	t.Run("invalid mod", func(t *testing.T) {
-		loader := convert.PkgDepLoader{}
-		_, err := loader.Import("pkg")
-		if err == nil {
-			t.Fatal("expected error")
-		}
-	})
-
 	t.Run("invalid include path", func(t *testing.T) {
 		p := &convert.Package{}
 		genPkg := gogen.NewPackage(".", "include", nil)
@@ -2092,12 +2117,7 @@ func TestImport(t *testing.T) {
 		}
 	})
 	t.Run("invalid pub file", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Fatal("expected panic")
-			}
-		}()
-		createTestPkg(t, &convert.PackageConfig{
+		_, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
 				CppgConf: &llcppg.Config{
@@ -2107,14 +2127,12 @@ func TestImport(t *testing.T) {
 				},
 			},
 		})
+		if err == nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 	})
 	t.Run("invalid dep", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Fatal("expected panic")
-			}
-		}()
-		createTestPkg(t, &convert.PackageConfig{
+		_, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
 				CppgConf: &llcppg.Config{
@@ -2124,9 +2142,12 @@ func TestImport(t *testing.T) {
 				},
 			},
 		})
+		if err == nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 	})
 	t.Run("same type register", func(t *testing.T) {
-		createTestPkg(t, &convert.PackageConfig{
+		_, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
 				CppgConf: &llcppg.Config{
@@ -2137,6 +2158,9 @@ func TestImport(t *testing.T) {
 				},
 			},
 		})
+		if err != nil {
+			t.Fatal("NewPackage failed:", err)
+		}
 	})
 }
 
@@ -2147,12 +2171,4 @@ func TestUnkownHfile(t *testing.T) {
 		}
 	}()
 	convert.NewHeaderFile("/path/to/foo.h", 0).ToGoFileName("Pkg")
-}
-
-func TestLookupSymbolError(t *testing.T) {
-	p := &convert.Package{}
-	_, err := p.LookupSymbol("")
-	if err == nil {
-		t.Fatal("Expect Error")
-	}
 }
