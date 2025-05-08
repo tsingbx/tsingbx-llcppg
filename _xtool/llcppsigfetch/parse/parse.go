@@ -5,56 +5,84 @@ import (
 	"os"
 	"path"
 	"strings"
+	"unsafe"
 
+	"github.com/goplus/lib/c"
 	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	llcppg "github.com/goplus/llcppg/config"
+	"github.com/goplus/llpkg/cjson"
 )
 
 // temp to avoid call clang in llcppsigfetch,will cause hang
 var ClangSearchPath []string
 var ClangResourceDir string
 
-type ParseConfig struct {
-	Conf             *llcppg.Config
+type Config struct {
+	Conf   *llcppg.Config
+	Out    bool     // if gen llcppg.sigfetch.json
+	Cflags []string // other cflags want to parse
+
+	ExtractMode bool
+	ExtractFile string
+	IsTemp      bool
+	IsCpp       bool
+
 	CombinedFile     string
 	PreprocessedFile string
-	OutputFile       bool
+	Exec             func(conf *Config, converter *Converter)
 }
 
-func Do(cfg *ParseConfig) (*Converter, error) {
-	if err := createTempIfNoExist(&cfg.CombinedFile, cfg.Conf.Name+"*.h"); err != nil {
-		return nil, err
+func Do(conf *Config) error {
+	if debugParse {
+		fmt.Fprintln(os.Stderr, "output to file:", conf.Out)
+		if conf.ExtractMode {
+			fmt.Fprintln(os.Stderr, "runExtract: extractFile:", conf.ExtractFile)
+			fmt.Fprintln(os.Stderr, "isTemp:", conf.IsTemp)
+			fmt.Fprintln(os.Stderr, "isCpp:", conf.IsCpp)
+			fmt.Fprintln(os.Stderr, "out:", conf.Out)
+			fmt.Fprintln(os.Stderr, "otherArgs:", conf.Cflags)
+		}
 	}
-	if err := createTempIfNoExist(&cfg.PreprocessedFile, cfg.Conf.Name+"*.i"); err != nil {
-		return nil, err
+
+	var isCpp bool
+	if conf.IsCpp {
+		isCpp = true
+	} else {
+		isCpp = conf.Conf.Cplusplus
+	}
+	if err := createTempIfNoExist(&conf.CombinedFile, conf.Conf.Name+"*.h"); err != nil {
+		return err
+	}
+	if err := createTempIfNoExist(&conf.PreprocessedFile, conf.Conf.Name+"*.i"); err != nil {
+		return err
 	}
 
 	if debugParse {
-		fmt.Fprintln(os.Stderr, "Do: combinedFile", cfg.CombinedFile)
-		fmt.Fprintln(os.Stderr, "Do: preprocessedFile", cfg.PreprocessedFile)
+		fmt.Fprintln(os.Stderr, "Do: combinedFile", conf.CombinedFile)
+		fmt.Fprintln(os.Stderr, "Do: preprocessedFile", conf.PreprocessedFile)
 	}
 
 	// compose includes to a combined file
-	err := clangutils.ComposeIncludes(cfg.Conf.Include, cfg.CombinedFile)
+	err := clangutils.ComposeIncludes(conf.Conf.Include, conf.CombinedFile)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// prepare clang flags to preprocess the combined file
-	clangFlags := strings.Fields(cfg.Conf.CFlags)
+	clangFlags := strings.Fields(conf.Conf.CFlags)
 	clangFlags = append(clangFlags, "-C")  // keep comment
 	clangFlags = append(clangFlags, "-dD") // keep macro
 	clangFlags = append(clangFlags, "-fparse-all-comments")
 
 	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
-		File:    cfg.CombinedFile,
-		IsCpp:   cfg.Conf.Cplusplus,
+		File:    conf.CombinedFile,
+		IsCpp:   isCpp,
 		Args:    clangFlags,
-		OutFile: cfg.PreprocessedFile,
+		OutFile: conf.PreprocessedFile,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// https://github.com/goplus/llgo/issues/603
@@ -66,28 +94,30 @@ func Do(cfg *ParseConfig) (*Converter, error) {
 	if ClangResourceDir != "" {
 		libclangFlags = append(libclangFlags, "-resource-dir="+ClangResourceDir, "-I"+path.Join(ClangResourceDir, "include"))
 	}
-	pkgHfiles := config.PkgHfileInfo(cfg.Conf, libclangFlags)
+	pkgHfiles := config.PkgHfileInfo(conf.Conf, libclangFlags)
 	if debugParse {
 		fmt.Fprintln(os.Stderr, "interfaces", pkgHfiles.Inters)
 		fmt.Fprintln(os.Stderr, "implements", pkgHfiles.Impls)
 		fmt.Fprintln(os.Stderr, "thirdhfile", pkgHfiles.Thirds)
 	}
-	libclangFlags = append(libclangFlags, strings.Fields(cfg.Conf.CFlags)...)
+	libclangFlags = append(libclangFlags, strings.Fields(conf.Conf.CFlags)...)
 	converter, err := NewConverter(
-		&Config{
+		&ConverterConfig{
 			HfileInfo: pkgHfiles,
 			Cfg: &clangutils.Config{
-				File:  cfg.PreprocessedFile,
-				IsCpp: cfg.Conf.Cplusplus,
+				File:  conf.PreprocessedFile,
+				IsCpp: isCpp,
 				Args:  libclangFlags,
 			},
 		})
 	if err != nil {
-		return nil, err
+		return err
 	}
+	defer converter.Dispose()
+
 	pkg, err := converter.Convert()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if debugParse {
 		fmt.Fprintln(os.Stderr, "Have %d Macros", len(pkg.File.Macros))
@@ -96,7 +126,34 @@ func Do(cfg *ParseConfig) (*Converter, error) {
 		}
 		fmt.Fprintln(os.Stderr)
 	}
-	return converter, nil
+
+	if conf.Exec != nil {
+		conf.Exec(conf, converter)
+	}
+
+	return nil
+}
+
+func OutputPkg(conf *Config, cvt *Converter) {
+	info := MarshalPkg(cvt.Pkg)
+	str := info.Print()
+	defer cjson.FreeCStr(unsafe.Pointer(str))
+	defer info.Delete()
+	outputResult(str, conf.Out)
+}
+
+func outputResult(result *c.Char, outputToFile bool) {
+	if outputToFile {
+		outputFile := llcppg.LLCPPG_SIGFETCH
+		err := os.WriteFile(outputFile, []byte(c.GoString(result)), 0644)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error writing to output file: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stderr, "Results saved to %s\n", outputFile)
+	} else {
+		c.Printf(c.Str("%s"), result)
+	}
 }
 
 func createTempIfNoExist(filename *string, pattern string) error {

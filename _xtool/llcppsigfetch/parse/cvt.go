@@ -14,7 +14,6 @@ import (
 	"github.com/goplus/llcppg/ast"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/token"
-	"github.com/goplus/llpkg/cjson"
 )
 
 type dbgFlags = int
@@ -45,12 +44,12 @@ var tagMap = map[string]ast.Tag{
 	"class":  ast.Class,
 }
 
-type Config struct {
+type ConverterConfig struct {
 	HfileInfo *config.PkgHfilesInfo
 	Cfg       *clangutils.Config
 }
 
-func NewConverter(config *Config) (*Converter, error) {
+func NewConverter(config *ConverterConfig) (*Converter, error) {
 	if debugParse {
 		fmt.Fprintln(os.Stderr, "NewConverter: config")
 		fmt.Fprintln(os.Stderr, "config.File", config.Cfg.File)
@@ -79,7 +78,7 @@ func NewConverter(config *Config) (*Converter, error) {
 }
 
 // combine file
-func initFileMap(cfg *Config) (map[string]*llcppg.FileInfo, error) {
+func initFileMap(cfg *ConverterConfig) (map[string]*llcppg.FileInfo, error) {
 	fileMap := make(map[string]*llcppg.FileInfo)
 	fileTypes := []struct {
 		files []string
@@ -975,10 +974,6 @@ func (ct *Converter) ProcessBuiltinType(t clang.Type) *ast.BuiltinType {
 func (ct *Converter) BuildScopingExpr(cursor clang.Cursor) ast.Expr {
 	parts := clangutils.BuildScopingParts(cursor)
 	return buildScopingFromParts(parts)
-}
-
-func (ct *Converter) Output() *cjson.JSON {
-	return MarshalPkg(ct.Pkg)
 }
 
 func IsExplicitSigned(t clang.Type) bool {
