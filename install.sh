@@ -2,11 +2,11 @@
 set -e
 
 # for test
-go install ./cmd/llcppcfg
-go install ./cmd/llcppgtest
+go install -v ./cmd/llcppcfg
+go install -v ./cmd/llcppgtest
 
 # main process required
 llgo install ./_xtool/llcppsymg
 llgo install ./_xtool/llcppsigfetch
-go install ./cmd/gogensig
-go install .
+go install -v ./cmd/gogensig
+go install -v ./cmd/llcppg
