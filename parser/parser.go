@@ -18,15 +18,47 @@ package parser
 
 import (
 	"go/token"
+	"os"
 
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llgo/xtool/clang/preprocessor"
 )
 
 // Config represents the configuration for parsing C/C++ source files.
 type Config struct {
+	Compiler    string // default: clang
+	PPFlag      string // default: -E
+	BaseDir     string // base of include searching directory, should be absolute path
+	IncludeDirs []string
+	Defines     []string
+	Flags       []string
+
+	Mode Mode // parsing mode
 }
 
 // ParseFile parses a C/C++ source file and returns the corresponding AST.
+// Allow fset to be nil, in which case a new FileSet will be created.
 func ParseFile(fset *token.FileSet, filename string, conf *Config) (f *ast.File, err error) {
-	panic("todo")
+	var mode Mode
+	var ppconf *preprocessor.Config
+	if conf == nil {
+		ppconf = new(preprocessor.Config)
+	} else {
+		ppconf = &preprocessor.Config{
+			Compiler:    conf.Compiler,
+			PPFlag:      conf.PPFlag,
+			BaseDir:     conf.BaseDir,
+			IncludeDirs: conf.IncludeDirs,
+			Defines:     conf.Defines,
+			Flags:       conf.Flags,
+		}
+		mode = conf.Mode
+	}
+	outfile := filename + ".i"
+	err = preprocessor.Do(filename, outfile, ppconf)
+	if err != nil {
+		return
+	}
+	defer os.Remove(outfile)
+	return ParseIntermediateFile(fset, outfile, mode)
 }
