@@ -41,9 +41,7 @@ type Config struct {
 func ParseFile(fset *token.FileSet, filename string, conf *Config) (f *ast.File, err error) {
 	var mode Mode
 	var ppconf *preprocessor.Config
-	if conf == nil {
-		ppconf = new(preprocessor.Config)
-	} else {
+	if conf != nil {
 		ppconf = &preprocessor.Config{
 			Compiler:    conf.Compiler,
 			PPFlag:      conf.PPFlag,
