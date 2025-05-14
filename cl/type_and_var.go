@@ -16,8 +16,6 @@
 
 package cl
 
-import "github.com/goplus/llcppg/ast"
-
 /*
 import (
 	"go/types"
@@ -31,17 +29,3 @@ func toType(ctx *blockCtx, typ ast.Expr, flags int) types.Type {
 	return t
 }
 */
-
-// compileTypeDecl compiles a struct/union/class declaration.
-func compileTypeDecl(ctx *blockCtx, decl *ast.TypeDecl, global, pub bool) {
-}
-
-// compileTypedef compiles a typedef declaration.
-func compileTypedef(ctx *blockCtx, decl *ast.TypedefDecl, global, pub bool) {
-	panic("todo")
-}
-
-// compileEnumTypeDecl compiles an enum type declaration.
-func compileEnumTypeDecl(ctx *blockCtx, decl *ast.EnumTypeDecl, global bool) {
-	panic("todo")
-}

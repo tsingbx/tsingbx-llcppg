@@ -20,6 +20,25 @@ import (
 	"github.com/goplus/llcppg/ast"
 )
 
+func compileMacro(ctx *blockCtx, macro *ast.Macro) {
+	panic("todo")
+}
+
+// compileTypeDecl compiles a struct/union/class declaration.
+func compileTypeDecl(ctx *blockCtx, decl *ast.TypeDecl, global, pub bool) {
+	panic("todo")
+}
+
+// compileTypedefDecl compiles a typedef declaration.
+func compileTypedefDecl(ctx *blockCtx, decl *ast.TypedefDecl, global, pub bool) {
+	panic("todo")
+}
+
+// compileEnumTypeDecl compiles an enum type declaration.
+func compileEnumTypeDecl(ctx *blockCtx, decl *ast.EnumTypeDecl, global bool) {
+	panic("todo")
+}
+
 func compileFuncDecl(ctx *blockCtx, fn *ast.FuncDecl) {
 	panic("todo")
 	/*
