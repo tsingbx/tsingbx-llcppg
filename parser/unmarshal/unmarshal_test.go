@@ -6,9 +6,171 @@ import (
 	"testing"
 
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
-	llcppg "github.com/goplus/llcppg/config"
+	"github.com/goplus/llcppg/parser/unmarshal"
 )
+
+func TestUnmarshalFile(t *testing.T) {
+	files := `{
+			"_Type":	"File",
+			"decls":	[{
+							"_Type":	"FuncDecl",
+							"Loc":	{
+								"_Type":	"Location",
+								"File":	"temp.h"
+							},
+							"Doc":	{
+								"_Type":	"CommentGroup",
+								"List":	[]
+							},
+							"Parent":	null,
+							"Name":	{
+								"_Type":	"Ident",
+								"Name":	"foo"
+							},
+							"Type":	{
+								"_Type":	"FuncType",
+								"Params":	{
+									"_Type":	"FieldList",
+									"List":	[{
+											"_Type":	"Field",
+											"Type":	{
+												"_Type":	"Variadic"
+											},
+											"Doc":	null,
+											"Comment":	null,
+											"IsStatic":	false,
+											"Access":	0,
+											"Names":	[]
+										}, {
+											"_Type":	"Field",
+											"Type":	{
+												"_Type":	"BuiltinType",
+												"Kind":	6,
+												"Flags":	0
+											},
+											"Doc":	{
+												"_Type":	"CommentGroup",
+												"List":	[]
+											},
+											"Comment":	{
+												"_Type":	"CommentGroup",
+												"List":	[]
+											},
+											"IsStatic":	false,
+											"Access":	0,
+											"Names":	[{
+													"_Type":	"Ident",
+													"Name":	"a"
+												}]
+										}]
+								},
+								"Ret":	{
+									"_Type":	"BuiltinType",
+									"Kind":	0,
+									"Flags":	0
+								}
+							},
+							"IsInline":	false,
+							"IsStatic":	false,
+							"IsConst":	false,
+							"IsExplicit":	false,
+							"IsConstructor":	false,
+							"IsDestructor":	false,
+							"IsVirtual":	false,
+							"IsOverride":	false
+						}
+			],
+			"includes":	[],
+			"macros":	[{
+					"_Type":	"Macro",
+					"Name":	"OK",
+					"Tokens":	[{
+							"_Type":	"Token",
+							"Token":	3,
+							"Lit":	"OK"
+						}, {
+							"_Type":	"Token",
+							"Token":	4,
+							"Lit":	"1"
+						}]
+				}]
+		}`
+
+	expected := &ast.File{
+		Decls: []ast.Decl{
+			&ast.FuncDecl{
+				DeclBase: ast.DeclBase{
+					Loc: &ast.Location{
+						File: "temp.h",
+					},
+					Doc: &ast.CommentGroup{
+						List: []*ast.Comment{},
+					},
+				},
+				Name: &ast.Ident{Name: "foo"},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type:  &ast.Variadic{},
+								Names: []*ast.Ident{},
+							}, {
+								Doc: &ast.CommentGroup{
+									List: []*ast.Comment{},
+								},
+								Comment: &ast.CommentGroup{
+									List: []*ast.Comment{},
+								},
+								Type: &ast.BuiltinType{
+									Kind:  6,
+									Flags: 0,
+								},
+								Names: []*ast.Ident{
+									{Name: "a"},
+								},
+							},
+						},
+					},
+					Ret: &ast.BuiltinType{
+						Kind:  0,
+						Flags: 0,
+					},
+				},
+			},
+		},
+		Includes: []*ast.Include{},
+		Macros: []*ast.Macro{
+			{
+				Name: "OK",
+				Tokens: []*ast.Token{
+					{Token: 3, Lit: "OK"},
+					{Token: 4, Lit: "1"},
+				},
+			},
+		},
+	}
+
+	fileSet, err := unmarshal.File([]byte(files))
+
+	if err != nil {
+		t.Fatalf("UnmarshalNode failed: %v", err)
+	}
+
+	resultJSON, err := json.MarshalIndent(fileSet, "", " ")
+	if err != nil {
+		t.Fatalf("Failed to marshal result to JSON: %v", err)
+	}
+
+	expectedJSON, err := json.MarshalIndent(expected, "", " ")
+
+	if err != nil {
+		t.Fatalf("Failed to marshal expected result to JSON: %v", err)
+	}
+
+	if string(resultJSON) != string(expectedJSON) {
+		t.Errorf("JSON mismatch.\nExpected: %s\nGot: %s", string(expectedJSON), string(resultJSON))
+	}
+}
 
 func TestUnmarshalNode(t *testing.T) {
 	testCases := []struct {
@@ -974,147 +1136,6 @@ func TestUnmarshalNode(t *testing.T) {
 				Path: "foo.h",
 			},
 		},
-		{
-			name: "File",
-			json: `{
-					"_Type":	"File",
-					"decls":	[{
-									"_Type":	"FuncDecl",
-									"Loc":	{
-										"_Type":	"Location",
-										"File":	"temp.h"
-									},
-									"Doc":	{
-										"_Type":	"CommentGroup",
-										"List":	[]
-									},
-									"Parent":	null,
-									"Name":	{
-										"_Type":	"Ident",
-										"Name":	"foo"
-									},
-									"Type":	{
-										"_Type":	"FuncType",
-										"Params":	{
-											"_Type":	"FieldList",
-											"List":	[{
-													"_Type":	"Field",
-													"Type":	{
-														"_Type":	"Variadic"
-													},
-													"Doc":	null,
-													"Comment":	null,
-													"IsStatic":	false,
-													"Access":	0,
-													"Names":	[]
-												}, {
-													"_Type":	"Field",
-													"Type":	{
-														"_Type":	"BuiltinType",
-														"Kind":	6,
-														"Flags":	0
-													},
-													"Doc":	{
-														"_Type":	"CommentGroup",
-														"List":	[]
-													},
-													"Comment":	{
-														"_Type":	"CommentGroup",
-														"List":	[]
-													},
-													"IsStatic":	false,
-													"Access":	0,
-													"Names":	[{
-															"_Type":	"Ident",
-															"Name":	"a"
-														}]
-												}]
-										},
-										"Ret":	{
-											"_Type":	"BuiltinType",
-											"Kind":	0,
-											"Flags":	0
-										}
-									},
-									"IsInline":	false,
-									"IsStatic":	false,
-									"IsConst":	false,
-									"IsExplicit":	false,
-									"IsConstructor":	false,
-									"IsDestructor":	false,
-									"IsVirtual":	false,
-									"IsOverride":	false
-								}
-					],
-					"includes":	[],
-					"macros":	[{
-							"_Type":	"Macro",
-							"Name":	"OK",
-							"Tokens":	[{
-									"_Type":	"Token",
-									"Token":	3,
-									"Lit":	"OK"
-								}, {
-									"_Type":	"Token",
-									"Token":	4,
-									"Lit":	"1"
-								}]
-						}]
-				}`,
-			expected: &ast.File{
-				Decls: []ast.Decl{
-					&ast.FuncDecl{
-						DeclBase: ast.DeclBase{
-							Loc: &ast.Location{
-								File: "temp.h",
-							},
-							Doc: &ast.CommentGroup{
-								List: []*ast.Comment{},
-							},
-						},
-						Name: &ast.Ident{Name: "foo"},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type:  &ast.Variadic{},
-										Names: []*ast.Ident{},
-									}, {
-										Doc: &ast.CommentGroup{
-											List: []*ast.Comment{},
-										},
-										Comment: &ast.CommentGroup{
-											List: []*ast.Comment{},
-										},
-										Type: &ast.BuiltinType{
-											Kind:  6,
-											Flags: 0,
-										},
-										Names: []*ast.Ident{
-											{Name: "a"},
-										},
-									},
-								},
-							},
-							Ret: &ast.BuiltinType{
-								Kind:  0,
-								Flags: 0,
-							},
-						},
-					},
-				},
-				Includes: []*ast.Include{},
-				Macros: []*ast.Macro{
-					{
-						Name: "OK",
-						Tokens: []*ast.Token{
-							{Token: 3, Lit: "OK"},
-							{Token: 4, Lit: "1"},
-						},
-					},
-				},
-			},
-		},
 	}
 
 	for _, tc := range testCases {
@@ -1139,143 +1160,6 @@ func TestUnmarshalNode(t *testing.T) {
 				t.Errorf("JSON mismatch.\nExpected: %s\nGot: %s", string(expectedJSON), string(resultJSON))
 			}
 		})
-	}
-}
-
-func TestUnmarshalPkg(t *testing.T) {
-	files := `
-{
-  "File": {
-    "_Type": "File",
-    "decls": [
-      {
-        "_Type": "TypeDecl",
-        "Loc": {
-          "_Type": "Location",
-          "File": "/opt/homebrew/include/lua/lua.h"
-        },
-        "Doc": null,
-        "Parent": null,
-        "Name": {
-          "_Type": "Ident",
-          "Name": "lua_State"
-        },
-        "Type": {
-          "_Type": "RecordType",
-          "Tag": 0,
-          "Fields": {
-            "_Type": "FieldList",
-            "List": null
-          },
-          "Methods": []
-        }
-      },
-      {
-        "_Type": "TypedefDecl",
-        "Loc": {
-          "_Type": "Location",
-          "File": "/opt/homebrew/include/lua/lua.h"
-        },
-        "Doc": null,
-        "Parent": null,
-        "Name": {
-          "_Type": "Ident",
-          "Name": "lua_Number"
-        },
-        "Type": {
-          "_Type": "BuiltinType",
-          "Kind": 8,
-          "Flags": 16
-        }
-      }
-    ],
-    "includes": [],
-    "macros": []
-  },
-  "FileMap": {
-    "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_rsize_t.h": {
-      "FileType":3
-    },
-    "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_seek_set.h": {
-      "FileType":3
-    },
-    "/opt/homebrew/include/lua/lua.h": {
-      "FileType":3
-    },
-    "/opt/homebrew/include/lua/luaconf.h": {
-      "FileType":1
-    }
-  }
-}
-`
-
-	expected := &llcppg.Pkg{
-		File: &ast.File{
-			Decls: []ast.Decl{
-				&ast.TypeDecl{
-					DeclBase: ast.DeclBase{
-						Loc: &ast.Location{
-							File: "/opt/homebrew/include/lua/lua.h",
-						},
-					},
-					Name: &ast.Ident{Name: "lua_State"},
-					Type: &ast.RecordType{
-						Tag:     0,
-						Fields:  &ast.FieldList{},
-						Methods: []*ast.FuncDecl{},
-					},
-				},
-				&ast.TypedefDecl{
-					DeclBase: ast.DeclBase{
-						Loc: &ast.Location{
-							File: "/opt/homebrew/include/lua/lua.h",
-						},
-					},
-					Name: &ast.Ident{Name: "lua_Number"},
-					Type: &ast.BuiltinType{
-						Kind:  8,
-						Flags: 16,
-					},
-				},
-			},
-			Includes: []*ast.Include{},
-			Macros:   []*ast.Macro{},
-		},
-		FileMap: map[string]*llcppg.FileInfo{
-			"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_rsize_t.h": {
-				FileType: llcppg.Third,
-			},
-			"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_seek_set.h": {
-				FileType: llcppg.Third,
-			},
-			"/opt/homebrew/include/lua/lua.h": {
-				FileType: llcppg.Third,
-			},
-			"/opt/homebrew/include/lua/luaconf.h": {
-				FileType: llcppg.Inter,
-			},
-		},
-	}
-
-	fileSet, err := unmarshal.Pkg([]byte(files))
-
-	if err != nil {
-		t.Fatalf("UnmarshalNode failed: %v", err)
-	}
-
-	resultJSON, err := json.MarshalIndent(fileSet, "", " ")
-	if err != nil {
-		t.Fatalf("Failed to marshal result to JSON: %v", err)
-	}
-
-	expectedJSON, err := json.MarshalIndent(expected, "", " ")
-
-	if err != nil {
-		t.Fatalf("Failed to marshal expected result to JSON: %v", err)
-	}
-
-	if string(resultJSON) != string(expectedJSON) {
-		t.Errorf("JSON mismatch.\nExpected: %s\nGot: %s", string(expectedJSON), string(resultJSON))
 	}
 }
 
@@ -1718,26 +1602,6 @@ func TestUnmarshalErrors(t *testing.T) {
 			input:       `{"Name": {"_Type": "Ident", "Name": "test"}, "Type": {"_Type": "EnumType", "Items": []}, "Loc": {"_Type": "InvalidType"}}`,
 			expectedErr: "unmarshal error in declBase when converting Parent of unmarshal.declBaseTemp",
 		},
-
-		// unmarshalFile errors
-		{
-			name:        "unmarshalFile - Invalid JSON",
-			fn:          unmarshal.File,
-			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshal error in File into unmarshal.fileTemp",
-		},
-		{
-			name:        "unmarshalFile - Invalid JSON",
-			fn:          unmarshal.File,
-			input:       `{"_Type": "File", "Includes": [], "Macros": [], "Decls": [{"_Type": "InvalidType"}]}`,
-			expectedErr: "",
-		},
-		{
-			name:        "unmarshalFile - Unexpected Decl",
-			fn:          unmarshal.File,
-			input:       `{"_Type": "File", "Includes": [], "Macros": [], "Decls": [{"_Type": "Token", "Token": 1, "Lit": "test"}]}`,
-			expectedErr: "unmarshal error in File: got *ast.Token, want ast.Decl",
-		},
 	}
 
 	for _, tc := range testCases {
@@ -1759,32 +1623,33 @@ func TestUnmarshalErrors(t *testing.T) {
 	}
 }
 
-func TestUnmarshalPkgErrors(t *testing.T) {
+func TestUnmarshalFileErrors(t *testing.T) {
 	testCases := []struct {
 		name        string
 		input       string
 		expectedErr string
 	}{
+		// unmarshalFile errors
 		{
-			name:        "Invalid JSON",
+			name:        "unmarshalFile - Invalid JSON",
 			input:       `{"invalid": "json"`,
-			expectedErr: "unmarshal error in Pkg into unmarshal.pkgTemp",
+			expectedErr: "unmarshal error in File into unmarshal.fileTemp",
 		},
 		{
-			name:        "not *ast.File",
-			input:       `{"File": {"_Type": "File","decls": [{"_Type": "Token", "Token": 1, "Lit": "test"}]}}`,
-			expectedErr: "unmarshal error in Pkg when converting File of unmarshal.pkgTemp",
+			name:        "unmarshalFile - Invalid JSON",
+			input:       `{"_Type": "File", "Includes": [], "Macros": [], "Decls": [{"_Type": "InvalidType"}]}`,
+			expectedErr: "",
 		},
 		{
-			name:        "Invalid File",
-			input:       `{"File": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
-			expectedErr: "unmarshal error in File: got *ast.Token, want *ast.File",
+			name:        "unmarshalFile - Unexpected Decl",
+			input:       `{"_Type": "File", "Includes": [], "Macros": [], "Decls": [{"_Type": "Token", "Token": 1, "Lit": "test"}]}`,
+			expectedErr: "unmarshal error in File: got *ast.Token, want ast.Decl",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := unmarshal.Pkg([]byte(tc.input))
+			_, err := unmarshal.File([]byte(tc.input))
 			if tc.expectedErr == "" {
 				if err != nil {
 					t.Errorf("Expected no error, but got: %v", err)
