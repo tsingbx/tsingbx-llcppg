@@ -148,7 +148,7 @@ func compileDeclStmt(ctx *blockCtx, node *ast.File, global bool) {
 		//case ast.VarDecl:
 		// compileVarDecl(ctx, decl, global)
 		case *ast.TypedefDecl:
-			compileTypedef(ctx, decl, global, false)
+			compileTypedefDecl(ctx, decl, global, false)
 			/* TODO(xsw): check
 			origName, pub := decl.Name, false
 			if global {
@@ -211,8 +211,4 @@ func compileDeclStmt(ctx *blockCtx, node *ast.File, global bool) {
 			log.Panicln("compileDeclStmt: unknown decl -", reflect.TypeOf(decl))
 		}
 	}
-}
-
-func compileMacro(ctx *blockCtx, macro *ast.Macro) {
-	panic("todo")
 }
