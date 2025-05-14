@@ -20,7 +20,7 @@ type Command struct {
 	Name     string
 	Usage    string
 	Short    string
-	Run      func(args []string)
+	Run      func(args []string) error
 	Commands []*Command
 }
 
@@ -59,24 +59,29 @@ func main() {
 
 	for _, cmd := range llclang.Commands {
 		if cmd.Name == cmdName {
-			cmd.Run(args)
+			err := cmd.Run(args)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
 			return
 		}
 	}
 }
 
-func runHelp(args []string) {
+func runHelp(args []string) error {
 	if len(args) == 0 {
 		mainUsage()
-		return
+		return nil
 	}
 
 	for _, cmd := range llclang.Commands {
 		if cmd.Name == args[0] {
 			fmt.Println(cmd.Usage)
-			return
+			return nil
 		}
 	}
+	return fmt.Errorf("unknown command %s", args[0])
 }
 
 func mainUsage() {
