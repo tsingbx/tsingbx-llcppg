@@ -3,6 +3,10 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"unsafe"
+
+	"github.com/goplus/lib/c"
+	"github.com/goplus/llpkg/cjson"
 )
 
 type Mode int
@@ -29,5 +33,16 @@ func RunParseIntermediateFile(args []string) error {
 
 // parses an intermediate file (*.i) and output the corresponding AST to stdout.
 func parseIntermediateFile(filename string, mode Mode) error {
-	return fmt.Errorf("parseIntermediateFile:not implemented")
+	file, err := Do(&ConverterConfig{
+		File: filename,
+	})
+	if err != nil {
+		return fmt.Errorf("parseIntermediateFile: %w", err)
+	}
+	json := MarshalASTFile(file)
+	str := json.Print()
+	defer cjson.FreeCStr(unsafe.Pointer(str))
+	defer json.Delete()
+	c.Printf(c.Str("%s"), str)
+	return nil
 }

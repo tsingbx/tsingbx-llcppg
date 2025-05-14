@@ -1,32 +1,10 @@
-package parse
+package parser
 
 import (
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/ast"
-	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkg/cjson"
 )
-
-func MarshalPkg(pkg *llcppg.Pkg) *cjson.JSON {
-	root := cjson.Object()
-	root.SetItem(c.Str("File"), MarshalASTFile(pkg.File))
-	root.SetItem(c.Str("FileMap"), MarshalFileMap(pkg.FileMap))
-	return root
-}
-
-func MarshalFileMap(fmap map[string]*llcppg.FileInfo) *cjson.JSON {
-	root := cjson.Object()
-	for path, info := range fmap {
-		root.SetItem(c.AllocaCStr(path), MarshalFileInfo(info))
-	}
-	return root
-}
-
-func MarshalFileInfo(info *llcppg.FileInfo) *cjson.JSON {
-	root := cjson.Object()
-	root.SetItem(c.Str("FileType"), numberField(uint(info.FileType)))
-	return root
-}
 
 func MarshalDeclList(list []ast.Decl) *cjson.JSON {
 	root := cjson.Array()
