@@ -60,4 +60,5 @@ runs:
     shell: bash
     run: |
       echo "Using LLGO_ROOT: $LLGO_ROOT"
+      llgo install ./_xtool/llclang 
       bash ./install.sh
