@@ -349,15 +349,22 @@ func prepareEnv(name string, deps []string) (string, error) {
 		return "", err
 	}
 
-	err = convert.ModInit(deps, outputDir, name)
+	// with the same module to import the internal/testdata/pkg
+	err = config.RunCommand(outputDir, "go", "mod", "init", "github.com/goplus/llcppg/cl/internal/"+name)
 	if err != nil {
 		return "", err
 	}
+
 	err = config.RunCommand(outputDir, "go", "get", "github.com/goplus/llcppg")
 	if err != nil {
 		return "", err
 	}
 	err = config.RunCommand(outputDir, "go", "mod", "edit", "-replace", "github.com/goplus/llcppg="+projectRoot)
+	if err != nil {
+		return "", err
+	}
+
+	err = convert.ModInit(deps, outputDir, "")
 	if err != nil {
 		return "", err
 	}
