@@ -2101,8 +2101,8 @@ func TestImport(t *testing.T) {
 		}
 		p.PkgInfo = convert.NewPkgInfo(".", ".", &llcppg.Config{
 			Deps: []string{
-				"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpath",
-				"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/partfinddep",
+				"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpath",
+				"github.com/goplus/llcppg/cl/internal/convert/testdata/partfinddep",
 			},
 		}, nil)
 		loader := convert.NewPkgDepLoader(mod, genPkg)
@@ -2122,7 +2122,7 @@ func TestImport(t *testing.T) {
 			PkgBase: convert.PkgBase{
 				CppgConf: &llcppg.Config{
 					Deps: []string{
-						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpub",
+						"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpub",
 					},
 				},
 			},
@@ -2137,7 +2137,7 @@ func TestImport(t *testing.T) {
 			PkgBase: convert.PkgBase{
 				CppgConf: &llcppg.Config{
 					Deps: []string{
-						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invaliddep",
+						"github.com/goplus/llcppg/cl/internal/convert/testdata/invaliddep",
 					},
 				},
 			},
@@ -2152,8 +2152,8 @@ func TestImport(t *testing.T) {
 			PkgBase: convert.PkgBase{
 				CppgConf: &llcppg.Config{
 					Deps: []string{
-						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjson",
-						"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjsonbool",
+						"github.com/goplus/llcppg/cl/internal/convert/testdata/cjson",
+						"github.com/goplus/llcppg/cl/internal/convert/testdata/cjsonbool",
 					},
 				},
 			},

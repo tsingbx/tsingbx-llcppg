@@ -3,8 +3,8 @@ package thirddep2
 import (
 	_ "unsafe"
 
-	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/basicdep"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep"
+	"github.com/goplus/llcppg/cl/internal/convert/testdata/basicdep"
+	"github.com/goplus/llcppg/cl/internal/convert/testdata/thirddep"
 )
 
 type ThirdDep2 struct {
