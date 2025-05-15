@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseFile(t *testing.T) {
-	astFile, err := parser.ParseFile(nil, "./testdata/func/hfile/forwarddecl.h", nil)
+	astFile, err := parser.ParseFile(nil, "./testdata/func/hfile/forwarddecl.h", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
