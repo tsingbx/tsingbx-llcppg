@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cmd/gogensig/convert"
+	"github.com/goplus/llcppg/cl/internal/convert"
 )
 
 func TestBuiltinType(t *testing.T) {
