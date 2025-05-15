@@ -102,14 +102,16 @@ func (pm *PkgDepLoader) Import(pkgPath string) (*PkgInfo, error) {
 	}
 
 	var conf *llcppg.Config
+	var deps []string
 	if !isStd {
 		conf, err = cfg.GetCppgCfgFromPath(filepath.Join(pkgDir, llcppg.LLCPPG_CFG))
 		if err != nil {
 			return nil, err
 		}
+		deps = conf.Deps
 	}
 
-	newPkg := NewPkgInfo(pkgPath, pkgDir, conf.Deps, pubs)
+	newPkg := NewPkgInfo(pkgPath, pkgDir, deps, pubs)
 	pm.pkgCache[pkgPath] = newPkg
 
 	if conf != nil && len(conf.Deps) > 0 {

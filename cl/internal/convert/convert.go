@@ -74,6 +74,7 @@ func NewConverter(config *Config) (*Converter, error) {
 		symbTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
 	}
 
+	// todo: remove this
 	conf, err := cfg.GetCppgCfgFromPath(config.CfgFile)
 	if err != nil {
 		if debugLog {
@@ -88,9 +89,12 @@ func NewConverter(config *Config) (*Converter, error) {
 			Deps:    conf.Deps,
 			Pubs:    conf.TypeMap,
 		},
-		Name:        config.PkgName,
-		OutputDir:   config.OutputDir,
-		SymbolTable: symbTable,
+		Name:           config.PkgName,
+		OutputDir:      config.OutputDir,
+		SymbolTable:    symbTable,
+		LibCommand:     conf.Libs,
+		TrimPrefixes:   conf.TrimPrefixes,
+		KeepUnderScore: conf.KeepUnderScore,
 	})
 	if err != nil {
 		return nil, err
