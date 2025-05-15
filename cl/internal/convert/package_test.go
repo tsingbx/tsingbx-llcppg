@@ -105,77 +105,10 @@ type U struct {
 	}
 }
 
-func TestLinkFileOK(t *testing.T) {
-	tempDir, err := os.MkdirTemp(dir, "test_package_link")
-	if err != nil {
-		t.Fatalf("Failed to create temporary directory: %v", err)
-	}
-	defer os.RemoveAll(tempDir)
-	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir:  tempDir,
-		LibCommand: "${pkg-config --libs libcjson}",
-	})
-	if err != nil {
-		t.Fatal("NewPackage failed:", err)
-	}
-	filePath, _ := pkg.WriteLinkFile()
-	_, err = os.Stat(filePath)
-	if os.IsNotExist(err) {
-		t.FailNow()
-	}
-}
-
-func TestLinkFileFail(t *testing.T) {
-	t.Run("not link lib", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_link")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: tempDir,
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		_, err = pkg.WriteLinkFile()
-		if err == nil {
-			t.FailNow()
-		}
-	})
-	t.Run("no permission", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_link")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir:  tempDir,
-			LibCommand: "${pkg-config --libs libcjson}",
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		err = os.Chmod(tempDir, 0555)
-		if err != nil {
-			t.Fatalf("Failed to change directory permissions: %v", err)
-		}
-		defer func() {
-			if err := os.Chmod(tempDir, 0755); err != nil {
-				t.Fatalf("Failed to change directory permissions: %v", err)
-			}
-		}()
-		_, err = pkg.WriteLinkFile()
-		if err == nil {
-			t.FailNow()
-		}
-	})
-
-}
-
 func TestToType(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir: "",
+		OutputDir:  "",
+		LibCommand: "${pkg-config --libs libcjson}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
@@ -1930,6 +1863,9 @@ func compareError(t *testing.T, err error, expectErr string) {
 func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 	if cfg.SymbolTable == nil {
 		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
+	}
+	if cfg.LibCommand == "" {
+		cfg.LibCommand = "${pkg-config --libs xxx}"
 	}
 	return convert.NewPackage(&convert.PackageConfig{
 		PkgBase: convert.PkgBase{

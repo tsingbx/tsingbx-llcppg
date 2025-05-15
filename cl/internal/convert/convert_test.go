@@ -275,10 +275,22 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 }
 
 func TestNewConvert(t *testing.T) {
-	_, err := convert.NewConverter(&convert.Config{
+
+	// todo: remove this,convert will not read llcppg.cfg directly
+	cfg := &llcppg.Config{
+		Libs: "${pkg-config --libs xxx}",
+	}
+	cfgPath := filepath.Join(os.TempDir(), llcppg.LLCPPG_CFG)
+	err := config.CreateJSONFile(cfgPath, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(cfgPath)
+
+	_, err = convert.NewConverter(&convert.Config{
 		PkgName:  "test",
 		SymbFile: "",
-		CfgFile:  "",
+		CfgFile:  cfgPath,
 	})
 	if err != nil {
 		t.Fatal("NewAstConvert Fail")

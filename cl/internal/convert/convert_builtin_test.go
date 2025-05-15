@@ -1,9 +1,8 @@
 package convert
 
 import (
-	"errors"
-	"go/types"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -12,7 +11,7 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 )
 
-func emptyConverter() *Converter {
+func basicConverter() *Converter {
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -21,10 +20,21 @@ func emptyConverter() *Converter {
 	if err != nil {
 		panic(err)
 	}
+
+	cfg := &llcppg.Config{
+		Libs: "${pkg-config --libs xxx}",
+	}
+	// todo: remove this,convert not read llcppg.cfg directly
+	cfgPath := filepath.Join(tempDir, llcppg.LLCPPG_CFG)
+	err = config.CreateJSONFile(cfgPath, cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	converter, err := NewConverter(&Config{
 		PkgName:   "test",
 		SymbFile:  "",
-		CfgFile:   "",
+		CfgFile:   cfgPath,
 		OutputDir: tempDir,
 		Pkg: &llcppg.Pkg{
 			File: &ast.File{
@@ -40,7 +50,7 @@ func emptyConverter() *Converter {
 }
 
 func TestPkgFail(t *testing.T) {
-	converter := emptyConverter()
+	converter := basicConverter()
 	defer os.RemoveAll(converter.GenPkg.conf.OutputDir)
 	t.Run("FmtFail", func(t *testing.T) {
 		defer func() {
@@ -65,39 +75,13 @@ func TestPkgFail(t *testing.T) {
 		converter.Process()
 	})
 
-	t.Run("WriteLinkFileFail", func(t *testing.T) {
-		defer func() {
-			checkPanic(t, recover(), "WriteLinkFile:")
-		}()
-		converter.Write()
-	})
-	t.Run("WritePubFileFail", func(t *testing.T) {
-		defer func() {
-			checkPanic(t, recover(), "WritePubFile:")
-		}()
-		converter.GenPkg.conf.OutputDir = "/nonexistent_directory/test.txt"
-		converter.GenPkg.Pubs = map[string]string{"test": "Test"}
-		converter.Write()
-	})
-	t.Run("WritePkgFilesFail", func(t *testing.T) {
-		defer func() {
-			checkPanic(t, recover(), "WritePkgFiles:")
-		}()
-		converter.GenPkg.incompleteTypes.Add(&Incomplete{cname: "Bar", file: &HeaderFile{
-			File:     "/path/to/temp.go",
-			FileType: llcppg.Inter,
-		}, getType: func() (types.Type, error) {
-			return nil, errors.New("Mock Err")
-		}})
-		converter.Write()
-	})
 }
 
 func TestProcessWithError(t *testing.T) {
 	defer func() {
 		checkPanic(t, recover(), "NewTypedefDecl: Foo fail")
 	}()
-	converter := emptyConverter()
+	converter := basicConverter()
 	converter.GenPkg.conf.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{
 		{
 			CppName:    "Foo",

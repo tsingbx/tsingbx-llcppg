@@ -2,8 +2,10 @@ package convert
 
 import (
 	"log"
+	"path/filepath"
 	"strings"
 
+	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
 
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
@@ -150,18 +152,22 @@ func (p *Converter) Process() {
 }
 
 func (p *Converter) Write() {
-	err := p.GenPkg.WritePkgFiles()
+	pkg := p.GenPkg.Pkg()
+	err := p.GenPkg.Complete()
 	if err != nil {
-		log.Panicf("WritePkgFiles: %v\n", err)
+		log.Panicf("Complete Fail: %v\n", err)
 	}
-	err = p.GenPkg.WritePubFile()
-	if err != nil {
-		log.Panicf("WritePubFile: %v\n", err)
-	}
-	_, err = p.GenPkg.WriteLinkFile()
-	if err != nil {
-		log.Panicf("WriteLinkFile: %v\n", err)
-	}
+	// todo:move to application layer to write
+	cfg.WritePubFile(filepath.Join(p.Conf.OutputDir, llconfig.LLCPPG_PUB), p.GenPkg.Pubs)
+	pkg.ForEachFile(func(fname string, file *gogen.File) {
+		if fname != "" { // gogen default fname
+			outFile := filepath.Join(p.Conf.OutputDir, fname)
+			err := pkg.WriteFile(outFile, fname)
+			if err != nil {
+				log.Panicf("WriteFile: %v\n", err)
+			}
+		}
+	})
 }
 
 func (p *Converter) Fmt() {
