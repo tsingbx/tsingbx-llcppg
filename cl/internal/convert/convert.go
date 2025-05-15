@@ -27,7 +27,6 @@ type Config struct {
 	PkgName   string
 	SymbFile  string // llcppg.symb.json
 	CfgFile   string // llcppg.cfg
-	PubFile   string // llcppg.pub
 	OutputDir string
 
 	Pkg *llconfig.Pkg
