@@ -49,8 +49,9 @@ type Config struct {
 	Importer types.Importer
 }
 
-// NewPackage create a Go package from C files AST.
-func NewPackage(pkgPath, pkgName string, files map[string]*ast.File, conf *Config) (pkg Package, err error) {
+// NewPackage create a Go package from C/C++ header files AST.
+// All the C/C++ header files have been parsed and merged into a single AST.
+func NewPackage(pkgPath, pkgName string, file *ast.File, conf *Config) (pkg Package, err error) {
 	confGox := &gogen.Config{
 		Fset:            conf.Fset,
 		Importer:        conf.Importer,
@@ -63,16 +64,7 @@ func NewPackage(pkgPath, pkgName string, files map[string]*ast.File, conf *Confi
 	}
 	pkg.Package = gogen.NewPackage(pkgPath, pkgName, confGox)
 	pkg.SetRedeclarable(true)
-	err = loadFiles(pkg.Package, conf, files)
-	return
-}
-
-func loadFiles(p *gogen.Package, conf *Config, files map[string]*ast.File) (err error) {
-	for _, file := range files {
-		if err = loadFile(p, conf, file); err != nil {
-			return
-		}
-	}
+	err = loadFile(pkg.Package, conf, file)
 	return
 }
 
