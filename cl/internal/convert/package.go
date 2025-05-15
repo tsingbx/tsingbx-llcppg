@@ -77,14 +77,14 @@ func NewPackage(config *PackageConfig) (*Package, error) {
 
 	// default have load llgo/c
 	hasC := false
-	for _, dep := range config.CppgConf.Deps {
+	for _, dep := range config.Deps {
 		if dep == "c" || dep == "github.com/goplus/lib/c" {
 			hasC = true
 			break
 		}
 	}
 	if !hasC {
-		config.CppgConf.Deps = append([]string{"c"}, config.CppgConf.Deps...)
+		config.Deps = append([]string{"c"}, config.Deps...)
 	}
 
 	mod, err := gopmod.Load(config.OutputDir)

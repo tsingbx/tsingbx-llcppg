@@ -84,9 +84,9 @@ func NewConverter(config *Config) (*Converter, error) {
 
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
-			PkgPath:  ".",
-			CppgConf: conf,
-			Pubs:     conf.TypeMap,
+			PkgPath: ".",
+			Deps:    conf.Deps,
+			Pubs:    conf.TypeMap,
 		},
 		Name:        config.PkgName,
 		OutputDir:   config.OutputDir,

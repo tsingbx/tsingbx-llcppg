@@ -138,9 +138,6 @@ func TestLinkFileFail(t *testing.T) {
 		defer os.RemoveAll(tempDir)
 		pkg, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: tempDir,
-			PkgBase: convert.PkgBase{
-				CppgConf: &llcppg.Config{},
-			},
 		})
 		if err != nil {
 			t.Fatal("NewPackage failed:", err)
@@ -1748,11 +1745,7 @@ func TestIdentRefer(t *testing.T) {
 		}
 	})
 	t.Run("type alias", func(t *testing.T) {
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			PkgBase: convert.PkgBase{
-				CppgConf: &llcppg.Config{},
-			},
-		})
+		pkg, err := createTestPkg(&convert.PackageConfig{})
 		if err != nil {
 			t.Fatal("NewPackage failed:", err)
 		}
@@ -1936,23 +1929,17 @@ func compareError(t *testing.T, err error, expectErr string) {
 }
 
 func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
-	if cfg.CppgConf == nil {
-		cfg.CppgConf = &llcppg.Config{}
-	}
 	if cfg.SymbolTable == nil {
 		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
-	}
-	if cfg.CppgConf == nil {
-		cfg.CppgConf = &llcppg.Config{}
 	}
 	if cfg.SymbolTable == nil {
 		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
 	}
 	return convert.NewPackage(&convert.PackageConfig{
 		PkgBase: convert.PkgBase{
-			PkgPath:  ".",
-			CppgConf: cfg.CppgConf,
-			Pubs:     make(map[string]string),
+			PkgPath: ".",
+			Deps:    cfg.Deps,
+			Pubs:    make(map[string]string),
 		},
 		Name:        "testpkg",
 		GenConf:     &gogen.Config{},

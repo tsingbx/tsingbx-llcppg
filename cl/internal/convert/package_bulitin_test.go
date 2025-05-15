@@ -17,9 +17,8 @@ import (
 func emptyPkg() *Package {
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
-			PkgPath:  ".",
-			CppgConf: &llcppg.Config{},
-			Pubs:     make(map[string]string),
+			PkgPath: ".",
+			Pubs:    make(map[string]string),
 		},
 		Name:        "testpkg",
 		GenConf:     &gogen.Config{},
@@ -208,9 +207,8 @@ func TestMarkUseFail(t *testing.T) {
 	}()
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
-			PkgPath:  ".",
-			CppgConf: &llcppg.Config{},
-			Pubs:     make(map[string]string),
+			PkgPath: ".",
+			Pubs:    make(map[string]string),
 		},
 	})
 	if err != nil {
