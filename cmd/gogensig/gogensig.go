@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	args "github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
+	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
-	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	llcppg "github.com/goplus/llcppg/config"
 )
@@ -39,7 +39,7 @@ func main() {
 	}
 
 	if ags.Verbose {
-		convert.SetDebug(convert.DbgFlagAll)
+		cl.SetDebug(cl.DbgFlagAll)
 	}
 
 	var cfgFile string
@@ -71,7 +71,7 @@ func main() {
 	convertPkg, err := unmarshal.Pkg(data)
 	check(err)
 
-	cvt, err := convert.NewConverter(&convert.Config{
+	err = cl.Convert(&cl.ConvConfig{
 		PkgName:  conf.Name,
 		SymbFile: filepath.Join(wd, llcppg.LLCPPG_SYMB),
 		CfgFile:  filepath.Join(wd, cfgFile),
@@ -81,7 +81,6 @@ func main() {
 	if err != nil {
 		check(err)
 	}
-	cvt.Convert()
 }
 
 func check(err error) {
@@ -103,7 +102,7 @@ func prepareEnv(wd, pkg string, deps []string, modulePath string) error {
 		return err
 	}
 
-	return convert.ModInit(deps, dir, modulePath)
+	return cl.ModInit(deps, dir, modulePath)
 }
 
 func printUsage() {
