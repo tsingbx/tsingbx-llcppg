@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
@@ -231,6 +232,33 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 	}
 	cvt.Convert()
 
+	pkg := cvt.GenPkg.Pkg()
+	pkg.ForEachFile(func(fname string, _ *gogen.File) {
+		if fname != "" { // gogen default fname
+			outFile := filepath.Join(outputDir, fname)
+			e := pkg.WriteFile(outFile, fname)
+			if e != nil {
+				t.Fatal(e)
+			}
+		}
+	})
+
+	// todo:reuse same write logic
+	err = config.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), cvt.GenPkg.Pubs)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = config.RunCommand(outputDir, "go", "fmt", ".")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = config.RunCommand(outputDir, "go", "mod", "tidy")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	var res strings.Builder
 
 	outDir, err := os.ReadDir(outputDir)
@@ -275,7 +303,6 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 }
 
 func TestNewConvert(t *testing.T) {
-
 	// todo: remove this,convert will not read llcppg.cfg directly
 	cfg := &llcppg.Config{
 		Libs: "${pkg-config --libs xxx}",
@@ -318,27 +345,6 @@ func TestModInitFail(t *testing.T) {
 			t.Fatal("no error")
 		}
 	})
-}
-
-func TestTidyFail(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fatal("expect panic")
-		}
-	}()
-
-	tempDir, err := os.MkdirTemp("", "gogensig-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tempDir)
-
-	cvt := &convert.Converter{
-		Conf: &convert.Config{
-			OutputDir: tempDir,
-		},
-	}
-	cvt.Tidy()
 }
 
 func prepareEnv(name string, deps []string) (string, error) {

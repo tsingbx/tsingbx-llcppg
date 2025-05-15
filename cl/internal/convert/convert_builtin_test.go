@@ -52,12 +52,6 @@ func basicConverter() *Converter {
 func TestPkgFail(t *testing.T) {
 	converter := basicConverter()
 	defer os.RemoveAll(converter.GenPkg.conf.OutputDir)
-	t.Run("FmtFail", func(t *testing.T) {
-		defer func() {
-			checkPanic(t, recover(), "go fmt:")
-		}()
-		converter.Fmt()
-	})
 	t.Run("ProcessFail", func(t *testing.T) {
 		defer func() {
 			checkPanic(t, recover(), "File \"noexist.h\" not found in FileMap")
@@ -74,7 +68,6 @@ func TestPkgFail(t *testing.T) {
 		}
 		converter.Process()
 	})
-
 }
 
 func TestProcessWithError(t *testing.T) {

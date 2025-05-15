@@ -22,11 +22,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/goplus/gogen"
 	args "github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	llcppg "github.com/goplus/llcppg/config"
+	"github.com/qiniu/x/errors"
 )
 
 func main() {
@@ -62,7 +64,9 @@ func main() {
 	wd, err := os.Getwd()
 	check(err)
 
-	err = prepareEnv(wd, conf.Name, conf.Deps, modulePath)
+	outputDir := filepath.Join(wd, conf.Name)
+
+	err = prepareEnv(outputDir, conf.Deps, modulePath)
 	check(err)
 
 	data, err := config.ReadSigfetchFile(filepath.Join(wd, ags.CfgFile))
@@ -71,7 +75,7 @@ func main() {
 	convertPkg, err := unmarshal.Pkg(data)
 	check(err)
 
-	err = cl.Convert(&cl.ConvConfig{
+	cvt, err := cl.Convert(&cl.ConvConfig{
 		PkgName:  conf.Name,
 		SymbFile: filepath.Join(wd, llcppg.LLCPPG_SYMB),
 		CfgFile:  filepath.Join(wd, cfgFile),
@@ -80,6 +84,33 @@ func main() {
 	if err != nil {
 		check(err)
 	}
+
+	err = config.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), cvt.GenPkg.Pubs)
+	check(err)
+
+	err = writePkg(cvt.GenPkg.Pkg(), outputDir)
+	check(err)
+
+	err = config.RunCommand(outputDir, "go", "fmt", ".")
+	check(err)
+
+	err = config.RunCommand(outputDir, "go", "mod", "tidy")
+	check(err)
+}
+
+// Write all files in the package to the output directory
+func writePkg(pkg *gogen.Package, outDir string) error {
+	var errs errors.List
+	pkg.ForEachFile(func(fname string, _ *gogen.File) {
+		if fname != "" { // gogen default fname
+			outFile := filepath.Join(outDir, fname)
+			e := pkg.WriteFile(outFile, fname)
+			if e != nil {
+				errs.Add(e)
+			}
+		}
+	})
+	return errs.ToError()
 }
 
 func check(err error) {
@@ -88,20 +119,18 @@ func check(err error) {
 	}
 }
 
-func prepareEnv(wd, pkg string, deps []string, modulePath string) error {
-	dir := filepath.Join(wd, pkg)
-
-	err := os.MkdirAll(dir, 0744)
+func prepareEnv(outputDir string, deps []string, modulePath string) error {
+	err := os.MkdirAll(outputDir, 0744)
 	if err != nil {
 		return err
 	}
 
-	err = os.Chdir(pkg)
+	err = os.Chdir(outputDir)
 	if err != nil {
 		return err
 	}
 
-	return cl.ModInit(deps, dir, modulePath)
+	return cl.ModInit(deps, outputDir, modulePath)
 }
 
 func printUsage() {

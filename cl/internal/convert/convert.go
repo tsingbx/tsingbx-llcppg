@@ -2,10 +2,8 @@ package convert
 
 import (
 	"log"
-	"path/filepath"
 	"strings"
 
-	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
 
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
@@ -108,11 +106,10 @@ func NewConverter(config *Config) (*Converter, error) {
 	}, nil
 }
 
+// todo(zzy):throw error
 func (p *Converter) Convert() {
 	p.Process()
-	p.Write()
-	p.Fmt()
-	p.Tidy()
+	p.Complete()
 }
 
 func (p *Converter) Process() {
@@ -151,36 +148,10 @@ func (p *Converter) Process() {
 	}
 }
 
-func (p *Converter) Write() {
-	pkg := p.GenPkg.Pkg()
+func (p *Converter) Complete() {
 	err := p.GenPkg.Complete()
 	if err != nil {
 		log.Panicf("Complete Fail: %v\n", err)
-	}
-	// todo:move to application layer to write
-	cfg.WritePubFile(filepath.Join(p.Conf.OutputDir, llconfig.LLCPPG_PUB), p.GenPkg.Pubs)
-	pkg.ForEachFile(func(fname string, file *gogen.File) {
-		if fname != "" { // gogen default fname
-			outFile := filepath.Join(p.Conf.OutputDir, fname)
-			err := pkg.WriteFile(outFile, fname)
-			if err != nil {
-				log.Panicf("WriteFile: %v\n", err)
-			}
-		}
-	})
-}
-
-func (p *Converter) Fmt() {
-	err := cfg.RunCommand(p.Conf.OutputDir, "go", "fmt", ".")
-	if err != nil {
-		log.Panicf("go fmt: %v\n", err)
-	}
-}
-
-func (p *Converter) Tidy() {
-	err := cfg.RunCommand(p.Conf.OutputDir, "go", "mod", "tidy")
-	if err != nil {
-		log.Panicf("go mod tidy: %v\n", err)
 	}
 }
 

@@ -108,7 +108,6 @@ func NewPackage(config *PackageConfig) (*Package, error) {
 		return nil, err
 	}
 	p.markUseDeps(pkgManager)
-
 	p.cvt = NewConv(p)
 	return p, nil
 }
