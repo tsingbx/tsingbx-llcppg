@@ -40,15 +40,6 @@ type Package struct {
 	*gogen.Package
 }
 
-type Reused struct {
-	pkg Package
-}
-
-// Pkg returns the shared package instance.
-func (p *Reused) Pkg() Package {
-	return p.pkg
-}
-
 type Config struct {
 	// Fset provides source position information for syntax trees and types.
 	// If Fset is nil, Load will use a new fileset, but preserve Fset's value.
@@ -56,32 +47,32 @@ type Config struct {
 
 	// An Importer resolves import paths to Packages.
 	Importer types.Importer
-
-	// Reused specifies to reuse the Package instance between processing multiple C source files.
-	*Reused
 }
 
-// NewPackage create a Go package from C file AST.
-// If conf.Reused isn't nil, it shares the Go package instance in multi C files.
-// Otherwise it creates a single Go file in the Go package.
-func NewPackage(pkgPath, pkgName string, file *ast.File, conf *Config) (pkg Package, err error) {
-	if reused := conf.Reused; reused != nil && reused.pkg.Package != nil {
-		pkg = reused.pkg
-	} else {
-		confGox := &gogen.Config{
-			Fset:            conf.Fset,
-			Importer:        conf.Importer,
-			LoadNamed:       nil,
-			HandleErr:       nil,
-			NewBuiltin:      nil,
-			NodeInterpreter: nil, // TODO(xsw): check
-			CanImplicitCast: nil, // TODO(xsw): check
-			DefaultGoFile:   "",  // TODO(xsw): check
-		}
-		pkg.Package = gogen.NewPackage(pkgPath, pkgName, confGox)
+// NewPackage create a Go package from C files AST.
+func NewPackage(pkgPath, pkgName string, files map[string]*ast.File, conf *Config) (pkg Package, err error) {
+	confGox := &gogen.Config{
+		Fset:            conf.Fset,
+		Importer:        conf.Importer,
+		LoadNamed:       nil,
+		HandleErr:       nil,
+		NewBuiltin:      nil,
+		NodeInterpreter: nil, // TODO(xsw): check
+		CanImplicitCast: nil, // TODO(xsw): check
+		DefaultGoFile:   "",  // TODO(xsw): check
 	}
+	pkg.Package = gogen.NewPackage(pkgPath, pkgName, confGox)
 	pkg.SetRedeclarable(true)
-	err = loadFile(pkg.Package, conf, file)
+	err = loadFiles(pkg.Package, conf, files)
+	return
+}
+
+func loadFiles(p *gogen.Package, conf *Config, files map[string]*ast.File) (err error) {
+	for _, file := range files {
+		if err = loadFile(p, conf, file); err != nil {
+			return
+		}
+	}
 	return
 }
 
