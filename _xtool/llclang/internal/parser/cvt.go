@@ -43,6 +43,7 @@ var tagMap = map[string]ast.Tag{
 
 type ConverterConfig struct {
 	File  string
+	Args  []string
 	IsCpp bool
 }
 
@@ -63,6 +64,7 @@ func NewConverter(config *ConverterConfig) (*Converter, error) {
 	index, unit, err := CreateTranslationUnit(&LibClangConfig{
 		File:  config.File,
 		Temp:  false,
+		Args:  config.Args,
 		IsCpp: config.IsCpp,
 	})
 	if err != nil {

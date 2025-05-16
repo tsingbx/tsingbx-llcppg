@@ -12,7 +12,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	cases := []string{"class"}
+	cases := []string{"class", "comment"}
 	// https://github.com/goplus/llgo/issues/1114
 	// todo(zzy):use os.ReadDir
 	for _, folder := range cases {
@@ -33,6 +33,7 @@ func testFrom(t *testing.T, dir string, filename string, gen bool) {
 	ast, err := parser.Do(&parser.ConverterConfig{
 		File:  filepath.Join(dir, filename),
 		IsCpp: true,
+		Args:  []string{"-fparse-all-comments"},
 	})
 	if err != nil {
 		t.Fatal("Do failed:", err)

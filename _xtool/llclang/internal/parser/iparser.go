@@ -35,9 +35,16 @@ func RunParseIntermediateFile(args []string) error {
 // parses an intermediate file (*.i) and output the corresponding AST to stdout.
 func parseIntermediateFile(filename string, mode Mode) error {
 	isCpp := mode&parser.ParseCpp != 0
+
+	args := []string{}
+	if mode&parser.ParseAllComments != 0 {
+		args = append(args, "-fparse-all-comments")
+	}
+
 	file, err := Do(&ConverterConfig{
 		File:  filename,
 		IsCpp: isCpp,
+		Args:  args,
 	})
 	if err != nil {
 		return fmt.Errorf("parseIntermediateFile: %w", err)
