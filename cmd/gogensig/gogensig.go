@@ -81,9 +81,7 @@ func main() {
 		CfgFile:  filepath.Join(wd, cfgFile),
 		Pkg:      convertPkg,
 	})
-	if err != nil {
-		check(err)
-	}
+	check(err)
 
 	err = config.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), cvt.GenPkg.Pubs)
 	check(err)

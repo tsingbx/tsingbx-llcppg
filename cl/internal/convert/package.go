@@ -90,7 +90,7 @@ func NewPackage(config *PackageConfig) (*Package, error) {
 
 	mod, err := gopmod.Load(config.OutputDir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load mod: %s", err.Error())
+		return nil, fmt.Errorf("failed to load mod: %w", err)
 	}
 
 	p.PkgInfo = NewPkgInfo(config.PkgPath, config.OutputDir, config.Deps, config.Pubs)
@@ -98,11 +98,11 @@ func NewPackage(config *PackageConfig) (*Package, error) {
 	pkgManager := NewPkgDepLoader(mod, p.p)
 	err = pkgManager.InitDeps(p.PkgInfo)
 	if err != nil {
-		return nil, fmt.Errorf("failed to init deps: %s", err.Error())
+		return nil, fmt.Errorf("failed to init deps: %w", err)
 	}
 	err = p.initLink()
 	if err != nil {
-		return nil, fmt.Errorf("failed to init link: %s", err.Error())
+		return nil, fmt.Errorf("failed to init link: %w", err)
 	}
 	p.markUseDeps(pkgManager)
 	p.cvt = NewConv(p)
@@ -162,10 +162,6 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 		p.p.SetCurFile(fileName, true)
 		p.p.Unsafe().MarkForceUsed(p.p)
 	}
-}
-
-func (p *Package) GetOutputDir() string {
-	return p.conf.OutputDir
 }
 
 // todo(zzy):refine logic
