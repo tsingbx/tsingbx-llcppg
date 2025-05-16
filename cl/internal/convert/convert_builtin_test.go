@@ -1,6 +1,8 @@
 package convert
 
 import (
+	"errors"
+	"go/types"
 	"os"
 	"path/filepath"
 	"strings"
@@ -67,6 +69,19 @@ func TestPkgFail(t *testing.T) {
 			FileType: llcppg.Inter,
 		}
 		converter.Process()
+	})
+
+	t.Run("Complete fail", func(t *testing.T) {
+		defer func() {
+			checkPanic(t, recover(), "Complete Fail: Mock Err")
+		}()
+		converter.GenPkg.incompleteTypes.Add(&Incomplete{cname: "Bar", file: &HeaderFile{
+			File:     "temp.h",
+			FileType: llcppg.Inter,
+		}, getType: func() (types.Type, error) {
+			return nil, errors.New("Mock Err")
+		}})
+		converter.Complete()
 	})
 }
 

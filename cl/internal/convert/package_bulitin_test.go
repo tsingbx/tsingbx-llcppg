@@ -1,7 +1,6 @@
 package convert
 
 import (
-	"errors"
 	"go/token"
 	"go/types"
 	"testing"
@@ -39,17 +38,6 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 		FileType: llcppg.Inter,
 	}
 	pkg.SetCurFile(tempFile)
-
-	t.Run("complete fail", func(t *testing.T) {
-		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar", file: tempFile, getType: func() (types.Type, error) {
-			return nil, errors.New("Mock Err")
-		}})
-		err := pkg.Complete()
-		if err == nil {
-			t.Fatal("Expect Error")
-		}
-		pkg.incompleteTypes.Complete("Bar")
-	})
 
 	t.Run("defer write third type not found", func(t *testing.T) {
 		pkg.locMap.Add(&ast.Ident{Name: "Bar"}, &ast.Location{File: "Bar"})

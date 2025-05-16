@@ -1,13 +1,10 @@
 package convert
 
 import (
-	"bytes"
 	"fmt"
 	"go/token"
 	"go/types"
 	"log"
-	"os"
-	"path/filepath"
 
 	goast "go/ast"
 
@@ -105,7 +102,7 @@ func NewPackage(config *PackageConfig) (*Package, error) {
 	}
 	err = p.initLink()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to init link: %s", err.Error())
 	}
 	p.markUseDeps(pkgManager)
 	p.cvt = NewConv(p)
@@ -165,10 +162,6 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 		p.p.SetCurFile(fileName, true)
 		p.p.Unsafe().MarkForceUsed(p.p)
 	}
-}
-
-func (p *Package) GetGenPackage() *gogen.Package {
-	return p.p
 }
 
 func (p *Package) GetOutputDir() string {
@@ -761,21 +754,6 @@ func (p *Package) Complete() error {
 	return nil
 }
 
-// Write generates a Go file based on the package content.
-// The output file will be generated in a subdirectory named after the package within the outputDir.
-// If outputDir is not provided, the current directory will be used.
-// The header file name is the go file name.
-//
-// Files that are already processed in dependent packages will not be output.
-func (p *Package) Write(headerFile string) error {
-	fileName := name.HeaderFileToGo(headerFile)
-	filePath := filepath.Join(p.GetOutputDir(), fileName)
-	if debugLog {
-		log.Printf("Write HeaderFile [%s] from  gogen:[%s] to [%s]\n", headerFile, fileName, filePath)
-	}
-	return p.writeToFile(fileName, filePath)
-}
-
 func (p *Package) autoLinkFile() string {
 	return p.conf.Name + "_autogen_link.go"
 }
@@ -791,25 +769,6 @@ func (p *Package) initLink() error {
 		return err
 	}
 	return nil
-}
-
-// Write the corresponding files in gogen package to the file
-func (p *Package) writeToFile(genFName string, filePath string) error {
-	buf, err := p.WriteToBuffer(genFName)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(filePath, buf.Bytes(), 0644)
-}
-
-// Write the corresponding files in gogen package to the buffer
-func (p *Package) WriteToBuffer(genFName string) (*bytes.Buffer, error) {
-	buf := new(bytes.Buffer)
-	err := p.p.WriteTo(buf, genFName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to write to buffer: %w", err)
-	}
-	return buf, nil
 }
 
 func (p *Package) deferTypeBuild() error {

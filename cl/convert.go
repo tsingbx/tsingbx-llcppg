@@ -34,7 +34,6 @@ func Convert(config *ConvConfig) (cvt *convert.Converter, err error) {
 	if err != nil {
 		return
 	}
-	// todo(zzy):throw error
 	cvt.Convert()
-	return cvt, nil
+	return
 }
