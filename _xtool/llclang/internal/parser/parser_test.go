@@ -12,7 +12,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	cases := []string{"class", "comment"}
+	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union"}
 	// https://github.com/goplus/llgo/issues/1114
 	// todo(zzy):use os.ReadDir
 	for _, folder := range cases {
