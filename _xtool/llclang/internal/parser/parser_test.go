@@ -17,7 +17,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union"}
+	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union", "macro", "forwarddecl1", "forwarddecl2"}
 	// https://github.com/goplus/llgo/issues/1114
 	// todo(zzy):use os.ReadDir
 	for _, folder := range cases {
@@ -61,7 +61,7 @@ func testFrom(t *testing.T, dir string, filename string, gen bool) {
 			t.Fatal("WriteFile failed:", err)
 		}
 	} else if expect != actual {
-		t.Fatal("expect != actual")
+		t.Fatalf("expect %s, got %s", expect, actual)
 	}
 }
 
