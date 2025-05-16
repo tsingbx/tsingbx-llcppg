@@ -6,10 +6,11 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
+	"github.com/goplus/llcppg/parser"
 	"github.com/goplus/llpkg/cjson"
 )
 
-type Mode int
+type Mode = parser.Mode
 
 func RunParseIntermediateFile(args []string) error {
 	if len(args) != 2 {
@@ -33,8 +34,10 @@ func RunParseIntermediateFile(args []string) error {
 
 // parses an intermediate file (*.i) and output the corresponding AST to stdout.
 func parseIntermediateFile(filename string, mode Mode) error {
+	isCpp := mode&parser.ParseCpp != 0
 	file, err := Do(&ConverterConfig{
-		File: filename,
+		File:  filename,
+		IsCpp: isCpp,
 	})
 	if err != nil {
 		return fmt.Errorf("parseIntermediateFile: %w", err)
