@@ -52,7 +52,7 @@ type PackageConfig struct {
 	PkgBase
 	Name           string // current package name
 	OutputDir      string
-	SymbolTable    *config.SymbolTable
+	ConvSym        func(mangleName string) (goName string, err error)
 	GenConf        *gogen.Config
 	TrimPrefixes   []string
 	LibCommand     string // use to gen link command like $(pkg-config --libs xxx)
@@ -131,11 +131,11 @@ func (p *Package) markUseDeps(pkgMgr *PkgDepLoader) {
 }
 
 func (p *Package) LookupSymbol(mangleName config.MangleNameType) (*GoFuncSpec, error) {
-	e, err := p.conf.SymbolTable.LookupSymbol(mangleName)
+	goName, err := p.conf.ConvSym(mangleName)
 	if err != nil {
 		return nil, err
 	}
-	return NewGoFuncSpec(e.GoName), nil
+	return NewGoFuncSpec(goName), nil
 }
 
 func (p *Package) SetCurFile(hfile *HeaderFile) {

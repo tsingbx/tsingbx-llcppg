@@ -9,6 +9,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/internal/cltest"
 	"github.com/goplus/llcppg/cl/internal/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
@@ -1034,9 +1035,9 @@ type Foo func(a c.Int, b c.Int) c.Int
 func TestRedef(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Bar", MangleName: "Bar", GoName: "Bar"},
+		ConvSym: cltest.NewConvSym(
+			config.SymbolEntry{
+				CppName: "Bar", MangleName: "Bar", GoName: "Bar",
 			},
 		),
 	})
@@ -1206,9 +1207,9 @@ const Foo__1 c.Int = 0
 
 func TestRedefTypedef(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Foo", MangleName: "Foo", GoName: "Foo"},
+		ConvSym: cltest.NewConvSym(
+			config.SymbolEntry{
+				CppName: "Foo", MangleName: "Foo", GoName: "Foo",
 			},
 		),
 	})
@@ -1238,9 +1239,9 @@ func TestRedefTypedef(t *testing.T) {
 
 func TestRedefineFunc(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Foo", MangleName: "Foo", GoName: "Foo"},
+		ConvSym: cltest.NewConvSym(
+			config.SymbolEntry{
+				CppName: "Foo", MangleName: "Foo", GoName: "Foo",
 			},
 		),
 	})
@@ -1616,9 +1617,9 @@ type Foo struct {
 func TestForwardDecl(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Bar", MangleName: "Bar", GoName: "Bar"},
+		ConvSym: cltest.NewConvSym(
+			config.SymbolEntry{
+				CppName: "Bar", MangleName: "Bar", GoName: "Bar",
 			},
 		),
 	})
@@ -1704,8 +1705,8 @@ func testGenDecl(t *testing.T, tc genDeclTestCase) {
 		deps = tc.cppgconf.Deps
 	}
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		SymbolTable: config.CreateSymbolTable(tc.symbs),
-		LibCommand:  libCommand,
+		ConvSym:    cltest.NewConvSym(tc.symbs...),
+		LibCommand: libCommand,
 		PkgBase: convert.PkgBase{
 			Deps: deps,
 		},
@@ -1752,8 +1753,8 @@ func compareError(t *testing.T, err error, expectErr string) {
 }
 
 func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
-	if cfg.SymbolTable == nil {
-		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
+	if cfg.ConvSym == nil {
+		cfg.ConvSym = cltest.GetConvSym("")
 	}
 	if cfg.LibCommand == "" {
 		cfg.LibCommand = "${pkg-config --libs xxx}"
@@ -1767,7 +1768,7 @@ func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 		Name:           "testpkg",
 		GenConf:        &gogen.Config{},
 		OutputDir:      cfg.OutputDir,
-		SymbolTable:    cfg.SymbolTable,
+		ConvSym:        cfg.ConvSym,
 		LibCommand:     cfg.LibCommand,
 		TrimPrefixes:   cfg.TrimPrefixes,
 		KeepUnderScore: cfg.KeepUnderScore,
@@ -1795,11 +1796,9 @@ func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 func TestTypeClean(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Func1", MangleName: "Func1", GoName: "Func1"},
-				{CppName: "Func2", MangleName: "Func2", GoName: "Func2"},
-			},
+		ConvSym: cltest.NewConvSym(
+			config.SymbolEntry{CppName: "Func1", MangleName: "Func1", GoName: "Func1"},
+			config.SymbolEntry{CppName: "Func2", MangleName: "Func2", GoName: "Func2"},
 		),
 	})
 	if err != nil {

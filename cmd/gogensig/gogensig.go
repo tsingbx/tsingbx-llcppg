@@ -75,11 +75,21 @@ func main() {
 	convertPkg, err := unmarshal.Pkg(data)
 	check(err)
 
+	symbFile := filepath.Join(wd, llcppg.LLCPPG_SYMB)
+	symbTable, err := config.NewSymbolTable(symbFile)
+	check(err)
+
 	pkg, err := cl.Convert(&cl.ConvConfig{
-		PkgName:  conf.Name,
-		SymbFile: filepath.Join(wd, llcppg.LLCPPG_SYMB),
-		CfgFile:  filepath.Join(wd, cfgFile),
-		Pkg:      convertPkg,
+		PkgName: conf.Name,
+		ConvSym: func(mangleName string) (goName string, err error) {
+			item, err := symbTable.LookupSymbol(mangleName)
+			if err != nil {
+				return
+			}
+			return item.GoName, nil
+		},
+		CfgFile: filepath.Join(wd, cfgFile),
+		Pkg:     convertPkg,
 	})
 	check(err)
 

@@ -25,7 +25,7 @@ import (
 
 // Config represents the configuration for parsing C/C++ source files.
 type Config struct {
-	Compiler    string // default: clang
+	Compiler    string // default: clang++
 	PPFlag      string // default: -E
 	BaseDir     string // base of include searching directory, should be absolute path
 	IncludeDirs []string
