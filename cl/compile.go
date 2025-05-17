@@ -24,6 +24,7 @@ import (
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/internal/convert"
 )
 
 /* TODO(xsw): remove
@@ -38,6 +39,7 @@ var (
 
 type Package struct {
 	*gogen.Package
+	*convert.PkgInfo // TODO(xsw): check
 }
 
 type Config struct {
