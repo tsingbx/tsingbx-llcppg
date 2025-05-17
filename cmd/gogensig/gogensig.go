@@ -75,7 +75,7 @@ func main() {
 	convertPkg, err := unmarshal.Pkg(data)
 	check(err)
 
-	cvt, err := cl.Convert(&cl.ConvConfig{
+	pkg, err := cl.Convert(&cl.ConvConfig{
 		PkgName:  conf.Name,
 		SymbFile: filepath.Join(wd, llcppg.LLCPPG_SYMB),
 		CfgFile:  filepath.Join(wd, cfgFile),
@@ -83,10 +83,10 @@ func main() {
 	})
 	check(err)
 
-	err = config.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), cvt.GenPkg.Pubs)
+	err = config.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), pkg.Pubs)
 	check(err)
 
-	err = writePkg(cvt.GenPkg.Pkg(), outputDir)
+	err = writePkg(pkg.Package, outputDir)
 	check(err)
 
 	err = config.RunCommand(outputDir, "go", "fmt", ".")
