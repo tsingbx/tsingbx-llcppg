@@ -41,8 +41,12 @@ func ParseFile(fset *token.FileSet, srcFile, interFile string, conf *Config) (f 
 	mode := ParseAllComments
 	var ppconf *preprocessor.Config
 	if conf != nil {
+		cc := conf.Compiler
+		if cc == "" {
+			cc = "clang++"
+		}
 		ppconf = &preprocessor.Config{
-			Compiler:    conf.Compiler,
+			Compiler:    cc,
 			PPFlag:      conf.PPFlag,
 			BaseDir:     conf.BaseDir,
 			IncludeDirs: conf.IncludeDirs,
