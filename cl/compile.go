@@ -51,6 +51,10 @@ type Config struct {
 	Importer types.Importer
 }
 
+const (
+	headerGoFile = "llcppg_header.go"
+)
+
 // NewPackage create a Go package from C/C++ header files AST.
 // All the C/C++ header files have been parsed and merged into a single AST.
 func NewPackage(pkgPath, pkgName string, file *ast.File, conf *Config) (pkg Package, err error) {
@@ -62,7 +66,7 @@ func NewPackage(pkgPath, pkgName string, file *ast.File, conf *Config) (pkg Pack
 		NewBuiltin:      nil,
 		NodeInterpreter: nil, // TODO(xsw): check
 		CanImplicitCast: nil, // TODO(xsw): check
-		DefaultGoFile:   "",  // TODO(xsw): check
+		DefaultGoFile:   headerGoFile,
 	}
 	pkg.Package = gogen.NewPackage(pkgPath, pkgName, confGox)
 	pkg.SetRedeclarable(true)
