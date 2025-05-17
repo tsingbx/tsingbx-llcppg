@@ -3,7 +3,6 @@ package convert_test
 import (
 	"bytes"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -105,77 +104,10 @@ type U struct {
 	}
 }
 
-func TestLinkFileOK(t *testing.T) {
-	tempDir, err := os.MkdirTemp(dir, "test_package_link")
-	if err != nil {
-		t.Fatalf("Failed to create temporary directory: %v", err)
-	}
-	defer os.RemoveAll(tempDir)
-	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir:  tempDir,
-		LibCommand: "${pkg-config --libs libcjson}",
-	})
-	if err != nil {
-		t.Fatal("NewPackage failed:", err)
-	}
-	filePath, _ := pkg.WriteLinkFile()
-	_, err = os.Stat(filePath)
-	if os.IsNotExist(err) {
-		t.FailNow()
-	}
-}
-
-func TestLinkFileFail(t *testing.T) {
-	t.Run("not link lib", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_link")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: tempDir,
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		_, err = pkg.WriteLinkFile()
-		if err == nil {
-			t.FailNow()
-		}
-	})
-	t.Run("no permission", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_link")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir:  tempDir,
-			LibCommand: "${pkg-config --libs libcjson}",
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		err = os.Chmod(tempDir, 0555)
-		if err != nil {
-			t.Fatalf("Failed to change directory permissions: %v", err)
-		}
-		defer func() {
-			if err := os.Chmod(tempDir, 0755); err != nil {
-				t.Fatalf("Failed to change directory permissions: %v", err)
-			}
-		}()
-		_, err = pkg.WriteLinkFile()
-		if err == nil {
-			t.FailNow()
-		}
-	})
-
-}
-
 func TestToType(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir: "",
+		OutputDir:  "",
+		LibCommand: "${pkg-config --libs libcjson}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
@@ -245,114 +177,6 @@ package testpkg
 
 import _ "unsafe"
 	`)
-}
-
-func TestPackageWrite(t *testing.T) {
-	verifyGeneratedFile := func(t *testing.T, expectedFilePath string) {
-		t.Helper()
-		if _, err := os.Stat(expectedFilePath); os.IsNotExist(err) {
-			t.Fatalf("Expected output file does not exist: %s", expectedFilePath)
-		}
-
-		content, err := os.ReadFile(expectedFilePath)
-		if err != nil {
-			t.Fatalf("Unable to read generated file: %v", err)
-		}
-
-		expectedContent := "package testpkg"
-		if !strings.Contains(string(content), expectedContent) {
-			t.Errorf("Generated file content does not match expected.\nExpected:\n%s\nActual:\n%s", expectedContent, string(content))
-		}
-	}
-
-	incPath := "mock_header.h"
-	filePath := filepath.Join("/path", "to", incPath)
-	genPath := name.HeaderFileToGo(filePath)
-
-	headerFile := convert.NewHeaderFile(filePath, llcppg.Inter)
-
-	t.Run("OutputToTempDir", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_write")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: tempDir,
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-
-		pkg.SetCurFile(headerFile)
-		err = pkg.Write(filePath)
-		if err != nil {
-			t.Fatalf("Write method failed: %v", err)
-		}
-
-		expectedFilePath := filepath.Join(tempDir, genPath)
-		verifyGeneratedFile(t, expectedFilePath)
-	})
-
-	t.Run("OutputToCurrentDir", func(t *testing.T) {
-		testpkgDir := filepath.Join(dir, "testpkg")
-		if err := os.MkdirAll(testpkgDir, 0755); err != nil {
-			t.Fatalf("Failed to create testpkg directory: %v", err)
-		}
-
-		defer func() {
-			// Clean up generated files and directory
-			os.RemoveAll(testpkgDir)
-		}()
-
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: testpkgDir,
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		pkg.SetCurFile(headerFile)
-		err = pkg.Write(filePath)
-		if err != nil {
-			t.Fatalf("Write method failed: %v", err)
-		}
-
-		expectedFilePath := filepath.Join(testpkgDir, genPath)
-		verifyGeneratedFile(t, expectedFilePath)
-	})
-
-	t.Run("InvalidOutputDir", func(t *testing.T) {
-		testpkgDir := filepath.Join(dir, "testpkg")
-		if err := os.MkdirAll(testpkgDir, 0755); err != nil {
-			t.Fatalf("Failed to create testpkg directory: %v", err)
-		}
-		defer func() {
-			os.RemoveAll(testpkgDir)
-		}()
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: testpkgDir,
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		pkg.Config().OutputDir = "/nonexistent/directory"
-		err = pkg.Write(incPath)
-		if err == nil {
-			t.Fatal("Expected an error for invalid output directory, but got nil")
-		}
-	})
-
-	t.Run("WriteUnexistFile", func(t *testing.T) {
-		pkg, err := createTestPkg(&convert.PackageConfig{})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		err = pkg.Write("test1.h")
-		if err == nil {
-			t.Fatal("Expected an error for invalid output directory, but got nil")
-		}
-	})
 }
 
 func TestFuncDecl(t *testing.T) {
@@ -1294,7 +1118,7 @@ func TestRedef(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err = pkg.GetGenPackage().WriteTo(&buf)
+	err = pkg.Pkg().WriteTo(&buf)
 	if err != nil {
 		t.Fatalf("WriteTo failed: %v", err)
 	}
@@ -1931,6 +1755,9 @@ func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 	if cfg.SymbolTable == nil {
 		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
 	}
+	if cfg.LibCommand == "" {
+		cfg.LibCommand = "${pkg-config --libs xxx}"
+	}
 	return convert.NewPackage(&convert.PackageConfig{
 		PkgBase: convert.PkgBase{
 			PkgPath: ".",
@@ -1951,7 +1778,8 @@ func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 	t.Helper()
 	// For Test,The Test package's header filename same as package name
-	buf, err := pkg.WriteToBuffer("temp.go")
+	var buf bytes.Buffer
+	err := pkg.Pkg().WriteTo(&buf, "temp.go")
 	if err != nil {
 		t.Fatalf("WriteTo failed: %v", err)
 	}
@@ -2025,8 +1853,9 @@ func TestTypeClean(t *testing.T) {
 		})
 		tc.addType()
 
+		var buf bytes.Buffer
 		goFileName := name.HeaderFileToGo(tc.headerFile)
-		buf, err := pkg.WriteToBuffer(goFileName)
+		pkg.Pkg().WriteTo(&buf, goFileName)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2150,4 +1979,17 @@ func TestUnkownHfile(t *testing.T) {
 		}
 	}()
 	convert.NewHeaderFile("/path/to/foo.h", 0).ToGoFileName("Pkg")
+}
+
+func TestNewPackageLinkFail(t *testing.T) {
+	_, err := convert.NewPackage(&convert.PackageConfig{
+		PkgBase: convert.PkgBase{
+			PkgPath: ".",
+		},
+		Name:    "testpkg",
+		GenConf: &gogen.Config{},
+	})
+	if err == nil {
+		t.Fatal("Expect Error")
+	}
 }

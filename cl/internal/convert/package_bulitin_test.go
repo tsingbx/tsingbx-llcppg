@@ -1,7 +1,6 @@
 package convert
 
 import (
-	"errors"
 	"go/token"
 	"go/types"
 	"testing"
@@ -24,6 +23,7 @@ func emptyPkg() *Package {
 		GenConf:     &gogen.Config{},
 		OutputDir:   "",
 		SymbolTable: cfg.CreateSymbolTable([]cfg.SymbolEntry{}),
+		LibCommand:  "${pkg-config --libs xxx}",
 	})
 	if err != nil {
 		panic(err)
@@ -39,17 +39,6 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 	}
 	pkg.SetCurFile(tempFile)
 
-	t.Run("write pkg fail", func(t *testing.T) {
-		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar", file: tempFile, getType: func() (types.Type, error) {
-			return nil, errors.New("Mock Err")
-		}})
-		err := pkg.WritePkgFiles()
-		if err == nil {
-			t.Fatal("Expect Error")
-		}
-		pkg.incompleteTypes.Complete("Bar")
-	})
-
 	t.Run("defer write third type not found", func(t *testing.T) {
 		pkg.locMap.Add(&ast.Ident{Name: "Bar"}, &ast.Location{File: "Bar"})
 		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
@@ -63,7 +52,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 			t.Fatal("NewTypedefDecl failed:", err)
 		}
 		pkg.incompleteTypes.Complete("Bar")
-		err = pkg.WritePkgFiles()
+		err = pkg.Complete()
 		if err == nil {
 			t.Fatal("expect a error")
 		}
@@ -175,6 +164,7 @@ func TestTrimPrefixes(t *testing.T) {
 		OutputDir:    "",
 		SymbolTable:  &cfg.SymbolTable{},
 		TrimPrefixes: []string{"prefix1", "prefix2"},
+		LibCommand:   "${pkg-config --libs xxx}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
@@ -208,6 +198,7 @@ func TestMarkUseFail(t *testing.T) {
 			PkgPath: ".",
 			Pubs:    make(map[string]string),
 		},
+		LibCommand: "${pkg-config --libs xxx}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)

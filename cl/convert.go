@@ -24,8 +24,8 @@ type ConvConfig struct {
 	Pkg *llconfig.Pkg
 }
 
-func Convert(config *ConvConfig) (err error) {
-	cvt, err := convert.NewConverter(&convert.Config{
+func Convert(config *ConvConfig) (cvt *convert.Converter, err error) {
+	cvt, err = convert.NewConverter(&convert.Config{
 		PkgName:  config.PkgName,
 		SymbFile: config.SymbFile,
 		CfgFile:  config.CfgFile,
@@ -35,5 +35,5 @@ func Convert(config *ConvConfig) (err error) {
 		return
 	}
 	cvt.Convert()
-	return nil
+	return
 }

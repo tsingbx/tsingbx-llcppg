@@ -27,6 +27,7 @@ func TestSubstObj(t *testing.T) {
 		GenConf:     &gogen.Config{},
 		OutputDir:   "",
 		SymbolTable: &config.SymbolTable{},
+		LibCommand:  "${pkg-config --libs xxx}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed")

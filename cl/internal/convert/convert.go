@@ -106,11 +106,10 @@ func NewConverter(config *Config) (*Converter, error) {
 	}, nil
 }
 
+// todo(zzy):throw error
 func (p *Converter) Convert() {
 	p.Process()
-	p.Write()
-	p.Fmt()
-	p.Tidy()
+	p.Complete()
 }
 
 func (p *Converter) Process() {
@@ -149,32 +148,10 @@ func (p *Converter) Process() {
 	}
 }
 
-func (p *Converter) Write() {
-	err := p.GenPkg.WritePkgFiles()
+func (p *Converter) Complete() {
+	err := p.GenPkg.Complete()
 	if err != nil {
-		log.Panicf("WritePkgFiles: %v\n", err)
-	}
-	err = p.GenPkg.WritePubFile()
-	if err != nil {
-		log.Panicf("WritePubFile: %v\n", err)
-	}
-	_, err = p.GenPkg.WriteLinkFile()
-	if err != nil {
-		log.Panicf("WriteLinkFile: %v\n", err)
-	}
-}
-
-func (p *Converter) Fmt() {
-	err := cfg.RunCommand(p.Conf.OutputDir, "go", "fmt", ".")
-	if err != nil {
-		log.Panicf("go fmt: %v\n", err)
-	}
-}
-
-func (p *Converter) Tidy() {
-	err := cfg.RunCommand(p.Conf.OutputDir, "go", "mod", "tidy")
-	if err != nil {
-		log.Panicf("go mod tidy: %v\n", err)
+		log.Panicf("Complete Fail: %v\n", err)
 	}
 }
 
