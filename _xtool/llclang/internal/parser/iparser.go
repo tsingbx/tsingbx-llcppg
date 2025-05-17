@@ -34,7 +34,7 @@ func RunParseIntermediateFile(args []string) error {
 
 // parses an intermediate file (*.i) and output the corresponding AST to stdout.
 func parseIntermediateFile(filename string, mode Mode) error {
-	isCpp := mode&parser.ParseCpp != 0
+	isCpp := mode&parser.ParseC == 0
 
 	args := []string{}
 	if mode&parser.ParseAllComments != 0 {

@@ -31,10 +31,8 @@ import (
 type Mode int
 
 const (
-	ParseC Mode = 1 << iota
-	ParseCpp
-
-	ParseAllComments // clang -fparse-all-comments
+	ParseC           Mode = 1 << iota // default parser with c++
+	ParseAllComments                  // clang -fparse-all-comments
 )
 
 // ParseIntermediateFile parses an intermediate file (*.i) and returns the corresponding AST.

@@ -38,7 +38,7 @@ type Config struct {
 // ParseFile parses a C/C++ source file and returns the corresponding AST.
 // Allow fset to be nil, in which case a new FileSet will be created.
 func ParseFile(fset *token.FileSet, srcFile, interFile string, conf *Config) (f *ast.File, err error) {
-	mode := ParseC | ParseAllComments
+	mode := ParseAllComments
 	var ppconf *preprocessor.Config
 	if conf != nil {
 		ppconf = &preprocessor.Config{
