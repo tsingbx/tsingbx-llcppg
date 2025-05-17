@@ -9,9 +9,14 @@ import (
 	"testing"
 
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/internal/cltest"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
 )
+
+func getConvSym(symbFile string) func(mangleName string) (goName string, err error) {
+	return cltest.GetConvSym(symbFile)
+}
 
 func basicConverter() *Converter {
 	dir, err := os.Getwd()
@@ -35,7 +40,7 @@ func basicConverter() *Converter {
 
 	converter, err := NewConverter(&Config{
 		PkgName:   "test",
-		SymbFile:  "",
+		ConvSym:   getConvSym(""),
 		CfgFile:   cfgPath,
 		OutputDir: tempDir,
 		Pkg: &llcppg.Pkg{
@@ -90,12 +95,10 @@ func TestProcessWithError(t *testing.T) {
 		checkPanic(t, recover(), "NewTypedefDecl: Foo fail")
 	}()
 	converter := basicConverter()
-	converter.GenPkg.conf.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{
-		{
-			CppName:    "Foo",
-			MangleName: "Foo",
-			GoName:     "Foo",
-		},
+	converter.GenPkg.conf.ConvSym = cltest.NewConvSym(config.SymbolEntry{
+		CppName:    "Foo",
+		MangleName: "Foo",
+		GoName:     "Foo",
 	})
 	declBase := ast.DeclBase{
 		Loc: &ast.Location{

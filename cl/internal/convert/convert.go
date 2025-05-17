@@ -25,7 +25,7 @@ func SetDebug(dbgFlags dbgFlags) {
 
 type Config struct {
 	PkgName   string
-	SymbFile  string // llcppg.symb.json
+	ConvSym   func(mangleName string) (goName string, err error)
 	CfgFile   string // llcppg.cfg
 	OutputDir string
 
@@ -66,6 +66,7 @@ type Converter struct {
 }
 
 func NewConverter(config *Config) (*Converter, error) {
+	/* TODO(xsw): remove this
 	symbTable, err := cfg.NewSymbolTable(config.SymbFile)
 	if err != nil {
 		if debugLog {
@@ -73,6 +74,7 @@ func NewConverter(config *Config) (*Converter, error) {
 		}
 		symbTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
 	}
+	*/
 
 	// todo: remove this
 	conf, err := cfg.GetCppgCfgFromPath(config.CfgFile)
@@ -91,7 +93,7 @@ func NewConverter(config *Config) (*Converter, error) {
 		},
 		Name:           config.PkgName,
 		OutputDir:      config.OutputDir,
-		SymbolTable:    symbTable,
+		ConvSym:        config.ConvSym,
 		LibCommand:     conf.Libs,
 		TrimPrefixes:   conf.TrimPrefixes,
 		KeepUnderScore: conf.KeepUnderScore,

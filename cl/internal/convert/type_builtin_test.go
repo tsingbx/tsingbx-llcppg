@@ -7,7 +7,7 @@ import (
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cl/internal/cltest"
 )
 
 func TestIdentRef(t *testing.T) {
@@ -23,11 +23,11 @@ func TestSubstObj(t *testing.T) {
 		PkgBase: PkgBase{
 			PkgPath: ".",
 		},
-		Name:        "testpkg",
-		GenConf:     &gogen.Config{},
-		OutputDir:   "",
-		SymbolTable: &config.SymbolTable{},
-		LibCommand:  "${pkg-config --libs xxx}",
+		Name:       "testpkg",
+		GenConf:    &gogen.Config{},
+		OutputDir:  "",
+		ConvSym:    cltest.GetConvSym(""),
+		LibCommand: "${pkg-config --libs xxx}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed")

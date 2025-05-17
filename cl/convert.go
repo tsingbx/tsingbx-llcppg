@@ -17,7 +17,7 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 
 type ConvConfig struct {
 	PkgName   string
-	SymbFile  string // llcppg.symb.json
+	ConvSym   func(mangleName string) (goName string, err error)
 	CfgFile   string // llcppg.cfg
 	OutputDir string
 
@@ -26,10 +26,10 @@ type ConvConfig struct {
 
 func Convert(config *ConvConfig) (pkg Package, err error) {
 	cvt, err := convert.NewConverter(&convert.Config{
-		PkgName:  config.PkgName,
-		SymbFile: config.SymbFile,
-		CfgFile:  config.CfgFile,
-		Pkg:      config.Pkg,
+		PkgName: config.PkgName,
+		ConvSym: config.ConvSym,
+		CfgFile: config.CfgFile,
+		Pkg:     config.Pkg,
 	})
 	if err != nil {
 		return
