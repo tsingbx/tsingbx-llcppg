@@ -9,13 +9,12 @@ func NewConvSym(syms ...cfg.SymbolEntry) func(mangleName string) (goName string,
 }
 
 func GetConvSym(symbFile string) func(mangleName string) (goName string, err error) {
-	var symbTable *cfg.SymbolTable
 	if symbFile == "" {
-		symbTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
-	} else if tab, err := cfg.NewSymbolTable(symbFile); err == nil {
-		symbTable = tab
-	} else {
-		panic(err)
+		return NewConvSym()
+	}
+	symbTable, err := cfg.NewSymbolTable(symbFile)
+	if err != nil {
+		return NewConvSym()
 	}
 	return fromSymbTable(symbTable)
 }
