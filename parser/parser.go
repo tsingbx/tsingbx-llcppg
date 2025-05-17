@@ -40,17 +40,22 @@ type Config struct {
 func ParseFile(fset *token.FileSet, srcFile, interFile string, conf *Config) (f *ast.File, err error) {
 	mode := ParseAllComments
 	var ppconf *preprocessor.Config
-	if conf != nil {
-		ppconf = &preprocessor.Config{
-			Compiler:    conf.Compiler,
-			PPFlag:      conf.PPFlag,
-			BaseDir:     conf.BaseDir,
-			IncludeDirs: conf.IncludeDirs,
-			Defines:     conf.Defines,
-			Flags:       conf.Flags,
-		}
-		mode = conf.Mode
+	if conf == nil {
+		conf = new(Config)
 	}
+	cc := conf.Compiler
+	if cc == "" {
+		cc = "clang++"
+	}
+	ppconf = &preprocessor.Config{
+		Compiler:    cc,
+		PPFlag:      conf.PPFlag,
+		BaseDir:     conf.BaseDir,
+		IncludeDirs: conf.IncludeDirs,
+		Defines:     conf.Defines,
+		Flags:       conf.Flags,
+	}
+	mode = conf.Mode
 	if interFile == "" {
 		interFile = srcFile + ".i"
 	}
