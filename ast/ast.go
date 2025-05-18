@@ -160,7 +160,7 @@ func (*ParenExpr) exprNode() {}
 // Parent::X
 type ScopingExpr struct {
 	Parent Expr
-	X      Expr
+	X      *Ident
 }
 
 func (*ScopingExpr) exprNode() {}

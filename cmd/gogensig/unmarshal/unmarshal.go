@@ -336,9 +336,9 @@ func ScopingExpr(data []byte) (ast.Node, error) {
 	if err != nil {
 		return nil, newUnmarshalFieldError("ScopingExpr", scopingExprData, "X", data, err)
 	}
-	x, ok := xNode.(ast.Expr)
+	x, ok := xNode.(*ast.Ident)
 	if !ok {
-		return nil, newUnexpectType("ScopingExpr", xNode, "ast.Expr")
+		return nil, newUnexpectType("ScopingExpr", xNode, "ast.Ident")
 	}
 	scopingExpr.X = x
 
