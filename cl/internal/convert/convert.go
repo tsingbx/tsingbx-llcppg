@@ -25,10 +25,16 @@ func SetDebug(dbgFlags dbgFlags) {
 type Config struct {
 	PkgName   string
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
-	CfgFile   string // llcppg.cfg
 	OutputDir string
 
 	Pkg *llconfig.Pkg
+
+	// CfgFile   string // llcppg.cfg
+	Pubs           map[string]string // llcppg.pub
+	Deps           []string          // dependent packages
+	TrimPrefixes   []string
+	Libs           string
+	KeepUnderScore bool
 }
 
 // if modulePath is not empty, init the module by modulePath
@@ -66,15 +72,6 @@ type Converter struct {
 
 func NewConverter(config *Config) (*Converter, error) {
 	/* TODO(xsw): remove this
-	symbTable, err := cfg.NewSymbolTable(config.SymbFile)
-	if err != nil {
-		if debugLog {
-			log.Printf("Can't get llcppg.symb.json from %s Use empty table\n", config.SymbFile)
-		}
-		symbTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
-	}
-	*/
-
 	// todo: remove this
 	conf, err := cfg.GetCppgCfgFromPath(config.CfgFile)
 	if err != nil {
@@ -83,19 +80,20 @@ func NewConverter(config *Config) (*Converter, error) {
 		}
 		conf = llconfig.NewDefault()
 	}
+	*/
 
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: ".",
-			Deps:    conf.Deps,
-			Pubs:    conf.TypeMap,
+			Deps:    config.Deps,
+			Pubs:    config.Pubs,
 		},
 		Name:           config.PkgName,
 		OutputDir:      config.OutputDir,
 		ConvSym:        config.ConvSym,
-		LibCommand:     conf.Libs,
-		TrimPrefixes:   conf.TrimPrefixes,
-		KeepUnderScore: conf.KeepUnderScore,
+		LibCommand:     config.Libs,
+		TrimPrefixes:   config.TrimPrefixes,
+		KeepUnderScore: config.KeepUnderScore,
 	})
 	if err != nil {
 		return nil, err
