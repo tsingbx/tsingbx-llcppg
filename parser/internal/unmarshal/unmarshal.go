@@ -617,6 +617,7 @@ func declBase(data []byte) (ast.Object, error) {
 	type declBaseTemp struct {
 		Loc    *ast.Location
 		Doc    *ast.CommentGroup
+		Name   *ast.Ident
 		Parent json.RawMessage
 	}
 	var declBaseData declBaseTemp
@@ -625,8 +626,9 @@ func declBase(data []byte) (ast.Object, error) {
 	}
 
 	declBase := ast.Object{
-		Loc: declBaseData.Loc,
-		Doc: declBaseData.Doc,
+		Loc:  declBaseData.Loc,
+		Doc:  declBaseData.Doc,
+		Name: declBaseData.Name,
 	}
 
 	if !isJSONNull(declBaseData.Parent) {
