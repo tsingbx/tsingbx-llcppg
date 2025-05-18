@@ -226,7 +226,7 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		OutputDir: outputDir,
 		Pkg:       convertPkg,
 
-		Pubs:           cfg.TypeMap,
+		TypeMap:        cfg.TypeMap,
 		Deps:           cfg.Deps,
 		TrimPrefixes:   cfg.TrimPrefixes,
 		Libs:           cfg.Libs,
@@ -317,7 +317,7 @@ func TestNewConvert(t *testing.T) {
 		PkgName: "test",
 		ConvSym: cltest.NewConvSym(),
 
-		Pubs:           cfg.TypeMap,
+		TypeMap:        cfg.TypeMap,
 		Deps:           cfg.Deps,
 		TrimPrefixes:   cfg.TrimPrefixes,
 		Libs:           cfg.Libs,

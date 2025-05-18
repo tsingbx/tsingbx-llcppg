@@ -89,7 +89,7 @@ func main() {
 			return item.GoName, nil
 		},
 		Pkg:            convertPkg,
-		Pubs:           conf.TypeMap,
+		TypeMap:        conf.TypeMap,
 		Deps:           conf.Deps,
 		TrimPrefixes:   conf.TrimPrefixes,
 		Libs:           conf.Libs,

@@ -35,7 +35,7 @@ func basicConverter() *Converter {
 			},
 			FileMap: map[string]*llcppg.FileInfo{},
 		},
-		Pubs:           cfg.TypeMap,
+		TypeMap:        cfg.TypeMap,
 		Deps:           cfg.Deps,
 		TrimPrefixes:   cfg.TrimPrefixes,
 		Libs:           cfg.Libs,
