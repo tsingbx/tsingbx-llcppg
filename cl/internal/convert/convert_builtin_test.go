@@ -14,10 +14,6 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 )
 
-func getConvSym(symbFile string) func(mangleName string) (goName string, err error) {
-	return cltest.GetConvSym(symbFile)
-}
-
 func basicConverter() *Converter {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -40,7 +36,7 @@ func basicConverter() *Converter {
 
 	converter, err := NewConverter(&Config{
 		PkgName:   "test",
-		ConvSym:   getConvSym(""),
+		ConvSym:   cltest.NewConvSym(),
 		CfgFile:   cfgPath,
 		OutputDir: tempDir,
 		Pkg: &llcppg.Pkg{
@@ -95,7 +91,7 @@ func TestProcessWithError(t *testing.T) {
 		checkPanic(t, recover(), "NewTypedefDecl: Foo fail")
 	}()
 	converter := basicConverter()
-	converter.GenPkg.conf.ConvSym = cltest.NewConvSym(config.SymbolEntry{
+	converter.GenPkg.conf.ConvSym = cltest.NewConvSym(cltest.SymbolEntry{
 		CppName:    "Foo",
 		MangleName: "Foo",
 		GoName:     "Foo",

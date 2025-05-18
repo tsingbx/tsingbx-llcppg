@@ -11,7 +11,6 @@ import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/cltest"
 	"github.com/goplus/llcppg/cl/internal/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/token"
 	"github.com/goplus/mod/gopmod"
@@ -192,7 +191,7 @@ func TestFuncDecl(t *testing.T) {
 					Ret:    &ast.BuiltinType{Kind: ast.Void},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -221,7 +220,7 @@ func Foo()
 					Ret: &ast.BuiltinType{Kind: ast.Void},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -269,7 +268,7 @@ import _ "unsafe"
 					Ret: nil,
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "invalidFunc",
 					MangleName: "invalidFunc",
@@ -288,7 +287,7 @@ import _ "unsafe"
 					Ret:    &ast.BuiltinType{Kind: ast.Void},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -336,7 +335,7 @@ func Foo()
 				},
 			},
 
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -375,7 +374,7 @@ func Foo(a uint16, b bool) c.Double
 					Ret: &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -414,7 +413,7 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 					Ret: &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -462,7 +461,7 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 					},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -501,7 +500,7 @@ func Foo(a *c.Uint, b *c.Long) *c.Double
 					},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -557,7 +556,7 @@ func Foo(a c.Pointer) c.Pointer
 					},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -596,7 +595,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					Ret: nil,
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -615,7 +614,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					Ret:    &ast.BuiltinType{Kind: ast.Bool, Flags: ast.Double},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -638,7 +637,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					Ret: nil,
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -665,7 +664,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -1036,7 +1035,7 @@ func TestRedef(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
 		ConvSym: cltest.NewConvSym(
-			config.SymbolEntry{
+			cltest.SymbolEntry{
 				CppName: "Bar", MangleName: "Bar", GoName: "Bar",
 			},
 		),
@@ -1208,7 +1207,7 @@ const Foo__1 c.Int = 0
 func TestRedefTypedef(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		ConvSym: cltest.NewConvSym(
-			config.SymbolEntry{
+			cltest.SymbolEntry{
 				CppName: "Foo", MangleName: "Foo", GoName: "Foo",
 			},
 		),
@@ -1240,7 +1239,7 @@ func TestRedefTypedef(t *testing.T) {
 func TestRedefineFunc(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		ConvSym: cltest.NewConvSym(
-			config.SymbolEntry{
+			cltest.SymbolEntry{
 				CppName: "Foo", MangleName: "Foo", GoName: "Foo",
 			},
 		),
@@ -1618,7 +1617,7 @@ func TestForwardDecl(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
 		ConvSym: cltest.NewConvSym(
-			config.SymbolEntry{
+			cltest.SymbolEntry{
 				CppName: "Bar", MangleName: "Bar", GoName: "Bar",
 			},
 		),
@@ -1685,7 +1684,7 @@ type Foo struct {
 type genDeclTestCase struct {
 	name        string
 	decl        ast.Decl
-	symbs       []config.SymbolEntry
+	symbs       []cltest.SymbolEntry
 	cppgconf    *llcppg.Config
 	expected    string
 	expectedErr string
@@ -1754,7 +1753,7 @@ func compareError(t *testing.T, err error, expectErr string) {
 
 func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 	if cfg.ConvSym == nil {
-		cfg.ConvSym = cltest.GetConvSym("")
+		cfg.ConvSym = cltest.NewConvSym()
 	}
 	if cfg.LibCommand == "" {
 		cfg.LibCommand = "${pkg-config --libs xxx}"
@@ -1797,8 +1796,8 @@ func TestTypeClean(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
 		ConvSym: cltest.NewConvSym(
-			config.SymbolEntry{CppName: "Func1", MangleName: "Func1", GoName: "Func1"},
-			config.SymbolEntry{CppName: "Func2", MangleName: "Func2", GoName: "Func2"},
+			cltest.SymbolEntry{CppName: "Func1", MangleName: "Func1", GoName: "Func1"},
+			cltest.SymbolEntry{CppName: "Func2", MangleName: "Func2", GoName: "Func2"},
 		),
 	})
 	if err != nil {

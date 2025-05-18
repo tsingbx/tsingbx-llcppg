@@ -26,7 +26,7 @@ func TestSubstObj(t *testing.T) {
 		Name:       "testpkg",
 		GenConf:    &gogen.Config{},
 		OutputDir:  "",
-		ConvSym:    cltest.GetConvSym(""),
+		ConvSym:    cltest.NewConvSym(),
 		LibCommand: "${pkg-config --libs xxx}",
 	})
 	if err != nil {
