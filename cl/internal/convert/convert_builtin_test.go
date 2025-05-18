@@ -26,6 +26,7 @@ func basicConverter() *Converter {
 		Libs: "${pkg-config --libs xxx}",
 	}
 	converter, err := NewConverter(&Config{
+		PkgPath:   ".",
 		PkgName:   "test",
 		ConvSym:   cltest.NewConvSym(),
 		OutputDir: tempDir,

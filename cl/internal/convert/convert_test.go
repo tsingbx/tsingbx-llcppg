@@ -221,6 +221,7 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 	}
 
 	cvt, err := convert.NewConverter(&convert.Config{
+		PkgPath:   ".",
 		PkgName:   cfg.Name,
 		ConvSym:   cltest.GetConvSym(symbPath),
 		OutputDir: outputDir,
@@ -314,6 +315,7 @@ func TestNewConvert(t *testing.T) {
 	}
 
 	_, err := convert.NewConverter(&convert.Config{
+		PkgPath: ".",
 		PkgName: "test",
 		ConvSym: cltest.NewConvSym(),
 

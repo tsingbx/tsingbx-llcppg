@@ -17,6 +17,7 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 }
 
 type ConvConfig struct {
+	PkgPath   string
 	PkgName   string
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
 	OutputDir string
@@ -33,6 +34,7 @@ type ConvConfig struct {
 
 func Convert(config *ConvConfig) (pkg Package, err error) {
 	cvt, err := convert.NewConverter(&convert.Config{
+		PkgPath:   config.PkgPath,
 		PkgName:   config.PkgName,
 		ConvSym:   config.ConvSym,
 		OutputDir: config.OutputDir,
