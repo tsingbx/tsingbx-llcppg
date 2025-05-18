@@ -41,7 +41,9 @@ func TestUnionDecl(t *testing.T) {
 		{
 			name: "union u{int a; long b; long c; bool f;};",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "u"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "u"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Union,
 					Fields: &ast.FieldList{
@@ -184,7 +186,9 @@ func TestFuncDecl(t *testing.T) {
 		{
 			name: "empty func",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: nil,
@@ -209,7 +213,9 @@ func Foo()
 		{
 			name: "variadic func",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -238,7 +244,9 @@ func Foo(__llgo_va_list ...interface{})
 		{
 			name: "func not in symbol table",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: nil,
@@ -254,7 +262,9 @@ import _ "unsafe"
 		{
 			name: "invalid function type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "invalidFunc"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "invalidFunc"},
+				},
 				MangledName: "invalidFunc",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -280,7 +290,9 @@ import _ "unsafe"
 		{
 			name: "explict void return",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: nil,
@@ -305,7 +317,9 @@ func Foo()
 		{
 			name: "builtin type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -356,7 +370,9 @@ func Foo(a uint16, b bool) c.Double
 		{
 			name: "c builtin type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -395,7 +411,9 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 		{
 			name: "basic decl with c type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -434,7 +452,9 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 		{
 			name: "pointer type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -482,7 +502,9 @@ func Foo(a *c.Uint, b *c.Long) *c.Double
 		{
 			name: "void *",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -521,7 +543,9 @@ func Foo(a c.Pointer) c.Pointer
 		{
 			name: "array",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -580,7 +604,9 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 		{
 			name: "error array param",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -607,7 +633,9 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 		{
 			name: "error return type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: nil,
@@ -626,7 +654,9 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 		{
 			name: "error nil param",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -649,10 +679,10 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 		{
 			name: "error receiver",
 			decl: &ast.FuncDecl{
-				DeclBase: ast.DeclBase{
-					Loc: &ast.Location{File: tempFile.File},
+				Object: ast.Object{
+					Loc:  &ast.Location{File: tempFile.File},
+					Name: &ast.Ident{Name: "foo"},
 				},
-				Name:        &ast.Ident{Name: "foo"},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -687,7 +717,9 @@ func TestStructDecl(t *testing.T) {
 		{
 			name: "empty struct",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag:    ast.Struct,
 					Fields: nil,
@@ -705,7 +737,9 @@ type Foo struct {
 		{
 			name: "invalid struct type",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "InvalidStruct"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "InvalidStruct"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -724,7 +758,9 @@ type Foo struct {
 		{
 			name: "struct field builtin type",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -770,7 +806,9 @@ type Foo struct {
 		{
 			name: "struct field pointer",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -829,7 +867,9 @@ type Foo struct {
 		{
 			name: "struct array field",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -878,7 +918,9 @@ type Foo struct {
 		{
 			name: "struct array field",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -927,7 +969,9 @@ type Foo struct {
 		{
 			name: "struct array field without len",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -950,7 +994,9 @@ type Foo struct {
 		{
 			name: "struct array field without len",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -986,7 +1032,9 @@ func TestTypedefFunc(t *testing.T) {
 		{
 			name: "typedef func",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.PointerType{
 					X: &ast.FuncType{
 						Params: &ast.FieldList{
@@ -1053,7 +1101,9 @@ func TestRedef(t *testing.T) {
 		},
 	}
 	pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: flds,
@@ -1061,7 +1111,9 @@ func TestRedef(t *testing.T) {
 	})
 
 	err = pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: flds,
@@ -1072,7 +1124,9 @@ func TestRedef(t *testing.T) {
 	}
 
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
-		Name:        &ast.Ident{Name: "Bar"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Bar"},
+		},
 		MangledName: "Bar",
 		Type: &ast.FuncType{
 			Ret: &ast.BuiltinType{
@@ -1085,7 +1139,9 @@ func TestRedef(t *testing.T) {
 	}
 
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
-		Name:        &ast.Ident{Name: "Bar"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Bar"},
+		},
 		MangledName: "Bar",
 		Type:        &ast.FuncType{},
 	})
@@ -1094,7 +1150,9 @@ func TestRedef(t *testing.T) {
 	}
 
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
-		Name:        &ast.Ident{Name: "Bar"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Bar"},
+		},
 		MangledName: "Bar",
 		Type:        &ast.FuncType{},
 	})
@@ -1144,7 +1202,9 @@ const MACRO_FOO = 1
 
 func TestRedefEnum(t *testing.T) {
 	typDecl := &ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag: ast.Struct,
 			Fields: &ast.FieldList{
@@ -1162,7 +1222,9 @@ func TestRedefEnum(t *testing.T) {
 		pkg.SetCurFile(tempFile)
 		pkg.NewTypeDecl(typDecl)
 		err = pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
-			Name: &ast.Ident{Name: "Foo"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "Foo"},
+			},
 			Type: &ast.EnumType{},
 		})
 		if err == nil {
@@ -1178,7 +1240,9 @@ func TestRedefEnum(t *testing.T) {
 		pkg.SetCurFile(tempFile)
 		pkg.NewTypeDecl(typDecl)
 		pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
-			Name: nil,
+			Object: ast.Object{
+				Name: nil,
+			},
 			Type: &ast.EnumType{
 				Items: []*ast.EnumItem{
 					{Name: &ast.Ident{Name: "Foo"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
@@ -1218,7 +1282,9 @@ func TestRedefTypedef(t *testing.T) {
 	pkg.SetCurFile(tempFile)
 
 	err = pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
@@ -1228,7 +1294,9 @@ func TestRedefTypedef(t *testing.T) {
 		t.Fatal("NewTypeDecl failed", err)
 	}
 	err = pkg.NewTypedefDecl(&ast.TypedefDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.Ident{Name: "Foo"},
 	})
 	if err == nil {
@@ -1250,7 +1318,9 @@ func TestRedefineFunc(t *testing.T) {
 	pkg.SetCurFile(tempFile)
 
 	err = pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
@@ -1260,7 +1330,9 @@ func TestRedefineFunc(t *testing.T) {
 		t.Fatal("NewTypeDecl failed", err)
 	}
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
-		Name:        &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		MangledName: "Foo",
 		Type:        &ast.FuncType{},
 	})
@@ -1275,7 +1347,9 @@ func TestTypedef(t *testing.T) {
 		{
 			name: "typedef double",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "DOUBLE"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "DOUBLE"},
+				},
 				Type: &ast.BuiltinType{
 					Kind:  ast.Float,
 					Flags: ast.Double,
@@ -1295,7 +1369,9 @@ type DOUBLE c.Double`,
 		{
 			name: "invalid typedef",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "INVALID"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "INVALID"},
+				},
 				Type: &ast.BuiltinType{
 					Kind:  ast.Bool,
 					Flags: ast.Double,
@@ -1307,7 +1383,9 @@ type DOUBLE c.Double`,
 		{
 			name: "typedef int",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "INT"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "INT"},
+				},
 				Type: &ast.BuiltinType{
 					Kind: ast.Int,
 				},
@@ -1326,7 +1404,9 @@ type INT c.Int
 		{
 			name: "typedef array",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "name"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "name"},
+				},
 				Type: &ast.ArrayType{
 					Elt: &ast.BuiltinType{
 						Kind:  ast.Char,
@@ -1349,7 +1429,9 @@ type Name [5]c.Char`,
 		{
 			name: "typedef pointer",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "ctx"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "ctx"},
+				},
 				Type: &ast.PointerType{
 					X: &ast.BuiltinType{
 						Kind: ast.Void,
@@ -1371,7 +1453,9 @@ type Ctx c.Pointer`,
 		{
 			name: "typedef pointer",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "name"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "name"},
+				},
 				Type: &ast.PointerType{
 					X: &ast.BuiltinType{
 						Kind:  ast.Char,
@@ -1393,7 +1477,9 @@ type Name *c.Char
 		{
 			name: "typedef invalid pointer",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "name"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "name"},
+				},
 				Type: &ast.PointerType{
 					X: &ast.BuiltinType{
 						Kind:  ast.Char,
@@ -1417,7 +1503,9 @@ func TestEnumDecl(t *testing.T) {
 		{
 			name: "enum",
 			decl: &ast.EnumTypeDecl{
-				Name: &ast.Ident{Name: "Color"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Color"},
+				},
 				Type: &ast.EnumType{
 					Items: []*ast.EnumItem{
 						{Name: &ast.Ident{Name: "Red"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
@@ -1446,7 +1534,9 @@ const (
 		{
 			name: "anonymous enum",
 			decl: &ast.EnumTypeDecl{
-				Name: nil,
+				Object: ast.Object{
+					Name: nil,
+				},
 				Type: &ast.EnumType{
 					Items: []*ast.EnumItem{
 						{Name: &ast.Ident{Name: "red"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
@@ -1472,7 +1562,6 @@ const (
 		{
 			name: "invalid enum item",
 			decl: &ast.EnumTypeDecl{
-				Name: nil,
 				Type: &ast.EnumType{
 					Items: []*ast.EnumItem{
 						{Name: &ast.Ident{Name: "red"}, Value: &ast.ArrayType{Elt: &ast.BuiltinType{Kind: ast.Bool}}},
@@ -1499,10 +1588,10 @@ func TestIdentRefer(t *testing.T) {
 		FileType: llcppg.Third,
 	})
 	pkg.NewTypedefDecl(&ast.TypedefDecl{
-		DeclBase: ast.DeclBase{
-			Loc: &ast.Location{File: "/path/to/stdio.h"},
+		Object: ast.Object{
+			Loc:  &ast.Location{File: "/path/to/stdio.h"},
+			Name: &ast.Ident{Name: "undefType"},
 		},
-		Name: &ast.Ident{Name: "undefType"},
 		Type: &ast.BuiltinType{
 			Kind:  ast.Char,
 			Flags: ast.Signed,
@@ -1514,10 +1603,10 @@ func TestIdentRefer(t *testing.T) {
 	})
 	t.Run("undef sys ident ref", func(t *testing.T) {
 		err := pkg.NewTypeDecl(&ast.TypeDecl{
-			DeclBase: ast.DeclBase{
-				Loc: &ast.Location{File: "/path/to/notsys.h"},
+			Object: ast.Object{
+				Loc:  &ast.Location{File: "/path/to/notsys.h"},
+				Name: &ast.Ident{Name: "Foo"},
 			},
-			Name: &ast.Ident{Name: "Foo"},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
 				Fields: &ast.FieldList{
@@ -1538,7 +1627,9 @@ func TestIdentRefer(t *testing.T) {
 	})
 	t.Run("undef tag ident ref", func(t *testing.T) {
 		err := pkg.NewTypeDecl(&ast.TypeDecl{
-			Name: &ast.Ident{Name: "Bar"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "Bar"},
+			},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
 				Fields: &ast.FieldList{
@@ -1567,7 +1658,9 @@ func TestIdentRefer(t *testing.T) {
 		}
 		pkg.SetCurFile(tempFile)
 		err = pkg.NewTypedefDecl(&ast.TypedefDecl{
-			Name: &ast.Ident{Name: "typ_int8_t"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "typ_int8_t"},
+			},
 			Type: &ast.BuiltinType{
 				Kind:  ast.Char,
 				Flags: ast.Signed,
@@ -1577,7 +1670,9 @@ func TestIdentRefer(t *testing.T) {
 			t.Fatal(err)
 		}
 		err = pkg.NewTypeDecl(&ast.TypeDecl{
-			Name: &ast.Ident{Name: "Foo"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "Foo"},
+			},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
 				Fields: &ast.FieldList{
@@ -1628,7 +1723,9 @@ func TestForwardDecl(t *testing.T) {
 	pkg.SetCurFile(tempFile)
 
 	forwardDecl := &ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
@@ -1642,7 +1739,9 @@ func TestForwardDecl(t *testing.T) {
 
 	// complete decl
 	err = pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag: ast.Struct,
 			Fields: &ast.FieldList{
@@ -1812,7 +1911,9 @@ func TestTypeClean(t *testing.T) {
 		{
 			addType: func() {
 				pkg.NewTypeDecl(&ast.TypeDecl{
-					Name: &ast.Ident{Name: "Foo1"},
+					Object: ast.Object{
+						Name: &ast.Ident{Name: "Foo1"},
+					},
 					Type: &ast.RecordType{Tag: ast.Struct},
 				})
 			},
@@ -1823,7 +1924,9 @@ func TestTypeClean(t *testing.T) {
 		{
 			addType: func() {
 				pkg.NewTypedefDecl(&ast.TypedefDecl{
-					Name: &ast.Ident{Name: "Bar2"},
+					Object: ast.Object{
+						Name: &ast.Ident{Name: "Bar2"},
+					},
 					Type: &ast.BuiltinType{Kind: ast.Int},
 				})
 			},
@@ -1834,8 +1937,11 @@ func TestTypeClean(t *testing.T) {
 		{
 			addType: func() {
 				pkg.NewFuncDecl(&ast.FuncDecl{
-					Name: &ast.Ident{Name: "Func1"}, MangledName: "Func1",
-					Type: &ast.FuncType{Params: nil, Ret: &ast.BuiltinType{Kind: ast.Void}},
+					Object: ast.Object{
+						Name: &ast.Ident{Name: "Func1"},
+					},
+					MangledName: "Func1",
+					Type:        &ast.FuncType{Params: nil, Ret: &ast.BuiltinType{Kind: ast.Void}},
 				})
 			},
 			headerFile: "/path/to/file3.h",

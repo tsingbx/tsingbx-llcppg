@@ -131,19 +131,19 @@ func (p *Converter) Process() {
 	for _, decl := range p.Pkg.File.Decls {
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
-			processDecl(decl.DeclBase.Loc.File, func() error {
+			processDecl(decl.Object.Loc.File, func() error {
 				return p.GenPkg.NewTypeDecl(decl)
 			})
 		case *ast.EnumTypeDecl:
-			processDecl(decl.DeclBase.Loc.File, func() error {
+			processDecl(decl.Object.Loc.File, func() error {
 				return p.GenPkg.NewEnumTypeDecl(decl)
 			})
 		case *ast.TypedefDecl:
-			processDecl(decl.DeclBase.Loc.File, func() error {
+			processDecl(decl.Object.Loc.File, func() error {
 				return p.GenPkg.NewTypedefDecl(decl)
 			})
 		case *ast.FuncDecl:
-			processDecl(decl.DeclBase.Loc.File, func() error {
+			processDecl(decl.Object.Loc.File, func() error {
 				return p.GenPkg.NewFuncDecl(decl)
 			})
 		}
