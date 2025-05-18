@@ -118,7 +118,6 @@ func MarshalASTDecl(decl ast.Decl) *cjson.JSON {
 	case *ast.TypeDecl:
 		root.SetItem(c.Str("_Type"), stringField("TypeDecl"))
 		MarshalObject(d.Object, root)
-		root.SetItem(c.Str("Name"), MarshalASTExpr(d.Name))
 		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
 	}
 	return root
