@@ -160,10 +160,6 @@ func testFromDir(t *testing.T, relDir string, gen bool) {
 	}
 }
 
-func getConvSym(symbFile string) func(mangleName string) (goName string, err error) {
-	return cltest.GetConvSym(symbFile)
-}
-
 func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T, pkg *convert.Package, converter *convert.Converter)) {
 	confPath := filepath.Join(dir, "conf")
 	cfgPath := filepath.Join(confPath, llcppg.LLCPPG_CFG)
@@ -226,7 +222,7 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 
 	cvt, err := convert.NewConverter(&convert.Config{
 		PkgName:   cfg.Name,
-		ConvSym:   getConvSym(symbPath),
+		ConvSym:   cltest.GetConvSym(symbPath),
 		CfgFile:   flagedCfgPath,
 		OutputDir: outputDir,
 		Pkg:       convertPkg,
@@ -321,7 +317,7 @@ func TestNewConvert(t *testing.T) {
 
 	_, err = convert.NewConverter(&convert.Config{
 		PkgName: "test",
-		ConvSym: getConvSym(""),
+		ConvSym: cltest.NewConvSym(),
 		CfgFile: cfgPath,
 	})
 	if err != nil {

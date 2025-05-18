@@ -8,6 +8,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/internal/cltest"
 	llcppg "github.com/goplus/llcppg/config"
 	ctoken "github.com/goplus/llcppg/token"
 )
@@ -21,7 +22,7 @@ func emptyPkg() *Package {
 		Name:       "testpkg",
 		GenConf:    &gogen.Config{},
 		OutputDir:  "",
-		ConvSym:    getConvSym(""),
+		ConvSym:    cltest.NewConvSym(),
 		LibCommand: "${pkg-config --libs xxx}",
 	})
 	if err != nil {
@@ -161,7 +162,7 @@ func TestTrimPrefixes(t *testing.T) {
 		Name:         "testpkg",
 		GenConf:      &gogen.Config{},
 		OutputDir:    "",
-		ConvSym:      getConvSym(""),
+		ConvSym:      cltest.NewConvSym(),
 		TrimPrefixes: []string{"prefix1", "prefix2"},
 		LibCommand:   "${pkg-config --libs xxx}",
 	})

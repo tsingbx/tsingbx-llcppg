@@ -1754,7 +1754,7 @@ func compareError(t *testing.T, err error, expectErr string) {
 
 func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 	if cfg.ConvSym == nil {
-		cfg.ConvSym = cltest.GetConvSym("")
+		cfg.ConvSym = cltest.NewConvSym()
 	}
 	if cfg.LibCommand == "" {
 		cfg.LibCommand = "${pkg-config --libs xxx}"

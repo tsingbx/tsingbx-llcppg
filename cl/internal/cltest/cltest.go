@@ -10,10 +10,11 @@ func NewConvSym(syms ...cfg.SymbolEntry) func(mangleName string) (goName string,
 
 func GetConvSym(symbFile string) func(mangleName string) (goName string, err error) {
 	if symbFile == "" {
-		return NewConvSym()
+		panic("symbol file not set")
 	}
 	symbTable, err := cfg.NewSymbolTable(symbFile)
 	if err != nil {
+		// NOTE(xsw): not a good idea, but make sense in test cases
 		return NewConvSym()
 	}
 	return fromSymbTable(symbTable)
