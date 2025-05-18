@@ -3,7 +3,6 @@ package cltest
 import (
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
-	llcppg "github.com/goplus/llcppg/config"
 )
 
 type SymbolEntry = cfg.SymbolEntry
@@ -34,6 +33,7 @@ func fromSymbTable(symbTable *cfg.SymbolTable) func(name *ast.Object, mangleName
 	}
 }
 
+/* TODO(xsw): remove this
 func GetCppgConfig(cfgFile string) (conf *llcppg.Config) {
 	conf, err := cfg.GetCppgCfgFromPath(cfgFile)
 	if err != nil {
@@ -42,3 +42,4 @@ func GetCppgConfig(cfgFile string) (conf *llcppg.Config) {
 	}
 	return
 }
+*/

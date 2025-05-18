@@ -24,7 +24,7 @@ type ConvConfig struct {
 	Pkg *llconfig.Pkg
 
 	// CfgFile   string // llcppg.cfg
-	Pubs           map[string]string // llcppg.pub
+	TypeMap        map[string]string // llcppg.pub
 	Deps           []string          // dependent packages
 	TrimPrefixes   []string
 	Libs           string
@@ -38,7 +38,7 @@ func Convert(config *ConvConfig) (pkg Package, err error) {
 		OutputDir: config.OutputDir,
 		Pkg:       config.Pkg,
 
-		Pubs:           config.Pubs,
+		TypeMap:        config.TypeMap,
 		Deps:           config.Deps,
 		TrimPrefixes:   config.TrimPrefixes,
 		Libs:           config.Libs,
