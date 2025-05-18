@@ -24,6 +24,7 @@ import (
 
 	"github.com/goplus/gogen"
 	args "github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
+	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
@@ -32,7 +33,6 @@ import (
 )
 
 func main() {
-
 	ags, remainArgs := args.ParseArgs(os.Args[1:], "-", nil)
 
 	if ags.Help {
@@ -81,7 +81,7 @@ func main() {
 
 	pkg, err := cl.Convert(&cl.ConvConfig{
 		PkgName: conf.Name,
-		ConvSym: func(mangleName string) (goName string, err error) {
+		ConvSym: func(name *ast.Object, mangleName string) (goName string, err error) {
 			item, err := symbTable.LookupSymbol(mangleName)
 			if err != nil {
 				return

@@ -1,6 +1,7 @@
 package cl
 
 import (
+	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/convert"
 	llconfig "github.com/goplus/llcppg/config"
 )
@@ -17,7 +18,7 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 
 type ConvConfig struct {
 	PkgName   string
-	ConvSym   func(mangleName string) (goName string, err error)
+	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
 	CfgFile   string // llcppg.cfg
 	OutputDir string
 

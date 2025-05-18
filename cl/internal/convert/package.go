@@ -11,7 +11,6 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
 	ctoken "github.com/goplus/llcppg/token"
 	"github.com/goplus/mod/gopmod"
@@ -52,7 +51,7 @@ type PackageConfig struct {
 	PkgBase
 	Name           string // current package name
 	OutputDir      string
-	ConvSym        func(mangleName string) (goName string, err error)
+	ConvSym        func(name *ast.Object, mangleName string) (goName string, err error)
 	GenConf        *gogen.Config
 	TrimPrefixes   []string
 	LibCommand     string // use to gen link command like $(pkg-config --libs xxx)
@@ -130,8 +129,8 @@ func (p *Package) markUseDeps(pkgMgr *PkgDepLoader) {
 	}
 }
 
-func (p *Package) LookupSymbol(mangleName config.MangleNameType) (*GoFuncSpec, error) {
-	goName, err := p.conf.ConvSym(mangleName)
+func (p *Package) LookupFunc(fn *ast.FuncDecl) (*GoFuncSpec, error) {
+	goName, err := p.conf.ConvSym(&fn.Object, fn.MangledName)
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +304,7 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		log.Printf("NewFuncDecl: %v\n", funcDecl.Name)
 	}
 
-	fnSpec, err := p.LookupSymbol(funcDecl.MangledName)
+	fnSpec, err := p.LookupFunc(funcDecl)
 	if err != nil {
 		// not gen the function not in the symbolmap
 		log.Printf("NewFuncDecl: %s not in the symbolmap: %s", funcDecl.Name.Name, err.Error())
