@@ -127,8 +127,8 @@ func MarshalASTDecl(decl ast.Decl) *cjson.JSON {
 func MarshalObject(decl ast.Object, root *cjson.JSON) {
 	root.SetItem(c.Str("Loc"), MarshalLocation(decl.Loc))
 	root.SetItem(c.Str("Doc"), MarshalASTExpr(decl.Doc))
-	root.SetItem(c.Str("Name"), MarshalASTExpr(decl.Name))
 	root.SetItem(c.Str("Parent"), MarshalASTExpr(decl.Parent))
+	root.SetItem(c.Str("Name"), MarshalASTExpr(decl.Name))
 }
 
 func MarshalLocation(loc *ast.Location) *cjson.JSON {
