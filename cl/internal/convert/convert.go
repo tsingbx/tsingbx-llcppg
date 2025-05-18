@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/ast"
-
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	llconfig "github.com/goplus/llcppg/config"
 )
@@ -25,7 +24,7 @@ func SetDebug(dbgFlags dbgFlags) {
 
 type Config struct {
 	PkgName   string
-	ConvSym   func(mangleName string) (goName string, err error)
+	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
 	CfgFile   string // llcppg.cfg
 	OutputDir string
 
