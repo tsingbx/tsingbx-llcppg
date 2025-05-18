@@ -92,7 +92,7 @@ func NewPackage(config *PackageConfig) (*Package, error) {
 		return nil, fmt.Errorf("failed to load mod: %w", err)
 	}
 
-	p.PkgInfo = NewPkgInfo(config.PkgPath, config.OutputDir, config.Deps, config.Pubs)
+	p.PkgInfo = NewPkgInfo(config.PkgPath, config.Deps, config.Pubs)
 
 	pkgManager := NewPkgDepLoader(mod, p.p)
 	err = pkgManager.InitDeps(p.PkgInfo)

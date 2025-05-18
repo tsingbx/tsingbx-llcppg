@@ -2022,7 +2022,7 @@ func TestImport(t *testing.T) {
 			"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpath",
 			"github.com/goplus/llcppg/cl/internal/convert/testdata/partfinddep",
 		}
-		p.PkgInfo = convert.NewPkgInfo(".", ".", deps, nil)
+		p.PkgInfo = convert.NewPkgInfo(".", deps, nil)
 		loader := convert.NewPkgDepLoader(mod, genPkg)
 		depPkgs, err := loader.LoadDeps(p.PkgInfo)
 		p.PkgInfo.Deps = depPkgs
