@@ -23,6 +23,7 @@ func SetDebug(dbgFlags dbgFlags) {
 }
 
 type Config struct {
+	PkgPath   string
 	PkgName   string
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
 	OutputDir string
@@ -73,7 +74,7 @@ type Converter struct {
 func NewConverter(config *Config) (*Converter, error) {
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
-			PkgPath: ".",
+			PkgPath: config.PkgPath,
 			Deps:    config.Deps,
 			Pubs:    config.TypeMap,
 		},
