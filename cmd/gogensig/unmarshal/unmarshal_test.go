@@ -1499,7 +1499,7 @@ func TestUnmarshalErrors(t *testing.T) {
 			name:        "unmarshalScopingExpr - Unexpected X",
 			fn:          unmarshal.ScopingExpr,
 			input:       `{"Parent": {"_Type": "Ident", "Name": "test"}, "X": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
-			expectedErr: "unmarshal error in ScopingExpr: got *ast.Token, want ast.Expr",
+			expectedErr: "unmarshal error in ScopingExpr: got *ast.Token, want ast.Ident",
 		},
 
 		// unmarshalEnumItem errors
