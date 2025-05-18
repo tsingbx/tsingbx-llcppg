@@ -4,13 +4,11 @@ import (
 	"errors"
 	"go/types"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/cltest"
-	"github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
 )
 
@@ -27,17 +25,9 @@ func basicConverter() *Converter {
 	cfg := &llcppg.Config{
 		Libs: "${pkg-config --libs xxx}",
 	}
-	// todo: remove this,convert not read llcppg.cfg directly
-	cfgPath := filepath.Join(tempDir, llcppg.LLCPPG_CFG)
-	err = config.CreateJSONFile(cfgPath, cfg)
-	if err != nil {
-		panic(err)
-	}
-
 	converter, err := NewConverter(&Config{
 		PkgName:   "test",
 		ConvSym:   cltest.NewConvSym(),
-		CfgFile:   cfgPath,
 		OutputDir: tempDir,
 		Pkg: &llcppg.Pkg{
 			File: &ast.File{
@@ -45,6 +35,11 @@ func basicConverter() *Converter {
 			},
 			FileMap: map[string]*llcppg.FileInfo{},
 		},
+		Pubs:           cfg.TypeMap,
+		Deps:           cfg.Deps,
+		TrimPrefixes:   cfg.TrimPrefixes,
+		Libs:           cfg.Libs,
+		KeepUnderScore: cfg.KeepUnderScore,
 	})
 	if err != nil {
 		panic(err)

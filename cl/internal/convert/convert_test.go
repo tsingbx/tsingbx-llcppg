@@ -223,11 +223,15 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 	cvt, err := convert.NewConverter(&convert.Config{
 		PkgName:   cfg.Name,
 		ConvSym:   cltest.GetConvSym(symbPath),
-		CfgFile:   flagedCfgPath,
 		OutputDir: outputDir,
 		Pkg:       convertPkg,
-	})
 
+		Pubs:           cfg.TypeMap,
+		Deps:           cfg.Deps,
+		TrimPrefixes:   cfg.TrimPrefixes,
+		Libs:           cfg.Libs,
+		KeepUnderScore: cfg.KeepUnderScore,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -308,17 +312,16 @@ func TestNewConvert(t *testing.T) {
 	cfg := &llcppg.Config{
 		Libs: "${pkg-config --libs xxx}",
 	}
-	cfgPath := filepath.Join(os.TempDir(), llcppg.LLCPPG_CFG)
-	err := config.CreateJSONFile(cfgPath, cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(cfgPath)
 
-	_, err = convert.NewConverter(&convert.Config{
+	_, err := convert.NewConverter(&convert.Config{
 		PkgName: "test",
 		ConvSym: cltest.NewConvSym(),
-		CfgFile: cfgPath,
+
+		Pubs:           cfg.TypeMap,
+		Deps:           cfg.Deps,
+		TrimPrefixes:   cfg.TrimPrefixes,
+		Libs:           cfg.Libs,
+		KeepUnderScore: cfg.KeepUnderScore,
 	})
 	if err != nil {
 		t.Fatal("NewAstConvert Fail")

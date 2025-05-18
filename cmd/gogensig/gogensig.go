@@ -88,8 +88,12 @@ func main() {
 			}
 			return item.GoName, nil
 		},
-		CfgFile: filepath.Join(wd, cfgFile),
-		Pkg:     convertPkg,
+		Pkg:            convertPkg,
+		Pubs:           conf.TypeMap,
+		Deps:           conf.Deps,
+		TrimPrefixes:   conf.TrimPrefixes,
+		Libs:           conf.Libs,
+		KeepUnderScore: conf.KeepUnderScore,
 	})
 	check(err)
 

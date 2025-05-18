@@ -19,18 +19,30 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 type ConvConfig struct {
 	PkgName   string
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
-	CfgFile   string // llcppg.cfg
 	OutputDir string
 
 	Pkg *llconfig.Pkg
+
+	// CfgFile   string // llcppg.cfg
+	Pubs           map[string]string // llcppg.pub
+	Deps           []string          // dependent packages
+	TrimPrefixes   []string
+	Libs           string
+	KeepUnderScore bool
 }
 
 func Convert(config *ConvConfig) (pkg Package, err error) {
 	cvt, err := convert.NewConverter(&convert.Config{
-		PkgName: config.PkgName,
-		ConvSym: config.ConvSym,
-		CfgFile: config.CfgFile,
-		Pkg:     config.Pkg,
+		PkgName:   config.PkgName,
+		ConvSym:   config.ConvSym,
+		OutputDir: config.OutputDir,
+		Pkg:       config.Pkg,
+
+		Pubs:           config.Pubs,
+		Deps:           config.Deps,
+		TrimPrefixes:   config.TrimPrefixes,
+		Libs:           config.Libs,
+		KeepUnderScore: config.KeepUnderScore,
 	})
 	if err != nil {
 		return
