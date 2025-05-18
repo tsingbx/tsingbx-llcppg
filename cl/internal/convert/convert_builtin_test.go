@@ -91,7 +91,7 @@ func TestProcessWithError(t *testing.T) {
 		checkPanic(t, recover(), "NewTypedefDecl: Foo fail")
 	}()
 	converter := basicConverter()
-	converter.GenPkg.conf.ConvSym = cltest.NewConvSym(config.SymbolEntry{
+	converter.GenPkg.conf.ConvSym = cltest.NewConvSym(cltest.SymbolEntry{
 		CppName:    "Foo",
 		MangleName: "Foo",
 		GoName:     "Foo",

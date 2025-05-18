@@ -4,7 +4,9 @@ import (
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 )
 
-func NewConvSym(syms ...cfg.SymbolEntry) func(mangleName string) (goName string, err error) {
+type SymbolEntry = cfg.SymbolEntry
+
+func NewConvSym(syms ...SymbolEntry) func(mangleName string) (goName string, err error) {
 	return fromSymbTable(cfg.CreateSymbolTable(syms))
 }
 
