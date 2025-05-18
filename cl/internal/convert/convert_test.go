@@ -64,13 +64,13 @@ func TestSysToPkg(t *testing.T) {
 		for _, decl := range cvt.Pkg.File.Decls {
 			switch decl := decl.(type) {
 			case *ast.TypeDecl:
-				inFileMap(decl.DeclBase.Loc.File)
+				inFileMap(decl.Object.Loc.File)
 			case *ast.EnumTypeDecl:
-				inFileMap(decl.DeclBase.Loc.File)
+				inFileMap(decl.Object.Loc.File)
 			case *ast.TypedefDecl:
-				inFileMap(decl.DeclBase.Loc.File)
+				inFileMap(decl.Object.Loc.File)
 			case *ast.FuncDecl:
-				inFileMap(decl.DeclBase.Loc.File)
+				inFileMap(decl.Object.Loc.File)
 			}
 		}
 	})

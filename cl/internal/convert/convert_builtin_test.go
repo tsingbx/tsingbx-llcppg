@@ -60,7 +60,7 @@ func TestPkgFail(t *testing.T) {
 			checkPanic(t, recover(), "File \"noexist.h\" not found in FileMap")
 		}()
 		converter.Pkg.File.Decls = append(converter.Pkg.File.Decls, &ast.TypeDecl{
-			DeclBase: ast.DeclBase{
+			Object: ast.Object{
 				Loc: &ast.Location{
 					File: "noexist.h",
 				},
@@ -96,18 +96,18 @@ func TestProcessWithError(t *testing.T) {
 		MangleName: "Foo",
 		GoName:     "Foo",
 	})
-	declBase := ast.DeclBase{
-		Loc: &ast.Location{
-			File: "exist.h",
-		},
+	declLoc := &ast.Location{
+		File: "exist.h",
 	}
 	converter.Pkg.File.Decls = []ast.Decl{
 		&ast.FuncDecl{
-			DeclBase:    declBase,
-			MangledName: "Foo",
-			Name: &ast.Ident{
-				Name: "Foo",
+			Object: ast.Object{
+				Loc: declLoc,
+				Name: &ast.Ident{
+					Name: "Foo",
+				},
 			},
+			MangledName: "Foo",
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
 					List: []*ast.Field{
@@ -118,9 +118,11 @@ func TestProcessWithError(t *testing.T) {
 			},
 		},
 		&ast.TypedefDecl{
-			DeclBase: declBase,
-			Name: &ast.Ident{
-				Name: "Foo",
+			Object: ast.Object{
+				Loc: declLoc,
+				Name: &ast.Ident{
+					Name: "Foo",
+				},
 			},
 			Type: &ast.Ident{
 				Name: "Foo",

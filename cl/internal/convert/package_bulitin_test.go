@@ -43,7 +43,9 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 		pkg.locMap.Add(&ast.Ident{Name: "Bar"}, &ast.Location{File: "Bar"})
 		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
 		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
-			Name: &ast.Ident{Name: "Foo"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "Foo"},
+			},
 			Type: &ast.TagExpr{
 				Name: &ast.Ident{Name: "Bar"},
 			},
@@ -84,10 +86,10 @@ func TestRedefPubName(t *testing.T) {
 	pkg.p.NewFuncDecl(token.NoPos, "Bar", types.NewSignatureType(nil, nil, nil, types.NewTuple(), types.NewTuple(), false))
 	t.Run("enum type redefine pubname", func(t *testing.T) {
 		err := pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
-			DeclBase: ast.DeclBase{
-				Loc: &ast.Location{File: "temp.h"},
+			Object: ast.Object{
+				Loc:  &ast.Location{File: "temp.h"},
+				Name: nil,
 			},
-			Name: nil,
 			Type: &ast.EnumType{
 				Items: []*ast.EnumItem{
 					{Name: &ast.Ident{Name: "Foo"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
