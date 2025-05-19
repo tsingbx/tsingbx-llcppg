@@ -104,7 +104,7 @@ func NewPackage(config *PackageConfig) (*Package, error) {
 		return nil, fmt.Errorf("failed to init link: %w", err)
 	}
 	p.markUseDeps(pkgManager)
-	p.cvt = NewConv(p)
+	p.cvt = NewConv(p.p, p.p.Types, p.lookupType)
 	return p, nil
 }
 
@@ -383,6 +383,23 @@ func (p *Package) lookupOrigin(name string, pubName string) types.Object {
 
 func (p *Package) lookupPub(_ string, pubName string) types.Object {
 	return p.Lookup(pubName)
+}
+
+// lookupType looks up a type in the current package.
+// If the type is from a third-party header file and not yet converted, it will return an error.
+// When the type doesn't exist, it creates an implicit forward declaration.
+func (p *Package) lookupType(name string) (types.Type, error) {
+	obj := p.Lookup(name)
+	if obj != nil {
+		return obj.Type(), nil
+	}
+	// in third hfile but not have converted go type
+	if path, ok := p.locMap.Lookup(name); ok {
+		return nil, fmt.Errorf("convert %s first, declare converted package in llcppg.cfg deps for load [%s]. See: https://github.com/goplus/llcppg?tab=readme-ov-file#dependency", path, name)
+	}
+	// implicit forward decl
+	decl := p.handleImplicitForwardDecl(name)
+	return decl.Type(), nil
 }
 
 // NewTypeDecl converts C/C++ type declarations to Go.
