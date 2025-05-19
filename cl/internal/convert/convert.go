@@ -23,12 +23,12 @@ func SetDebug(dbgFlags dbgFlags) {
 }
 
 type Config struct {
+	OutputDir string
 	PkgPath   string
 	PkgName   string
+	Pkg       *ast.File
+	FileMap   map[string]*llconfig.FileInfo
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
-	OutputDir string
-
-	Pkg *llconfig.Pkg
 
 	// CfgFile   string // llcppg.cfg
 	TypeMap        map[string]string // llcppg.pub
@@ -66,9 +66,10 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 }
 
 type Converter struct {
-	Pkg    *llconfig.Pkg
-	GenPkg *Package
-	Conf   *Config
+	Pkg     *ast.File
+	FileMap map[string]*llconfig.FileInfo
+	GenPkg  *Package
+	Conf    *Config
 }
 
 func NewConverter(config *Config) (*Converter, error) {
@@ -89,9 +90,10 @@ func NewConverter(config *Config) (*Converter, error) {
 		return nil, err
 	}
 	return &Converter{
-		GenPkg: pkg,
-		Pkg:    config.Pkg,
-		Conf:   config,
+		Pkg:     config.Pkg,
+		FileMap: config.FileMap,
+		GenPkg:  pkg,
+		Conf:    config,
 	}, nil
 }
 
@@ -109,13 +111,13 @@ func (p *Converter) Process() {
 		}
 	}
 
-	for _, macro := range p.Pkg.File.Macros {
+	for _, macro := range p.Pkg.Macros {
 		processDecl(macro.Loc.File, func() error {
 			return p.GenPkg.NewMacro(macro)
 		})
 	}
 
-	for _, decl := range p.Pkg.File.Decls {
+	for _, decl := range p.Pkg.Decls {
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
 			processDecl(decl.Object.Loc.File, func() error {
@@ -145,10 +147,10 @@ func (p *Converter) Complete() {
 }
 
 func (p *Converter) setCurFile(file string) {
-	info, exist := p.Pkg.FileMap[file]
+	info, exist := p.FileMap[file]
 	if !exist {
 		var availableFiles []string
-		for f := range p.Pkg.FileMap {
+		for f := range p.FileMap {
 			availableFiles = append(availableFiles, f)
 		}
 		log.Panicf("File %q not found in FileMap. Available files:\n%s",

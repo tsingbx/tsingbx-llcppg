@@ -17,12 +17,12 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 }
 
 type ConvConfig struct {
+	OutputDir string
 	PkgPath   string
 	PkgName   string
+	Pkg       *ast.File
+	FileMap   map[string]*llconfig.FileInfo
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
-	OutputDir string
-
-	Pkg *llconfig.Pkg
 
 	// CfgFile   string // llcppg.cfg
 	TypeMap        map[string]string // llcppg.pub
@@ -34,11 +34,12 @@ type ConvConfig struct {
 
 func Convert(config *ConvConfig) (pkg Package, err error) {
 	cvt, err := convert.NewConverter(&convert.Config{
+		OutputDir: config.OutputDir,
 		PkgPath:   config.PkgPath,
 		PkgName:   config.PkgName,
-		ConvSym:   config.ConvSym,
-		OutputDir: config.OutputDir,
 		Pkg:       config.Pkg,
+		FileMap:   config.FileMap,
+		ConvSym:   config.ConvSym,
 
 		TypeMap:        config.TypeMap,
 		Deps:           config.Deps,

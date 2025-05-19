@@ -56,12 +56,12 @@ func TestSysToPkg(t *testing.T) {
 	testFrom(t, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
 		// check FileMap's info is right
 		inFileMap := func(file string) {
-			_, ok := cvt.Pkg.FileMap[file]
+			_, ok := cvt.FileMap[file]
 			if !ok {
 				t.Fatal("File not found in FileMap:", file)
 			}
 		}
-		for _, decl := range cvt.Pkg.File.Decls {
+		for _, decl := range cvt.Pkg.Decls {
 			switch decl := decl.(type) {
 			case *ast.TypeDecl:
 				inFileMap(decl.Object.Loc.File)
@@ -225,7 +225,8 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		PkgName:   cfg.Name,
 		ConvSym:   cltest.GetConvSym(symbPath),
 		OutputDir: outputDir,
-		Pkg:       convertPkg,
+		Pkg:       convertPkg.File,
+		FileMap:   convertPkg.FileMap,
 
 		TypeMap:        cfg.TypeMap,
 		Deps:           cfg.Deps,

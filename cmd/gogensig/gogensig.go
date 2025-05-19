@@ -88,7 +88,8 @@ func main() {
 			}
 			return item.GoName, nil
 		},
-		Pkg:            convertPkg,
+		Pkg:            convertPkg.File,
+		FileMap:        convertPkg.FileMap,
 		TypeMap:        conf.TypeMap,
 		Deps:           conf.Deps,
 		TrimPrefixes:   conf.TrimPrefixes,
