@@ -30,12 +30,10 @@ func basicConverter() *Converter {
 		PkgName:   "test",
 		ConvSym:   cltest.NewConvSym(),
 		OutputDir: tempDir,
-		Pkg: &llcppg.Pkg{
-			File: &ast.File{
-				Decls: []ast.Decl{},
-			},
-			FileMap: map[string]*llcppg.FileInfo{},
+		Pkg: &ast.File{
+			Decls: []ast.Decl{},
 		},
+		FileMap:        map[string]*llcppg.FileInfo{},
 		TypeMap:        cfg.TypeMap,
 		Deps:           cfg.Deps,
 		TrimPrefixes:   cfg.TrimPrefixes,
@@ -55,14 +53,14 @@ func TestPkgFail(t *testing.T) {
 		defer func() {
 			checkPanic(t, recover(), "File \"noexist.h\" not found in FileMap")
 		}()
-		converter.Pkg.File.Decls = append(converter.Pkg.File.Decls, &ast.TypeDecl{
+		converter.Pkg.Decls = append(converter.Pkg.Decls, &ast.TypeDecl{
 			Object: ast.Object{
 				Loc: &ast.Location{
 					File: "noexist.h",
 				},
 			},
 		})
-		converter.Pkg.FileMap["exist.h"] = &llcppg.FileInfo{
+		converter.FileMap["exist.h"] = &llcppg.FileInfo{
 			FileType: llcppg.Inter,
 		}
 		converter.Process()
@@ -95,7 +93,7 @@ func TestProcessWithError(t *testing.T) {
 	declLoc := &ast.Location{
 		File: "exist.h",
 	}
-	converter.Pkg.File.Decls = []ast.Decl{
+	converter.Pkg.Decls = []ast.Decl{
 		&ast.FuncDecl{
 			Object: ast.Object{
 				Loc: declLoc,
@@ -125,7 +123,7 @@ func TestProcessWithError(t *testing.T) {
 			},
 		},
 	}
-	converter.Pkg.FileMap["exist.h"] = &llcppg.FileInfo{
+	converter.FileMap["exist.h"] = &llcppg.FileInfo{
 		FileType: llcppg.Inter,
 	}
 	converter.Process()
