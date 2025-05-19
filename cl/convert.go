@@ -3,10 +3,9 @@ package cl
 import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/convert"
+	"github.com/goplus/llcppg/cl/nc"
 	llconfig "github.com/goplus/llcppg/config"
 )
-
-var ErrSkip = convert.ErrSkip
 
 const DbgFlagAll = convert.DbgFlagAll
 
@@ -18,8 +17,6 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 	return convert.ModInit(deps, outputDir, modulePath)
 }
 
-type NodeConverter = convert.NodeConverter
-
 type ConvConfig struct {
 	OutputDir string
 	PkgPath   string
@@ -27,7 +24,7 @@ type ConvConfig struct {
 	Pkg       *ast.File
 	FileMap   map[string]*llconfig.FileInfo
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
-	NodeConv  NodeConverter
+	NC        nc.NodeConverter
 
 	// CfgFile   string // llcppg.cfg
 	TypeMap        map[string]string // llcppg.pub
@@ -45,7 +42,7 @@ func Convert(config *ConvConfig) (pkg Package, err error) {
 		Pkg:       config.Pkg,
 		FileMap:   config.FileMap,
 		ConvSym:   config.ConvSym,
-		NodeConv:  config.NodeConv,
+		NC:        config.NC,
 
 		TypeMap:        config.TypeMap,
 		Deps:           config.Deps,

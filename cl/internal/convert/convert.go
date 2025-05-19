@@ -1,24 +1,14 @@
 package convert
 
 import (
-	"errors"
 	"log"
 	"strings"
 
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/nc"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	llconfig "github.com/goplus/llcppg/config"
 )
-
-var (
-	ErrSkip = errors.New("skip this node")
-)
-
-type NodeConverter interface {
-	ConvDecl(decl ast.Decl) (goName, goFile string, err error) // ErrSkip
-	ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName, goFile string, err error)
-	ConvMacro(macro *ast.Macro) (goName, goFile string, err error)
-}
 
 type dbgFlags = int
 
@@ -40,7 +30,7 @@ type Config struct {
 	Pkg       *ast.File
 	FileMap   map[string]*llconfig.FileInfo
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
-	NodeConv  NodeConverter
+	NC        nc.NodeConverter
 
 	// CfgFile   string // llcppg.cfg
 	TypeMap        map[string]string // llcppg.pub
