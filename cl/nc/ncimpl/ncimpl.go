@@ -135,6 +135,10 @@ func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string,
 	switch decl := decl.(type) {
 	case *ast.FuncDecl:
 		goName, err = p.ConvSym(obj, decl.MangledName)
+		// only have error when symbol not found,current keep only log this error
+		if err != nil {
+			log.Printf("ConvDecl: %s not found in symbolmap: %s", decl.MangledName, err.Error())
+		}
 	case *ast.EnumTypeDecl:
 		// support anonymous enum with empty name
 		if obj.Name != nil {
@@ -167,6 +171,10 @@ func (p *Converter) ConvTagExpr(cname string) string {
 
 func (p *Converter) Lookup(name string) (locFile string, ok bool) {
 	return p.locMap.Lookup(name)
+}
+
+func (p *Converter) IsRecordPub(cname string, goName string) bool {
+	return p.KeepUnderScore || rune(cname[0]) != '_'
 }
 
 // which is define in llcppg.cfg/typeMap

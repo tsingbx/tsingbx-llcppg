@@ -17,4 +17,5 @@ type NodeConverter interface {
 	ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName string, err error)
 	ConvTagExpr(cname string) string
 	Lookup(name string) (locFile string, ok bool)
+	IsRecordPub(cname string, goName string) bool
 }

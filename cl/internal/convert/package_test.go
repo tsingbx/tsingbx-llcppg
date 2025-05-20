@@ -1124,7 +1124,7 @@ func TestRedef(t *testing.T) {
 			Tag:    ast.Struct,
 			Fields: flds,
 		},
-	})
+	}, nc)
 
 	err = pkg.NewTypeDecl("Foo", &ast.TypeDecl{
 		Object: ast.Object{
@@ -1134,7 +1134,7 @@ func TestRedef(t *testing.T) {
 			Tag:    ast.Struct,
 			Fields: flds,
 		},
-	})
+	}, nc)
 	if err != nil {
 		t.Fatal("unexpect redefine err")
 	}
@@ -1238,7 +1238,7 @@ func TestRedefEnum(t *testing.T) {
 			t.Fatal("NewPackage failed:", err)
 		}
 		SetTempFile(pkg)
-		pkg.NewTypeDecl(typeName, typDecl)
+		pkg.NewTypeDecl(typeName, typDecl, nc)
 		err = pkg.NewEnumTypeDecl(typeName, &ast.EnumTypeDecl{
 			Object: ast.Object{
 				Name: &ast.Ident{Name: typeName},
@@ -1257,7 +1257,7 @@ func TestRedefEnum(t *testing.T) {
 			t.Fatal("NewPackage failed:", err)
 		}
 		SetTempFile(pkg)
-		pkg.NewTypeDecl(typeName, typDecl)
+		pkg.NewTypeDecl(typeName, typDecl, nc)
 		pkg.NewEnumTypeDecl(typeName, &ast.EnumTypeDecl{
 			Object: ast.Object{
 				Name: nil,
@@ -1289,9 +1289,10 @@ const Foo__1 c.Int = 0
 }
 
 func TestRedefTypedef(t *testing.T) {
-	pkg, err := createTestPkg(cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym(cltest.SymbolEntry{
+	nc := cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym(cltest.SymbolEntry{
 		CppName: "Foo", MangleName: "Foo", GoName: "Foo",
-	})), &convert.PackageConfig{})
+	}))
+	pkg, err := createTestPkg(nc, &convert.PackageConfig{})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
 	}
@@ -1305,7 +1306,7 @@ func TestRedefTypedef(t *testing.T) {
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
 		},
-	})
+	}, nc)
 	if err != nil {
 		t.Fatal("NewTypeDecl failed", err)
 	}
@@ -1314,16 +1315,17 @@ func TestRedefTypedef(t *testing.T) {
 			Name: &ast.Ident{Name: "Foo"},
 		},
 		Type: &ast.Ident{Name: "Foo"},
-	})
+	}, nc)
 	if err == nil {
 		t.Fatal("expect a redefine error")
 	}
 }
 
 func TestRedefineFunc(t *testing.T) {
-	pkg, err := createTestPkg(cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym(cltest.SymbolEntry{
+	nc := cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym(cltest.SymbolEntry{
 		CppName: "Foo", MangleName: "Foo", GoName: "Foo",
-	})), &convert.PackageConfig{})
+	}))
+	pkg, err := createTestPkg(nc, &convert.PackageConfig{})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
 	}
@@ -1337,7 +1339,7 @@ func TestRedefineFunc(t *testing.T) {
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
 		},
-	})
+	}, nc)
 	if err != nil {
 		t.Fatal("NewTypeDecl failed", err)
 	}
@@ -1756,7 +1758,7 @@ func TestForwardDecl(t *testing.T) {
 		},
 	}
 	// forward decl
-	err = pkg.NewTypeDecl("Foo", forwardDecl)
+	err = pkg.NewTypeDecl("Foo", forwardDecl, nc)
 	if err != nil {
 		t.Fatalf("Forward decl failed: %v", err)
 	}
@@ -1777,13 +1779,13 @@ func TestForwardDecl(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, nc)
 
 	if err != nil {
 		t.Fatalf("NewTypeDecl failed: %v", err)
 	}
 
-	err = pkg.NewTypeDecl("Foo", forwardDecl)
+	err = pkg.NewTypeDecl("Foo", forwardDecl, nc)
 
 	if err != nil {
 		t.Fatalf("NewTypeDecl failed: %v", err)
@@ -1854,9 +1856,9 @@ func testGenDecl(t *testing.T, tc genDeclTestCase) {
 	SetTempFile(pkg)
 	switch d := tc.decl.(type) {
 	case *ast.TypeDecl:
-		err = pkg.NewTypeDecl(goName, d)
+		err = pkg.NewTypeDecl(goName, d, nc)
 	case *ast.TypedefDecl:
-		err = pkg.NewTypedefDecl(goName, d)
+		err = pkg.NewTypedefDecl(goName, d, nc)
 	case *ast.FuncDecl:
 		err = pkg.NewFuncDecl(goName, d)
 	case *ast.EnumTypeDecl:
@@ -1949,7 +1951,7 @@ func TestTypeClean(t *testing.T) {
 						Name: &ast.Ident{Name: "Foo1"},
 					},
 					Type: &ast.RecordType{Tag: ast.Struct},
-				})
+				}, nc)
 			},
 			headerFile: "/path/to/file1.h",
 			incPath:    "file1.h",
@@ -1962,7 +1964,7 @@ func TestTypeClean(t *testing.T) {
 						Name: &ast.Ident{Name: "Bar2"},
 					},
 					Type: &ast.BuiltinType{Kind: ast.Int},
-				})
+				}, nc)
 			},
 			headerFile: "/path/to/file2.h",
 			incPath:    "file2.h",
