@@ -166,6 +166,13 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 }
 */
 
+// to keep the unsafe package load to use go:linkname command
+func (p *Package) SetGoFile(goFile string) {
+	p.p.SetCurFile(goFile, true)
+	// todo(zzy):avoid remark
+	p.p.Unsafe().MarkForceUsed(p.p)
+}
+
 // todo(zzy):refine logic
 func (p *Package) linkLib(lib string) error {
 	if lib == "" {
