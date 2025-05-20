@@ -55,7 +55,7 @@ func (p *Converter) convFile(file string, obj *ast.Object) (goFile string, ok bo
 			file, strings.Join(availableFiles, "\n"))
 	}
 	hf := NewHeaderFile(file, info.FileType)
-	if obj != nil && hf.FileType == llconfig.Third {
+	if obj != nil && obj.Name != nil && hf.FileType == llconfig.Third {
 		p.locMap.Add(obj.Name, obj.Loc)
 	}
 	return hf.ToGoFileName(p.PkgName), hf.InCurPkg()
