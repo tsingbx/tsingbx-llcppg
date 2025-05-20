@@ -173,7 +173,7 @@ func (p *Converter) Lookup(name string) (locFile string, ok bool) {
 	return p.locMap.Lookup(name)
 }
 
-func (p *Converter) IsRecordPub(cname string, goName string) bool {
+func (p *Converter) IsPublic(cname string) bool {
 	return p.KeepUnderScore || rune(cname[0]) != '_'
 }
 

@@ -916,7 +916,7 @@ func (p *Package) CollectNameMapping(originName, newName string, pnc nc.NodeConv
 			return
 		}
 		*/
-		if !pnc.IsRecordPub(originName, value) {
+		if !pnc.IsPublic(originName) {
 			return
 		}
 		p.Pubs[originName] = value
