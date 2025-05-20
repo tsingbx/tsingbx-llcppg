@@ -26,6 +26,10 @@ func (p *ThirdTypeLoc) Add(ident *ast.Ident, loc *ast.Location) {
 	if p.locMap == nil {
 		p.locMap = make(map[string]string)
 	}
+	if _, ok := p.locMap[ident.Name]; ok {
+		// a third ident in multiple location is permit
+		return
+	}
 	p.locMap[ident.Name] = loc.File
 }
 
