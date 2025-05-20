@@ -107,7 +107,10 @@ func (p *Converter) Process() {
 			log.Panicln("ConvMacro:", err)
 		}
 		ctx.SetGoFile(goFile)
-		ctx.NewMacro(goName, macro)
+		err = ctx.NewMacro(goName, macro)
+		if err != nil {
+			log.Panicln("NewMacro:", err)
+		}
 	}
 
 	for _, decl := range p.Pkg.Decls {
@@ -122,13 +125,16 @@ func (p *Converter) Process() {
 		ctx.p.SetCurFile(goFile, true)
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
-			ctx.NewTypeDecl(goName, decl)
+			err = ctx.NewTypeDecl(goName, decl)
 		case *ast.EnumTypeDecl:
-			ctx.NewEnumTypeDecl(goName, decl, pnc)
+			err = ctx.NewEnumTypeDecl(goName, decl, pnc)
 		case *ast.TypedefDecl:
-			ctx.NewTypedefDecl(goName, decl)
+			err = ctx.NewTypedefDecl(goName, decl)
 		case *ast.FuncDecl:
-			ctx.NewFuncDecl(goName, decl)
+			err = ctx.NewFuncDecl(goName, decl)
+		}
+		if err != nil {
+			log.Panicln(err)
 		}
 	}
 }
