@@ -33,13 +33,13 @@ func (p *ThirdTypeLoc) Lookup(name string) (string, bool) {
 type Converter struct {
 	PkgName string
 
-	TypeMap map[string]string // llcppg.pub
 	FileMap map[string]*llconfig.FileInfo
 	ConvSym func(name *ast.Object, mangleName string) (goName string, err error)
 
 	locMap ThirdTypeLoc // record third type's location
 
 	// CfgFile   string // llcppg.cfg
+	Pubs           map[string]string
 	TrimPrefixes   []string
 	KeepUnderScore bool
 }
@@ -117,7 +117,7 @@ func (p *Converter) IsPublic(cname string) bool {
 
 // which is define in llcppg.cfg/typeMap
 func (p *Converter) definedName(name string) (string, bool) {
-	definedName, ok := p.TypeMap[name]
+	definedName, ok := p.Pubs[name]
 	if ok {
 		if definedName == "" {
 			return name, true
