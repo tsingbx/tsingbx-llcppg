@@ -1,4 +1,4 @@
-package convert
+package ncimpl
 
 import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"

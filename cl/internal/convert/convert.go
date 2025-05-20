@@ -2,12 +2,10 @@ package convert
 
 import (
 	"log"
-	"strings"
 
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/nc"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
-	llconfig "github.com/goplus/llcppg/config"
 )
 
 type dbgFlags = int
@@ -28,16 +26,11 @@ type Config struct {
 	PkgPath   string
 	PkgName   string
 	Pkg       *ast.File
-	FileMap   map[string]*llconfig.FileInfo
-	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
 	NC        nc.NodeConverter
 
-	// CfgFile   string // llcppg.cfg
-	TypeMap        map[string]string // llcppg.pub
-	Deps           []string          // dependent packages
-	TrimPrefixes   []string
-	Libs           string
-	KeepUnderScore bool
+	TypeMap map[string]string // llcppg.pub
+	Deps    []string          // dependent packages
+	Libs    string
 }
 
 // if modulePath is not empty, init the module by modulePath
@@ -68,10 +61,10 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 }
 
 type Converter struct {
-	Pkg     *ast.File
-	FileMap map[string]*llconfig.FileInfo
-	GenPkg  *Package
-	Conf    *Config
+	Pkg    *ast.File
+	GenPkg *Package
+	Conf   *Config
+	NC     nc.NodeConverter
 }
 
 func NewConverter(config *Config) (*Converter, error) {
@@ -81,21 +74,18 @@ func NewConverter(config *Config) (*Converter, error) {
 			Deps:    config.Deps,
 			Pubs:    config.TypeMap,
 		},
-		Name:           config.PkgName,
-		OutputDir:      config.OutputDir,
-		ConvSym:        config.ConvSym,
-		LibCommand:     config.Libs,
-		TrimPrefixes:   config.TrimPrefixes,
-		KeepUnderScore: config.KeepUnderScore,
+		Name:       config.PkgName,
+		OutputDir:  config.OutputDir,
+		LibCommand: config.Libs,
 	})
 	if err != nil {
 		return nil, err
 	}
 	return &Converter{
-		Pkg:     config.Pkg,
-		FileMap: config.FileMap,
-		GenPkg:  pkg,
-		Conf:    config,
+		Pkg:    config.Pkg,
+		GenPkg: pkg,
+		Conf:   config,
+		NC:     config.NC,
 	}, nil
 }
 
@@ -106,37 +96,39 @@ func (p *Converter) Convert() {
 }
 
 func (p *Converter) Process() {
-	processDecl := func(file string, process func() error) {
-		p.setCurFile(file)
-		if err := process(); err != nil {
-			log.Panicln(err)
-		}
-	}
-
+	pnc := p.NC
+	ctx := p.GenPkg
 	for _, macro := range p.Pkg.Macros {
-		processDecl(macro.Loc.File, func() error {
-			return p.GenPkg.NewMacro(macro)
-		})
+		goName, goFile, err := pnc.ConvMacro(macro.Loc.File, macro)
+		if err != nil {
+			if err == nc.ErrSkip {
+				continue
+			}
+			log.Panicln("ConvMacro:", err)
+		}
+		ctx.p.SetCurFile(goFile, true)
+		ctx.NewMacro(goName, macro)
 	}
 
 	for _, decl := range p.Pkg.Decls {
+		obj := ast.ObjectOf(decl)
+		goName, goFile, err := pnc.ConvDecl(obj.Loc.File, decl)
+		if err != nil {
+			if err == nc.ErrSkip {
+				continue
+			}
+			log.Panicln("ConvDecl:", err)
+		}
+		ctx.p.SetCurFile(goFile, true)
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
-			processDecl(decl.Object.Loc.File, func() error {
-				return p.GenPkg.NewTypeDecl(decl)
-			})
+			ctx.NewTypeDecl(goName, decl)
 		case *ast.EnumTypeDecl:
-			processDecl(decl.Object.Loc.File, func() error {
-				return p.GenPkg.NewEnumTypeDecl(decl)
-			})
+			ctx.NewEnumTypeDecl(goName, decl, pnc)
 		case *ast.TypedefDecl:
-			processDecl(decl.Object.Loc.File, func() error {
-				return p.GenPkg.NewTypedefDecl(decl)
-			})
+			ctx.NewTypedefDecl(goName, decl)
 		case *ast.FuncDecl:
-			processDecl(decl.Object.Loc.File, func() error {
-				return p.GenPkg.NewFuncDecl(decl)
-			})
+			ctx.NewFuncDecl(goName, decl)
 		}
 	}
 }
@@ -146,17 +138,4 @@ func (p *Converter) Complete() {
 	if err != nil {
 		log.Panicf("Complete Fail: %v\n", err)
 	}
-}
-
-func (p *Converter) setCurFile(file string) {
-	info, exist := p.FileMap[file]
-	if !exist {
-		var availableFiles []string
-		for f := range p.FileMap {
-			availableFiles = append(availableFiles, f)
-		}
-		log.Panicf("File %q not found in FileMap. Available files:\n%s",
-			file, strings.Join(availableFiles, "\n"))
-	}
-	p.GenPkg.SetCurFile(NewHeaderFile(file, info.FileType))
 }

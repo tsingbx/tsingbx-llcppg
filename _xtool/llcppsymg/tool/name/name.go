@@ -15,9 +15,6 @@ func GoName(name string, trimPrefixes []string, inCurPkg bool) string {
 }
 
 func RemovePrefixedName(name string, trimPrefixes []string) string {
-	if len(trimPrefixes) == 0 {
-		return name
-	}
 	for _, prefix := range trimPrefixes {
 		if strings.HasPrefix(name, prefix) {
 			return strings.TrimPrefix(name, prefix)

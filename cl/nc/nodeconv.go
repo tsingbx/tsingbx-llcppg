@@ -12,7 +12,7 @@ var (
 )
 
 type NodeConverter interface {
-	ConvDecl(decl ast.Decl) (goName, goFile string, err error) // ErrSkip
-	ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName, goFile string, err error)
-	ConvMacro(macro *ast.Macro) (goName, goFile string, err error)
+	ConvDecl(file string, decl ast.Decl) (goName, goFile string, err error)
+	ConvMacro(file string, macro *ast.Macro) (goName, goFile string, err error)
+	ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName string, err error)
 }
