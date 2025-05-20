@@ -6,10 +6,13 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/nc"
 	llconfig "github.com/goplus/llcppg/config"
 )
 
 type Converter struct {
+	PkgName string
+
 	TypeMap map[string]string // llcppg.pub
 	FileMap map[string]*llconfig.FileInfo
 	ConvSym func(name *ast.Object, mangleName string) (goName string, err error)
@@ -32,9 +35,35 @@ func (p *Converter) setCurFile(file string) {
 	}
 	p.GenPkg.SetCurFile(NewHeaderFile(file, info.FileType))
 }
+
+func (p *Package) SetCurFile(hfile *HeaderFile) {
+	var curFile *HeaderFile
+	for _, f := range p.files {
+		if f.File == hfile.File {
+			curFile = f
+			break
+		}
+	}
+
+	if curFile == nil {
+		curFile = hfile
+		p.files = append(p.files, curFile)
+	}
+
+	p.curFile = curFile
+	// for third hfile not register to gogen.Package
+	if curFile.FileType != llcppg.Third {
+		fileName := curFile.ToGoFileName(p.conf.Name)
+		if debugLog {
+			log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, curFile.FileType)
+		}
+		p.p.SetCurFile(fileName, true)
+		p.p.Unsafe().MarkForceUsed(p.p)
+	}
+}
 */
 
-func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string, err error) {
+func (p *Converter) convFile(file string) (goFile string, ok bool) {
 	info, exist := p.FileMap[file]
 	if !exist {
 		var availableFiles []string
@@ -44,7 +73,23 @@ func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string,
 		log.Panicf("File %q not found in FileMap. Available files:\n%s",
 			file, strings.Join(availableFiles, "\n"))
 	}
-	p.GenPkg.SetCurFile(NewHeaderFile(file, info.FileType))
+	hf := NewHeaderFile(file, info.FileType)
+	return hf.ToGoFileName(p.PkgName), hf.InCurPkg()
+}
+
+func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string, err error) {
+	goFile, ok := p.convFile(file)
+	if !ok {
+		err = nc.ErrSkip
+		return
+	}
+	switch decl.(type) {
+	case *ast.TypeDecl:
+	case *ast.EnumTypeDecl:
+	case *ast.TypedefDecl:
+	case *ast.FuncDecl:
+	}
+	panic("todo")
 }
 
 func (p *Converter) ConvMacro(file string, macro *ast.Macro) (goName, goFile string, err error) {
