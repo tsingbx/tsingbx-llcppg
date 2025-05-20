@@ -93,7 +93,13 @@ func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string,
 }
 
 func (p *Converter) ConvMacro(file string, macro *ast.Macro) (goName, goFile string, err error) {
-	panic("todo")
+	goFile, ok := p.convFile(file)
+	if !ok {
+		err = nc.ErrSkip
+		return
+	}
+	goName = p.constName(macro.Name)
+	return
 }
 
 func (p *Converter) ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName, goFile string, err error) {
