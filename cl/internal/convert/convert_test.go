@@ -228,7 +228,6 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		OutputDir: outputDir,
 		Pkg:       convertPkg.File,
 		NC:        cltest.NC(cfg, convertPkg.FileMap, cltest.GetConvSym(symbPath)),
-		TypeMap:   cfg.TypeMap,
 		Deps:      cfg.Deps,
 		Libs:      cfg.Libs,
 	})
@@ -317,7 +316,6 @@ func TestNewConvert(t *testing.T) {
 		PkgPath: ".",
 		PkgName: "test",
 		NC:      cltest.NC(cfg, nil, cltest.NewConvSym()),
-		TypeMap: cfg.TypeMap,
 		Deps:    cfg.Deps,
 		Libs:    cfg.Libs,
 	})
