@@ -106,7 +106,7 @@ func (p *Converter) Process() {
 			}
 			log.Panicln("ConvMacro:", err)
 		}
-		ctx.SetGoFile(goFile)
+		ctx.setGoFile(goFile)
 		err = ctx.NewMacro(goName, macro)
 		if err != nil {
 			log.Panicln("NewMacro:", err)
@@ -122,7 +122,7 @@ func (p *Converter) Process() {
 			}
 			log.Panicln("ConvDecl:", err)
 		}
-		ctx.p.SetCurFile(goFile, true)
+		ctx.setGoFile(goFile)
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
 			err = ctx.NewTypeDecl(goName, decl)
