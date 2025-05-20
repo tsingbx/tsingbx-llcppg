@@ -395,7 +395,7 @@ func (p *Package) lookupType(name string) (types.Type, error) {
 	}
 	// in third hfile but not have converted go type
 	if path, ok := p.locMap.Lookup(name); ok {
-		return nil, fmt.Errorf("convert %s first, declare converted package in llcppg.cfg deps for load [%s]. See: https://github.com/goplus/llcppg?tab=readme-ov-file#dependency", path, name)
+		return nil, fmt.Errorf("convert %s first, declare converted package in llcppg.cfg deps for load [%s]. See: https://github.com/goplus/llcppg#dependency", path, name)
 	}
 	// implicit forward decl
 	decl := p.handleImplicitForwardDecl(name)
