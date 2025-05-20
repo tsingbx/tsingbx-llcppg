@@ -1537,47 +1537,46 @@ const (
 )
 `,
 		},
-		/* todo(zzy): fix this test
-		   		{
-		   			name: "anonymous enum",
-		   			decl: &ast.EnumTypeDecl{
-		   				Object: ast.Object{
-		   					Name: nil,
-		   				},
-		   				Type: &ast.EnumType{
-		   					Items: []*ast.EnumItem{
-		   						{Name: &ast.Ident{Name: "red"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
-		   						{Name: &ast.Ident{Name: "green"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "1"}},
-		   						{Name: &ast.Ident{Name: "blue"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "2"}},
-		   					},
-		   				},
-		   			},
-		   			expected: `
-		   package testpkg
+		{
+			name: "anonymous enum",
+			decl: &ast.EnumTypeDecl{
+				Object: ast.Object{
+					Name: nil,
+				},
+				Type: &ast.EnumType{
+					Items: []*ast.EnumItem{
+						{Name: &ast.Ident{Name: "red"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
+						{Name: &ast.Ident{Name: "green"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "1"}},
+						{Name: &ast.Ident{Name: "blue"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "2"}},
+					},
+				},
+			},
+			expected: `
+package testpkg
 
-		   import (
-		   	"github.com/goplus/lib/c"
-		   	_ "unsafe"
-		   )
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
 
-		   const (
-		   	Red   c.Int = 0
-		   	Green c.Int = 1
-		   	Blue  c.Int = 2
-		   )`,
-		   		},
-		   		{
-		   			name: "invalid enum item",
-		   			decl: &ast.EnumTypeDecl{
-		   				Type: &ast.EnumType{
-		   					Items: []*ast.EnumItem{
-		   						{Name: &ast.Ident{Name: "red"}, Value: &ast.ArrayType{Elt: &ast.BuiltinType{Kind: ast.Bool}}},
-		   					},
-		   				},
-		   			},
-		   			expectedErr: "NewEnumTypeDecl: <nil> fail: createEnumItems:fail to convert *ast.ArrayType to int",
-		   		},
-		*/
+const (
+	Red   c.Int = 0
+	Green c.Int = 1
+	Blue  c.Int = 2
+)`,
+		},
+
+		{
+			name: "invalid enum item",
+			decl: &ast.EnumTypeDecl{
+				Type: &ast.EnumType{
+					Items: []*ast.EnumItem{
+						{Name: &ast.Ident{Name: "red"}, Value: &ast.ArrayType{Elt: &ast.BuiltinType{Kind: ast.Bool}}},
+					},
+				},
+			},
+			expectedErr: "NewEnumTypeDecl: <nil> fail: createEnumItems:fail to convert *ast.ArrayType to int",
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
