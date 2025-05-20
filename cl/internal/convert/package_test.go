@@ -27,8 +27,14 @@ var tempFile = &ncimpl.HeaderFile{
 
 var pkgname = "testpkg"
 
+func SetGoFile(ctx *convert.Package, goFile string) {
+	pkg := ctx.Pkg()
+	pkg.SetCurFile(goFile, true)
+	pkg.Unsafe().MarkForceUsed(pkg)
+}
+
 func SetTempFile(ctx *convert.Package) {
-	ctx.SetGoFile(tempFile.ToGoFileName(pkgname))
+	SetGoFile(ctx, tempFile.ToGoFileName(pkgname))
 }
 
 func init() {
@@ -1983,7 +1989,7 @@ func TestTypeClean(t *testing.T) {
 			File:     tc.headerFile,
 			FileType: llcppg.Inter,
 		}
-		pkg.SetGoFile(hfile.ToGoFileName(pkgname))
+		SetGoFile(pkg, hfile.ToGoFileName(pkgname))
 		tc.addType()
 
 		var buf bytes.Buffer
