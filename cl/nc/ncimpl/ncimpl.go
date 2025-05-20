@@ -83,13 +83,13 @@ func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string,
 		err = nc.ErrSkip
 		return
 	}
-	switch decl.(type) {
-	case *ast.TypeDecl:
-	case *ast.EnumTypeDecl:
-	case *ast.TypedefDecl:
-	case *ast.FuncDecl:
+	obj := ast.ObjectOf(decl)
+	if fn, ok := decl.(*ast.FuncDecl); ok {
+		goName, err = p.ConvSym(obj, fn.MangledName)
+	} else {
+		goName = p.declName(obj.Name.Name)
 	}
-	panic("todo")
+	return
 }
 
 func (p *Converter) ConvMacro(file string, macro *ast.Macro) (goName, goFile string, err error) {
@@ -97,7 +97,8 @@ func (p *Converter) ConvMacro(file string, macro *ast.Macro) (goName, goFile str
 }
 
 func (p *Converter) ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName, goFile string, err error) {
-	panic("todo")
+	goName = p.constName(item.Name.Name)
+	return
 }
 
 // which is define in llcppg.cfg/typeMap
