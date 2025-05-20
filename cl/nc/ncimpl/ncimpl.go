@@ -107,6 +107,10 @@ func (p *Converter) ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (go
 	return
 }
 
+func (p *Converter) ConvTagExpr(cname string) string {
+	return p.declName(cname)
+}
+
 // which is define in llcppg.cfg/typeMap
 func (p *Converter) definedName(name string) (string, bool) {
 	definedName, ok := p.TypeMap[name]

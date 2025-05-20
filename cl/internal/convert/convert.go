@@ -68,7 +68,7 @@ type Converter struct {
 }
 
 func NewConverter(config *Config) (*Converter, error) {
-	pkg, err := NewPackage(&PackageConfig{
+	pkg, err := NewPackage(config.NC, &PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: config.PkgPath,
 			Deps:    config.Deps,
