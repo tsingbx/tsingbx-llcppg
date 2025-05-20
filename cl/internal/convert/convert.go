@@ -106,7 +106,7 @@ func (p *Converter) Process() {
 			}
 			log.Panicln("ConvMacro:", err)
 		}
-		ctx.p.SetCurFile(goFile, true)
+		ctx.SetGoFile(goFile)
 		ctx.NewMacro(goName, macro)
 	}
 
