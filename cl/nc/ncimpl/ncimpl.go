@@ -14,14 +14,6 @@ type ThirdTypeLoc struct {
 	locMap map[string]string // type name from third package -> define location
 }
 
-/* TODO(xsw): remove this
-func NewThirdTypeLoc() *ThirdTypeLoc {
-	return &ThirdTypeLoc{
-		locMap: make(map[string]string),
-	}
-}
-*/
-
 func (p *ThirdTypeLoc) Add(ident *ast.Ident, loc *ast.Location) {
 	if p.locMap == nil {
 		p.locMap = make(map[string]string)
@@ -51,62 +43,6 @@ type Converter struct {
 	TrimPrefixes   []string
 	KeepUnderScore bool
 }
-
-/* TODO(xsw): remove this
-func (p *Converter) setCurFile(file string) {
-	info, exist := p.FileMap[file]
-	if !exist {
-		var availableFiles []string
-		for f := range p.FileMap {
-			availableFiles = append(availableFiles, f)
-		}
-		log.Panicf("File %q not found in FileMap. Available files:\n%s",
-			file, strings.Join(availableFiles, "\n"))
-	}
-	p.GenPkg.SetCurFile(NewHeaderFile(file, info.FileType))
-}
-
-func (p *Package) SetCurFile(hfile *HeaderFile) {
-	var curFile *HeaderFile
-	for _, f := range p.files {
-		if f.File == hfile.File {
-			curFile = f
-			break
-		}
-	}
-
-	if curFile == nil {
-		curFile = hfile
-		p.files = append(p.files, curFile)
-	}
-
-	p.curFile = curFile
-	// for third hfile not register to gogen.Package
-	if curFile.FileType != llcppg.Third {
-		fileName := curFile.ToGoFileName(p.conf.Name)
-		if debugLog {
-			log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, curFile.FileType)
-		}
-		p.p.SetCurFile(fileName, true)
-		p.p.Unsafe().MarkForceUsed(p.p)
-	}
-}
-
-// typedecl,enumdecl,funcdecl,funcdecl
-// true determine continue execute the type gen
-// if this type is in a third header,skip the type gen & collect the type info
-func (p *Package) handleType(ident *ast.Ident, loc *ast.Location) (skip bool) {
-	if curPkg := p.curFile.InCurPkg(); curPkg {
-		return false
-	}
-	if _, ok := p.locMap.Lookup(ident.Name); ok {
-		// a third ident in multiple location is permit
-		return true
-	}
-	p.locMap.Add(ident, loc)
-	return true
-}
-*/
 
 func (p *Converter) convFile(file string, obj *ast.Object) (goFile string, ok bool) {
 	info, exist := p.FileMap[file]

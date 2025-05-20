@@ -22,11 +22,6 @@ type Package struct {
 	p    *gogen.Package // package writer
 	conf *PackageConfig // package config
 	cvt  *TypeConv      // package type convert
-	/* TODO(xsw): remove this
-	curFile *HeaderFile    // current processing c header file.
-	files   []*HeaderFile  // header files.
-	locMap  *ThirdTypeLoc  // record third type's location
-	*/
 
 	// incomplete stores type declarations that are not fully defined yet, including:
 	// - Forward declarations in C/C++
@@ -70,8 +65,7 @@ func NewPackage(pnc nc.NodeConverter, config *PackageConfig) (*Package, error) {
 		p:               gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
 		conf:            config,
 		incompleteTypes: NewIncompleteTypes(),
-		//locMap:          NewThirdTypeLoc(),
-		symbols: NewProcessSymbol(),
+		symbols:         NewProcessSymbol(),
 	}
 
 	// default have load llgo/c
@@ -129,42 +123,8 @@ func (p *Package) markUseDeps(pkgMgr *PkgDepLoader) {
 }
 
 func (p *Package) LookupFunc(goName string, fn *ast.FuncDecl) (*GoFuncSpec, error) {
-	/* TODO(xsw): remove this
-	goName, err := p.conf.ConvSym(&fn.Object, fn.MangledName)
-	if err != nil {
-		return nil, err
-	}
-	*/
 	return NewGoFuncSpec(goName), nil
 }
-
-/* TODO(xsw): remove this
-func (p *Package) SetCurFile(hfile *HeaderFile) {
-	var curFile *HeaderFile
-	for _, f := range p.files {
-		if f.File == hfile.File {
-			curFile = f
-			break
-		}
-	}
-
-	if curFile == nil {
-		curFile = hfile
-		p.files = append(p.files, curFile)
-	}
-
-	p.curFile = curFile
-	// for third hfile not register to gogen.Package
-	if curFile.FileType != llcppg.Third {
-		fileName := curFile.ToGoFileName(p.conf.Name)
-		if debugLog {
-			log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, curFile.FileType)
-		}
-		p.p.SetCurFile(fileName, true)
-		p.p.Unsafe().MarkForceUsed(p.p)
-	}
-}
-*/
 
 // to keep the unsafe package load to use go:linkname command
 func (p *Package) setGoFile(goFile string) {
@@ -303,15 +263,6 @@ func pubMethodName(recv types.Type, fnSpec *GoFuncSpec) string {
 }
 
 func (p *Package) NewFuncDecl(goName string, funcDecl *ast.FuncDecl) error {
-	/* TODO(xsw): remove this
-	isThird := p.handleType(funcDecl.Name, funcDecl.Loc)
-	if isThird {
-		if debugLog {
-			log.Printf("NewFuncDecl: %v is a function of third header file\n", funcDecl.Name)
-		}
-		return nil
-	}
-	*/
 	if debugLog {
 		log.Printf("NewFuncDecl: %v\n", funcDecl.Name)
 	}
@@ -417,15 +368,6 @@ func (p *Package) lookupType(name string, pnc nc.NodeConverter) (types.Type, err
 // - Forward declarations: Pre-registers incomplete types for later definition
 // - Self-referential types: Handles types that reference themselves (like linked lists)
 func (p *Package) NewTypeDecl(goName string, typeDecl *ast.TypeDecl, pnc nc.NodeConverter) error {
-	/* TODO(xsw): remove this
-	skip := p.handleType(typeDecl.Name, typeDecl.Loc)
-	if skip {
-		if debugLog {
-			log.Printf("NewTypeDecl: %s type of third header\n", typeDecl.Name)
-		}
-		return nil
-	}
-	*/
 	if debugLog {
 		log.Printf("NewTypeDecl: %s\n", typeDecl.Name.Name)
 	}
@@ -527,15 +469,6 @@ func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) *gogen.TypeD
 }
 
 func (p *Package) NewTypedefDecl(goName string, typedefDecl *ast.TypedefDecl, pnc nc.NodeConverter) error {
-	/* TODO(xsw): remove this
-	skip := p.handleType(typedefDecl.Name, typedefDecl.Loc)
-	if skip {
-		if debugLog {
-			log.Printf("NewTypedefDecl: %v is a typedef of third header file\n", typedefDecl.Name)
-		}
-		return nil
-	}
-	*/
 	if debugLog {
 		log.Printf("NewTypedefDecl: %s\n", typedefDecl.Name.Name)
 	}
@@ -628,15 +561,6 @@ func (p *Package) NewTypedefs(name string, typ types.Type) *gogen.TypeDecl {
 }
 
 func (p *Package) NewEnumTypeDecl(goName string, enumTypeDecl *ast.EnumTypeDecl, pnc nc.NodeConverter) error {
-	/* TODO(xsw): remove this
-	skip := p.handleType(enumTypeDecl.Name, enumTypeDecl.Loc)
-	if skip {
-		if debugLog {
-			log.Printf("NewEnumTypeDecl: %v is a enum type of system header file\n", enumTypeDecl.Name)
-		}
-		return nil
-	}
-	*/
 	if debugLog {
 		log.Printf("NewEnumTypeDecl: %v\n", enumTypeDecl.Name)
 	}
@@ -720,12 +644,6 @@ func (p *Package) createEnumItems(pnc nc.NodeConverter, decl *ast.EnumTypeDecl, 
 }
 
 func (p *Package) NewMacro(goName string, macro *ast.Macro) error {
-	/* TODO(xsw): remove this
-	if !p.curFile.InCurPkg() {
-		return nil
-	}
-	*/
-
 	// simple const macro define (#define NAME value)
 	if len(macro.Tokens) == 2 && macro.Tokens[1].Token == ctoken.LITERAL {
 		value := macro.Tokens[1].Lit
@@ -854,95 +772,17 @@ func (p *Package) GetUniqueName(node Node, pubName string) (_ string, changed bo
 	return uniquePubName, uniquePubName != node.name
 }
 
-/* TODO(xsw): remove this
-// which is define in llcppg.cfg/typeMap
-func (p *Package) definedName(name string) (string, bool) {
-	definedName, ok := p.Pubs[name]
-	if ok {
-		if definedName == "" {
-			return name, true
-		}
-		return definedName, true
-	}
-	return name, false
-}
-
-type NameMethod func(name string) string
-
-// transformName handles identifier name conversion following these rules:
-// 1. First checks if the name exists in predefined mapping (in typeMap of llcppg.cfg)
-// 2. If not in predefined mapping, applies the transform function
-// 3. Before applying the transform function, removes specified prefixes (obtained via trimPrefixes)
-//
-// Parameters:
-//   - name: Original C/C++ identifier name
-//   - transform: Name transformation function (like names.PubName or names.ExportName)
-//
-// Returns:
-//   - Transformed identifier name
-func (p *Package) transformName(cname string, transform NameMethod) string {
-	if definedName, ok := p.definedName(cname); ok {
-		return definedName
-	}
-	return transform(name.RemovePrefixedName(cname, p.trimPrefixes()))
-}
-
-func (p *Package) declName(cname string) string {
-	return p.transformName(cname, name.PubName)
-}
-
-func (p *Package) constName(cname string) string {
-	return p.transformName(cname, name.ExportName)
-}
-
-func (p *Package) trimPrefixes() []string {
-	if p.curFile.InCurPkg() {
-		return p.conf.TrimPrefixes
-	}
-	return []string{}
-}
-*/
-
 // Collect the name mapping between origin name and pubname
 // if in current package, it will be collected in public symbol table
 func (p *Package) CollectNameMapping(originName, newName string, pnc nc.NodeConverter) {
-	value := ""
-	if originName != newName {
-		value = newName
-	}
-	if true /* p.curFile.InCurPkg() */ {
-		/* TODO(xsw): remove this
-		if !p.conf.KeepUnderScore && rune(originName[0]) == '_' {
-			return
-		}
-		*/
-		if !pnc.IsPublic(originName) {
-			return
+	if pnc.IsPublic(originName) {
+		value := ""
+		if originName != newName { // TODO(xsw): check logic
+			value = newName
 		}
 		p.Pubs[originName] = value
 	}
 }
-
-/* TODO(xsw): remove this
-type ThirdTypeLoc struct {
-	locMap map[string]string // type name from third package -> define location
-}
-
-func NewThirdTypeLoc() *ThirdTypeLoc {
-	return &ThirdTypeLoc{
-		locMap: make(map[string]string),
-	}
-}
-
-func (p *ThirdTypeLoc) Add(ident *ast.Ident, loc *ast.Location) {
-	p.locMap[ident.Name] = loc.File
-}
-
-func (p *ThirdTypeLoc) Lookup(name string) (string, bool) {
-	loc, ok := p.locMap[name]
-	return loc, ok
-}
-*/
 
 type IncompleteTypes struct {
 	types    []*Incomplete          // ordered list of incomplete types
