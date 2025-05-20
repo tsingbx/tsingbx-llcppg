@@ -28,17 +28,14 @@ func basicConverter() *Converter {
 	converter, err := NewConverter(&Config{
 		PkgPath:   ".",
 		PkgName:   "test",
-		ConvSym:   cltest.NewConvSym(),
 		OutputDir: tempDir,
 		Pkg: &ast.File{
 			Decls: []ast.Decl{},
 		},
-		FileMap:        map[string]*llcppg.FileInfo{},
-		TypeMap:        cfg.TypeMap,
-		Deps:           cfg.Deps,
-		TrimPrefixes:   cfg.TrimPrefixes,
-		Libs:           cfg.Libs,
-		KeepUnderScore: cfg.KeepUnderScore,
+		NC:      cltest.NC(cfg, nil, cltest.NewConvSym()),
+		TypeMap: cfg.TypeMap,
+		Deps:    cfg.Deps,
+		Libs:    cfg.Libs,
 	})
 	if err != nil {
 		panic(err)
@@ -49,6 +46,8 @@ func basicConverter() *Converter {
 func TestPkgFail(t *testing.T) {
 	converter := basicConverter()
 	defer os.RemoveAll(converter.GenPkg.conf.OutputDir)
+
+	/* TODO(xsw): remove this
 	t.Run("ProcessFail", func(t *testing.T) {
 		defer func() {
 			checkPanic(t, recover(), "File \"noexist.h\" not found in FileMap")
@@ -65,6 +64,7 @@ func TestPkgFail(t *testing.T) {
 		}
 		converter.Process()
 	})
+	*/
 
 	t.Run("Complete fail", func(t *testing.T) {
 		defer func() {

@@ -102,7 +102,7 @@ func (p *Converter) ConvMacro(file string, macro *ast.Macro) (goName, goFile str
 	return
 }
 
-func (p *Converter) ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName, goFile string, err error) {
+func (p *Converter) ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName string, err error) {
 	goName = p.constName(item.Name.Name)
 	return
 }

@@ -2,7 +2,10 @@ package cltest
 
 import (
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/nc"
+	"github.com/goplus/llcppg/cl/nc/ncimpl"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 type SymbolEntry = cfg.SymbolEntry
@@ -30,6 +33,17 @@ func fromSymbTable(symbTable *cfg.SymbolTable) func(name *ast.Object, mangleName
 			return
 		}
 		return item.GoName, nil
+	}
+}
+
+func NC(cfg *llcppg.Config, fileMap map[string]*llcppg.FileInfo, convSym func(name *ast.Object, mangleName string) (goName string, err error)) nc.NodeConverter {
+	return &ncimpl.Converter{
+		PkgName:        cfg.Name,
+		TypeMap:        cfg.TypeMap,
+		FileMap:        fileMap,
+		ConvSym:        convSym,
+		TrimPrefixes:   cfg.TrimPrefixes,
+		KeepUnderScore: cfg.KeepUnderScore,
 	}
 }
 
