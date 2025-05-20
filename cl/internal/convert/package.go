@@ -25,8 +25,8 @@ type Package struct {
 	/* TODO(xsw): remove this
 	curFile *HeaderFile    // current processing c header file.
 	files   []*HeaderFile  // header files.
+	locMap  *ThirdTypeLoc  // record third type's location
 	*/
-	locMap *ThirdTypeLoc // record third type's location
 
 	// incomplete stores type declarations that are not fully defined yet, including:
 	// - Forward declarations in C/C++
@@ -70,8 +70,8 @@ func NewPackage(pnc nc.NodeConverter, config *PackageConfig) (*Package, error) {
 		p:               gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
 		conf:            config,
 		incompleteTypes: NewIncompleteTypes(),
-		locMap:          NewThirdTypeLoc(),
-		symbols:         NewProcessSymbol(),
+		//locMap:          NewThirdTypeLoc(),
+		symbols: NewProcessSymbol(),
 	}
 
 	// default have load llgo/c
@@ -296,13 +296,15 @@ func pubMethodName(recv types.Type, fnSpec *GoFuncSpec) string {
 }
 
 func (p *Package) NewFuncDecl(goName string, funcDecl *ast.FuncDecl) error {
-	isThird, _ := p.handleType(funcDecl.Name, funcDecl.Loc)
+	/* TODO(xsw): remove this
+	isThird := p.handleType(funcDecl.Name, funcDecl.Loc)
 	if isThird {
 		if debugLog {
 			log.Printf("NewFuncDecl: %v is a function of third header file\n", funcDecl.Name)
 		}
 		return nil
 	}
+	*/
 	if debugLog {
 		log.Printf("NewFuncDecl: %v\n", funcDecl.Name)
 	}
@@ -397,7 +399,7 @@ func (p *Package) lookupType(name string, pnc nc.NodeConverter) (types.Type, err
 		return obj.Type(), nil
 	}
 	// in third hfile but not have converted go type
-	if path, ok := p.locMap.Lookup(name); ok {
+	if path, ok := pnc.Lookup(name); ok {
 		return nil, fmt.Errorf("convert %s first, declare converted package in llcppg.cfg deps for load [%s]. See: https://github.com/goplus/llcppg#dependency", path, name)
 	}
 	// implicit forward decl
@@ -410,14 +412,15 @@ func (p *Package) lookupType(name string, pnc nc.NodeConverter) (types.Type, err
 // - Forward declarations: Pre-registers incomplete types for later definition
 // - Self-referential types: Handles types that reference themselves (like linked lists)
 func (p *Package) NewTypeDecl(goName string, typeDecl *ast.TypeDecl) error {
-	skip, _ := p.handleType(typeDecl.Name, typeDecl.Loc)
+	/* TODO(xsw): remove this
+	skip := p.handleType(typeDecl.Name, typeDecl.Loc)
 	if skip {
 		if debugLog {
 			log.Printf("NewTypeDecl: %s type of third header\n", typeDecl.Name)
 		}
 		return nil
 	}
-
+	*/
 	if debugLog {
 		log.Printf("NewTypeDecl: %s\n", typeDecl.Name.Name)
 	}
@@ -519,13 +522,15 @@ func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) *gogen.TypeD
 }
 
 func (p *Package) NewTypedefDecl(goName string, typedefDecl *ast.TypedefDecl) error {
-	skip, _ := p.handleType(typedefDecl.Name, typedefDecl.Loc)
+	/* TODO(xsw): remove this
+	skip := p.handleType(typedefDecl.Name, typedefDecl.Loc)
 	if skip {
 		if debugLog {
 			log.Printf("NewTypedefDecl: %v is a typedef of third header file\n", typedefDecl.Name)
 		}
 		return nil
 	}
+	*/
 	if debugLog {
 		log.Printf("NewTypedefDecl: %s\n", typedefDecl.Name.Name)
 	}
@@ -618,13 +623,15 @@ func (p *Package) NewTypedefs(name string, typ types.Type) *gogen.TypeDecl {
 }
 
 func (p *Package) NewEnumTypeDecl(goName string, enumTypeDecl *ast.EnumTypeDecl, pnc nc.NodeConverter) error {
-	skip, _ := p.handleType(enumTypeDecl.Name, enumTypeDecl.Loc)
+	/* TODO(xsw): remove this
+	skip := p.handleType(enumTypeDecl.Name, enumTypeDecl.Loc)
 	if skip {
 		if debugLog {
 			log.Printf("NewEnumTypeDecl: %v is a enum type of system header file\n", enumTypeDecl.Name)
 		}
 		return nil
 	}
+	*/
 	if debugLog {
 		log.Printf("NewEnumTypeDecl: %v\n", enumTypeDecl.Name)
 	}
@@ -891,22 +898,6 @@ func (p *Package) trimPrefixes() []string {
 }
 */
 
-// typedecl,enumdecl,funcdecl,funcdecl
-// true determine continue execute the type gen
-// if this type is in a third header,skip the type gen & collect the type info
-func (p *Package) handleType(ident *ast.Ident, loc *ast.Location) (skip bool, anony bool) {
-	anony = ident == nil
-	if /* curPkg := p.curFile.InCurPkg(); curPkg || */ anony {
-		return false, anony
-	}
-	if _, ok := p.locMap.Lookup(ident.Name); ok {
-		// a third ident in multiple location is permit
-		return true, anony
-	}
-	p.locMap.Add(ident, loc)
-	return true, anony
-}
-
 // Collect the name mapping between origin name and pubname
 // if in current package, it will be collected in public symbol table
 func (p *Package) CollectNameMapping(originName, newName string) {
@@ -924,6 +915,7 @@ func (p *Package) CollectNameMapping(originName, newName string) {
 	}
 }
 
+/* TODO(xsw): remove this
 type ThirdTypeLoc struct {
 	locMap map[string]string // type name from third package -> define location
 }
@@ -942,6 +934,7 @@ func (p *ThirdTypeLoc) Lookup(name string) (string, bool) {
 	loc, ok := p.locMap[name]
 	return loc, ok
 }
+*/
 
 type IncompleteTypes struct {
 	types    []*Incomplete          // ordered list of incomplete types

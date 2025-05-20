@@ -16,4 +16,5 @@ type NodeConverter interface {
 	ConvMacro(file string, macro *ast.Macro) (goName, goFile string, err error)
 	ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName string, err error)
 	ConvTagExpr(cname string) string
+	Lookup(name string) (locFile string, ok bool)
 }

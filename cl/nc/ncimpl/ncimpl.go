@@ -10,12 +10,38 @@ import (
 	llconfig "github.com/goplus/llcppg/config"
 )
 
+type ThirdTypeLoc struct {
+	locMap map[string]string // type name from third package -> define location
+}
+
+/* TODO(xsw): remove this
+func NewThirdTypeLoc() *ThirdTypeLoc {
+	return &ThirdTypeLoc{
+		locMap: make(map[string]string),
+	}
+}
+*/
+
+func (p *ThirdTypeLoc) Add(ident *ast.Ident, loc *ast.Location) {
+	if p.locMap == nil {
+		p.locMap = make(map[string]string)
+	}
+	p.locMap[ident.Name] = loc.File
+}
+
+func (p *ThirdTypeLoc) Lookup(name string) (string, bool) {
+	loc, ok := p.locMap[name]
+	return loc, ok
+}
+
 type Converter struct {
 	PkgName string
 
 	TypeMap map[string]string // llcppg.pub
 	FileMap map[string]*llconfig.FileInfo
 	ConvSym func(name *ast.Object, mangleName string) (goName string, err error)
+
+	locMap ThirdTypeLoc // record third type's location
 
 	// CfgFile   string // llcppg.cfg
 	TrimPrefixes   []string
@@ -61,9 +87,24 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 		p.p.Unsafe().MarkForceUsed(p.p)
 	}
 }
+
+// typedecl,enumdecl,funcdecl,funcdecl
+// true determine continue execute the type gen
+// if this type is in a third header,skip the type gen & collect the type info
+func (p *Package) handleType(ident *ast.Ident, loc *ast.Location) (skip bool) {
+	if curPkg := p.curFile.InCurPkg(); curPkg {
+		return false
+	}
+	if _, ok := p.locMap.Lookup(ident.Name); ok {
+		// a third ident in multiple location is permit
+		return true
+	}
+	p.locMap.Add(ident, loc)
+	return true
+}
 */
 
-func (p *Converter) convFile(file string) (goFile string, ok bool) {
+func (p *Converter) convFile(file string, obj *ast.Object) (goFile string, ok bool) {
 	info, exist := p.FileMap[file]
 	if !exist {
 		var availableFiles []string
@@ -74,16 +115,19 @@ func (p *Converter) convFile(file string) (goFile string, ok bool) {
 			file, strings.Join(availableFiles, "\n"))
 	}
 	hf := NewHeaderFile(file, info.FileType)
+	if obj != nil && hf.FileType == llconfig.Third {
+		p.locMap.Add(obj.Name, obj.Loc)
+	}
 	return hf.ToGoFileName(p.PkgName), hf.InCurPkg()
 }
 
 func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string, err error) {
-	goFile, ok := p.convFile(file)
+	obj := ast.ObjectOf(decl)
+	goFile, ok := p.convFile(file, obj)
 	if !ok {
 		err = nc.ErrSkip
 		return
 	}
-	obj := ast.ObjectOf(decl)
 	if fn, ok := decl.(*ast.FuncDecl); ok {
 		goName, err = p.ConvSym(obj, fn.MangledName)
 	} else {
@@ -93,7 +137,7 @@ func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string,
 }
 
 func (p *Converter) ConvMacro(file string, macro *ast.Macro) (goName, goFile string, err error) {
-	goFile, ok := p.convFile(file)
+	goFile, ok := p.convFile(file, nil)
 	if !ok {
 		err = nc.ErrSkip
 		return
@@ -109,6 +153,10 @@ func (p *Converter) ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (go
 
 func (p *Converter) ConvTagExpr(cname string) string {
 	return p.declName(cname)
+}
+
+func (p *Converter) Lookup(name string) (locFile string, ok bool) {
+	return p.locMap.Lookup(name)
 }
 
 // which is define in llcppg.cfg/typeMap
