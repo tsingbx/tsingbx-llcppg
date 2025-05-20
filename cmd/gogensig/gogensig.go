@@ -47,8 +47,7 @@ func main() {
 
 	var cfgFile string
 	var modulePath string
-	for i := 0; i < len(remainArgs); i++ {
-		arg := remainArgs[i]
+	for _, arg := range remainArgs {
 		if strings.HasPrefix(arg, "-cfg=") {
 			cfgFile = args.StringArg(arg, llcppg.LLCPPG_CFG)
 		}
@@ -85,7 +84,7 @@ func main() {
 		Pkg:     convertPkg.File,
 		NC: &ncimpl.Converter{
 			PkgName: conf.Name,
-			TypeMap: conf.TypeMap,
+			Pubs:    conf.TypeMap,
 			ConvSym: func(name *ast.Object, mangleName string) (goName string, err error) {
 				item, err := symbTable.LookupSymbol(mangleName)
 				if err != nil {

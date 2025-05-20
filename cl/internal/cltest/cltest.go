@@ -39,7 +39,7 @@ func fromSymbTable(symbTable *cfg.SymbolTable) func(name *ast.Object, mangleName
 func NC(cfg *llcppg.Config, fileMap map[string]*llcppg.FileInfo, convSym func(name *ast.Object, mangleName string) (goName string, err error)) nc.NodeConverter {
 	return &ncimpl.Converter{
 		PkgName:        cfg.Name,
-		TypeMap:        cfg.TypeMap,
+		Pubs:           cfg.TypeMap,
 		FileMap:        fileMap,
 		ConvSym:        convSym,
 		TrimPrefixes:   cfg.TrimPrefixes,
