@@ -125,11 +125,11 @@ func (p *Converter) Process() {
 		ctx.setGoFile(goFile)
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
-			err = ctx.NewTypeDecl(goName, decl)
+			err = ctx.NewTypeDecl(goName, decl, pnc)
 		case *ast.EnumTypeDecl:
 			err = ctx.NewEnumTypeDecl(goName, decl, pnc)
 		case *ast.TypedefDecl:
-			err = ctx.NewTypedefDecl(goName, decl)
+			err = ctx.NewTypedefDecl(goName, decl, pnc)
 		case *ast.FuncDecl:
 			err = ctx.NewFuncDecl(goName, decl)
 		}

@@ -318,9 +318,7 @@ func (p *Package) NewFuncDecl(goName string, funcDecl *ast.FuncDecl) error {
 
 	fnSpec, err := p.LookupFunc(goName, funcDecl)
 	if err != nil {
-		// not gen the function not in the symbolmap
-		log.Printf("NewFuncDecl: %s not in the symbolmap: %s", funcDecl.Name.Name, err.Error())
-		return nil
+		return fmt.Errorf("NewFuncDecl: %s fail: %w", funcDecl.Name.Name, err)
 	}
 	if fnSpec.IsIgnore() {
 		log.Printf("NewFuncDecl: %v is ignored\n", funcDecl.Name)
@@ -418,7 +416,7 @@ func (p *Package) lookupType(name string, pnc nc.NodeConverter) (types.Type, err
 // Besides regular type declarations, it also supports:
 // - Forward declarations: Pre-registers incomplete types for later definition
 // - Self-referential types: Handles types that reference themselves (like linked lists)
-func (p *Package) NewTypeDecl(goName string, typeDecl *ast.TypeDecl) error {
+func (p *Package) NewTypeDecl(goName string, typeDecl *ast.TypeDecl, pnc nc.NodeConverter) error {
 	/* TODO(xsw): remove this
 	skip := p.handleType(typeDecl.Name, typeDecl.Loc)
 	if skip {
@@ -449,7 +447,7 @@ func (p *Package) NewTypeDecl(goName string, typeDecl *ast.TypeDecl) error {
 		return nil
 	}
 
-	p.CollectNameMapping(cname, name)
+	p.CollectNameMapping(cname, name, pnc)
 	incom := p.handleTypeDecl(name, cname, typeDecl)
 	if changed {
 		substObj(p.p.Types, p.p.Types.Scope(), cname, incom.decl.Type().Obj())
@@ -528,7 +526,7 @@ func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) *gogen.TypeD
 	return typeBlock.NewType(name)
 }
 
-func (p *Package) NewTypedefDecl(goName string, typedefDecl *ast.TypedefDecl) error {
+func (p *Package) NewTypedefDecl(goName string, typedefDecl *ast.TypedefDecl, pnc nc.NodeConverter) error {
 	/* TODO(xsw): remove this
 	skip := p.handleType(typedefDecl.Name, typedefDecl.Loc)
 	if skip {
@@ -554,7 +552,7 @@ func (p *Package) NewTypedefDecl(goName string, typedefDecl *ast.TypedefDecl) er
 		return nil
 	}
 
-	p.CollectNameMapping(typedefDecl.Name.Name, name)
+	p.CollectNameMapping(typedefDecl.Name.Name, name, pnc)
 
 	genDecl := p.p.NewTypeDefs()
 	typeSpecdecl := genDecl.NewType(name)
@@ -642,7 +640,7 @@ func (p *Package) NewEnumTypeDecl(goName string, enumTypeDecl *ast.EnumTypeDecl,
 	if debugLog {
 		log.Printf("NewEnumTypeDecl: %v\n", enumTypeDecl.Name)
 	}
-	enumType, exist, err := p.createEnumType(goName, enumTypeDecl.Name)
+	enumType, exist, err := p.createEnumType(goName, enumTypeDecl.Name, pnc)
 	if err != nil {
 		return fmt.Errorf("NewEnumTypeDecl: %v fail: %w", enumTypeDecl.Name, err)
 	}
@@ -661,7 +659,7 @@ func (p *Package) NewEnumTypeDecl(goName string, enumTypeDecl *ast.EnumTypeDecl,
 	return nil
 }
 
-func (p *Package) createEnumType(goName string, enumName *ast.Ident) (types.Type, bool, error) {
+func (p *Package) createEnumType(goName string, enumName *ast.Ident, pnc nc.NodeConverter) (types.Type, bool, error) {
 	var name string
 	var changed bool
 	var err error
@@ -676,7 +674,7 @@ func (p *Package) createEnumType(goName string, enumName *ast.Ident) (types.Type
 		if exist {
 			return nil, true, nil
 		}
-		p.CollectNameMapping(enumName.Name, name)
+		p.CollectNameMapping(enumName.Name, name, pnc)
 	}
 	enumType := p.cvt.ToDefaultEnumType()
 	if name != "" {
@@ -907,7 +905,7 @@ func (p *Package) trimPrefixes() []string {
 
 // Collect the name mapping between origin name and pubname
 // if in current package, it will be collected in public symbol table
-func (p *Package) CollectNameMapping(originName, newName string) {
+func (p *Package) CollectNameMapping(originName, newName string, pnc nc.NodeConverter) {
 	value := ""
 	if originName != newName {
 		value = newName
@@ -918,6 +916,9 @@ func (p *Package) CollectNameMapping(originName, newName string) {
 			return
 		}
 		*/
+		if !pnc.IsRecordPub(originName, value) {
+			return
+		}
 		p.Pubs[originName] = value
 	}
 }
