@@ -28,9 +28,8 @@ type Config struct {
 	Pkg       *ast.File
 	NC        nc.NodeConverter
 
-	TypeMap map[string]string // llcppg.pub
-	Deps    []string          // dependent packages
-	Libs    string
+	Deps []string // dependent packages
+	Libs string
 }
 
 // if modulePath is not empty, init the module by modulePath
@@ -72,7 +71,7 @@ func NewConverter(config *Config) (*Converter, error) {
 		PkgBase: PkgBase{
 			PkgPath: config.PkgPath,
 			Deps:    config.Deps,
-			Pubs:    config.TypeMap,
+			Pubs:    make(map[string]string),
 		},
 		Name:       config.PkgName,
 		OutputDir:  config.OutputDir,

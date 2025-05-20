@@ -23,9 +23,8 @@ type ConvConfig struct {
 	Pkg       *ast.File
 	NC        nc.NodeConverter
 
-	TypeMap map[string]string // llcppg.pub
-	Deps    []string          // dependent packages
-	Libs    string
+	Deps []string // dependent packages
+	Libs string
 }
 
 func Convert(config *ConvConfig) (pkg Package, err error) {
@@ -35,7 +34,6 @@ func Convert(config *ConvConfig) (pkg Package, err error) {
 		PkgName:   config.PkgName,
 		Pkg:       config.Pkg,
 		NC:        config.NC,
-		TypeMap:   config.TypeMap,
 		Deps:      config.Deps,
 		Libs:      config.Libs,
 	})

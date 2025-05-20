@@ -83,7 +83,6 @@ func main() {
 	pkg, err := cl.Convert(&cl.ConvConfig{
 		PkgName: conf.Name,
 		Pkg:     convertPkg.File,
-		TypeMap: conf.TypeMap,
 		NC: &ncimpl.Converter{
 			PkgName: conf.Name,
 			TypeMap: conf.TypeMap,

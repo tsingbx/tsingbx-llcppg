@@ -37,10 +37,9 @@ func basicConverter(nc nc.NodeConverter) *Converter {
 		Pkg: &ast.File{
 			Decls: []ast.Decl{},
 		},
-		NC:      nodeConverter,
-		TypeMap: cfg.TypeMap,
-		Deps:    cfg.Deps,
-		Libs:    cfg.Libs,
+		NC:   nodeConverter,
+		Deps: cfg.Deps,
+		Libs: cfg.Libs,
 	})
 	if err != nil {
 		panic(err)

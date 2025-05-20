@@ -46,14 +46,3 @@ func NC(cfg *llcppg.Config, fileMap map[string]*llcppg.FileInfo, convSym func(na
 		KeepUnderScore: cfg.KeepUnderScore,
 	}
 }
-
-/* TODO(xsw): remove this
-func GetCppgConfig(cfgFile string) (conf *llcppg.Config) {
-	conf, err := cfg.GetCppgCfgFromPath(cfgFile)
-	if err != nil {
-		// NOTE(xsw): not a good idea, but make sense in test cases
-		conf = llcppg.NewDefault()
-	}
-	return
-}
-*/
