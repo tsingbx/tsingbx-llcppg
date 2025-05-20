@@ -132,9 +132,15 @@ func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string,
 		err = nc.ErrSkip
 		return
 	}
-	if fn, ok := decl.(*ast.FuncDecl); ok {
-		goName, err = p.ConvSym(obj, fn.MangledName)
-	} else {
+	switch decl := decl.(type) {
+	case *ast.FuncDecl:
+		goName, err = p.ConvSym(obj, decl.MangledName)
+	case *ast.EnumTypeDecl:
+		// support anonymous enum with empty name
+		if obj.Name != nil {
+			goName = p.declName(obj.Name.Name)
+		}
+	default:
 		goName = p.declName(obj.Name.Name)
 	}
 	return
