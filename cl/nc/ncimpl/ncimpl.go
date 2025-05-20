@@ -138,6 +138,8 @@ func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string,
 		// only have error when symbol not found,current keep only log this error
 		if err != nil {
 			log.Printf("ConvDecl: %s not found in symbolmap: %s", decl.MangledName, err.Error())
+			err = nc.ErrSkip
+			return
 		}
 	case *ast.EnumTypeDecl:
 		// support anonymous enum with empty name
