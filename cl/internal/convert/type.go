@@ -15,6 +15,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/nc"
 )
 
 type TypeContext int
@@ -46,16 +47,18 @@ type TypeConv struct {
 	types   *types.Package
 	typeMap *BuiltinTypeMap
 	ctx     TypeContext
-	lookup  func(name string) (types.Type, error)
+	pnc     nc.NodeConverter
+	lookup  func(name string, pnc nc.NodeConverter) (types.Type, error)
 }
 
-func NewConv(pkg *gogen.Package, types *types.Package, lookup func(name string) (types.Type, error)) *TypeConv {
+func NewConv(pkg *gogen.Package, types *types.Package, pnc nc.NodeConverter, lookup func(name string, pnc nc.NodeConverter) (types.Type, error)) *TypeConv {
 	clib := pkg.Import("github.com/goplus/lib/c")
 	math := pkg.Import("math")
 	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, math, pkg.Unsafe())
 	typeConv := &TypeConv{
 		typeMap: typeMap,
 		types:   types,
+		pnc:     pnc,
 		lookup:  lookup,
 	}
 	return typeConv
@@ -139,7 +142,7 @@ func (p *TypeConv) handlePointerType(t *ast.PointerType) (types.Type, error) {
 
 func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 	lookup := func(name string) (types.Type, error) {
-		typ, err := p.lookup(name)
+		typ, err := p.lookup(name, p.pnc)
 		if err != nil {
 			return nil, err
 		}
