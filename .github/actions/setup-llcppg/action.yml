@@ -30,6 +30,8 @@ runs:
     run: |
       brew update
       brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv
+      brew install zlib # for llgo test .
+      brew link --force zlib # for llgo test .
       brew link --force libffi
       echo "$(brew --prefix llvm@${{inputs.llvm}})/bin" >> $GITHUB_PATH
 
