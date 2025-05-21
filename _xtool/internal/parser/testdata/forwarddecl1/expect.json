@@ -525,7 +525,7 @@
 				"_Type":	"Ident",
 				"Name":	"lua_getstack"
 			},
-			"MangledName":	"__Z12lua_getstackP9lua_StateiP9lua_Debug",
+			"MangledName":	"_Z12lua_getstackP9lua_StateiP9lua_Debug",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{

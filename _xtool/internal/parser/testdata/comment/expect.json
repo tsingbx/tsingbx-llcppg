@@ -18,7 +18,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo1"
 			},
-			"MangledName":	"__Z4foo1v",
+			"MangledName":	"_Z4foo1v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -57,7 +57,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo2"
 			},
-			"MangledName":	"__Z4foo2v",
+			"MangledName":	"_Z4foo2v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -96,7 +96,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo3"
 			},
-			"MangledName":	"__Z4foo3v",
+			"MangledName":	"_Z4foo3v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -135,7 +135,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo4"
 			},
-			"MangledName":	"__Z4foo4v",
+			"MangledName":	"_Z4foo4v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -174,7 +174,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo5"
 			},
-			"MangledName":	"__Z4foo5v",
+			"MangledName":	"_Z4foo5v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -216,7 +216,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo6"
 			},
-			"MangledName":	"__Z4foo6v",
+			"MangledName":	"_Z4foo6v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -258,7 +258,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo7"
 			},
-			"MangledName":	"__Z4foo7v",
+			"MangledName":	"_Z4foo7v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -300,7 +300,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo8"
 			},
-			"MangledName":	"__Z4foo8v",
+			"MangledName":	"_Z4foo8v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -348,7 +348,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo9"
 			},
-			"MangledName":	"__Z4foo9v",
+			"MangledName":	"_Z4foo9v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -616,7 +616,7 @@
 							"_Type":	"Ident",
 							"Name":	"Foo"
 						},
-						"MangledName":	"__ZN3Doc3FooEv",
+						"MangledName":	"_ZN3Doc3FooEv",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{

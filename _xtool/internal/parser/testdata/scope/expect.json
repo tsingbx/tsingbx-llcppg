@@ -12,7 +12,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo"
 			},
-			"MangledName":	"__Z3foov",
+			"MangledName":	"_Z3foov",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -48,7 +48,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo"
 			},
-			"MangledName":	"__ZN1a3fooEv",
+			"MangledName":	"_ZN1a3fooEv",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -91,7 +91,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo"
 			},
-			"MangledName":	"__ZN1a1b3fooEv",
+			"MangledName":	"_ZN1a1b3fooEv",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -146,7 +146,7 @@
 							"_Type":	"Ident",
 							"Name":	"foo"
 						},
-						"MangledName":	"__ZN3Foo3fooEv",
+						"MangledName":	"_ZN3Foo3fooEv",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -213,7 +213,7 @@
 							"_Type":	"Ident",
 							"Name":	"foo"
 						},
-						"MangledName":	"__ZN1a3Foo3fooEv",
+						"MangledName":	"_ZN1a3Foo3fooEv",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{

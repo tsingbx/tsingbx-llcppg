@@ -9,7 +9,6 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
-	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/token"
 )
@@ -280,7 +279,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 		ct.file.Decls = append(ct.file.Decls, typedefDecl)
 		ct.logln("visitTop: ProcessTypeDefDecl END", typedefDecl.Name.Name)
 	case clang.CursorNamespace:
-		clangutils.VisitChildren(cursor, ct.visitTop)
+		VisitChildren(cursor, ct.visitTop)
 	}
 	return clang.ChildVisit_Continue
 }
@@ -289,7 +288,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 // input is clang -E 's result
 func (ct *Converter) Convert() (*ast.File, error) {
 	cursor := ct.unit.Cursor()
-	clangutils.VisitChildren(cursor, ct.visitTop)
+	VisitChildren(cursor, ct.visitTop)
 	return ct.file, nil
 }
 
@@ -604,7 +603,7 @@ func (ct *Converter) ProcessMethodAttributes(cursor clang.Cursor, fn *ast.FuncDe
 func (ct *Converter) ProcessEnumType(cursor clang.Cursor) *ast.EnumType {
 	items := make([]*ast.EnumItem, 0)
 
-	clangutils.VisitChildren(cursor, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
+	VisitChildren(cursor, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
 		if cursor.Kind == clang.CursorEnumConstantDecl {
 			name := cursor.String()
 			defer name.Dispose()
@@ -705,7 +704,7 @@ func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 	defer ct.decIndent()
 	flds := &ast.FieldList{}
 	ct.logln("ProcessFieldList: VisitChildren")
-	clangutils.VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
+	VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
 		switch subcsr.Kind {
 		case clang.CursorFieldDecl:
 			// In C language, parameter lists do not have similar parameter grouping in Go.
@@ -736,7 +735,7 @@ func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 // Note:Public Method is considered
 func (ct *Converter) ProcessMethods(cursor clang.Cursor) []*ast.FuncDecl {
 	methods := make([]*ast.FuncDecl, 0)
-	clangutils.VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
+	VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
 		if isMethod(subcsr) && subcsr.CXXAccessSpecifier() == clang.CXXPublic {
 			method := ct.ProcessFuncDecl(subcsr)
 			if method != nil {
@@ -944,7 +943,7 @@ func (ct *Converter) ProcessBuiltinType(t clang.Type) *ast.BuiltinType {
 // Constructs a complete scoping expression by traversing the semantic parents, starting from the given clang.Cursor
 // For anonymous decl of typedef references, use their anonymous name
 func (ct *Converter) BuildScopingExpr(cursor clang.Cursor) ast.Expr {
-	parts := clangutils.BuildScopingParts(cursor)
+	parts := BuildScopingParts(cursor)
 	return buildScopingFromParts(parts)
 }
 
@@ -999,7 +998,7 @@ func buildScopingFromParts(parts []string) ast.Expr {
 }
 
 func getOffset(location clang.SourceLocation) c.Uint {
-	_, _, _, offset := clangutils.GetLocation(location)
+	_, _, _, offset := GetLocation(location)
 	return offset
 }
 

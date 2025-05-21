@@ -10,7 +10,7 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
-	"github.com/goplus/llcppg/_xtool/llclang/internal/parser"
+	"github.com/goplus/llcppg/_xtool/internal/parser"
 	"github.com/goplus/llcppg/ast"
 
 	"github.com/goplus/llpkg/cjson"

@@ -12,7 +12,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo1"
 			},
-			"MangledName":	"__Z4foo1v",
+			"MangledName":	"_Z4foo1v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -45,7 +45,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo2"
 			},
-			"MangledName":	"__Z4foo2i",
+			"MangledName":	"_Z4foo2i",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -93,7 +93,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo3"
 			},
-			"MangledName":	"__Z4foo3iz",
+			"MangledName":	"_Z4foo3iz",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -151,7 +151,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo4"
 			},
-			"MangledName":	"__Z4foo4id",
+			"MangledName":	"_Z4foo4id",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -217,7 +217,7 @@
 				"_Type":	"Ident",
 				"Name":	"foo5"
 			},
-			"MangledName":	"__ZL4foo5ii",
+			"MangledName":	"_ZL4foo5ii",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -304,7 +304,7 @@
 				"_Type":	"Ident",
 				"Name":	"bar1"
 			},
-			"MangledName":	"__Z4bar1v",
+			"MangledName":	"_Z4bar1v",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -389,7 +389,7 @@
 				"_Type":	"Ident",
 				"Name":	"bar2"
 			},
-			"MangledName":	"__Z4bar2l",
+			"MangledName":	"_Z4bar2l",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
@@ -563,7 +563,7 @@
 				"_Type":	"Ident",
 				"Name":	"OSSL_provider_init"
 			},
-			"MangledName":	"__Z18OSSL_provider_initPK16OSSL_CORE_HANDLEPK13OSSL_DISPATCHPS4_PPv",
+			"MangledName":	"_Z18OSSL_provider_initPK16OSSL_CORE_HANDLEPK13OSSL_DISPATCHPS4_PPv",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{
