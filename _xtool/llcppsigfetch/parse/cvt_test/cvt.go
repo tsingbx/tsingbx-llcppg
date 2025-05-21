@@ -35,8 +35,8 @@ func RunTest(testName string, testCases []string) {
 }
 
 func RunTestWithConfig(config *parse.Config) {
-	config.Exec = func(conf *parse.Config, cvt *parse.Converter) {
-		result := MarshalPkg(cvt.Pkg)
+	config.Exec = func(conf *parse.Config, pkg *llcppg.Pkg) {
+		result := MarshalPkg(pkg)
 		str := result.Print()
 		c.Printf(c.Str("%s\n\n"), str)
 		cjson.FreeCStr(unsafe.Pointer(str))
