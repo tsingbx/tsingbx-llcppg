@@ -24,7 +24,7 @@ type ConvConfig struct {
 	NC        nc.NodeConverter
 
 	Deps []string // dependent packages
-	Libs string
+	Libs string   // $(pkg-config --libs xxx)
 }
 
 func Convert(config *ConvConfig) (pkg Package, err error) {
