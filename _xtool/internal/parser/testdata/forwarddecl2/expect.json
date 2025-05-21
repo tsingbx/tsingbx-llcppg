@@ -48,7 +48,7 @@
 				"_Type":	"Ident",
 				"Name":	"f"
 			},
-			"MangledName":	"__Z1fP3foo",
+			"MangledName":	"_Z1fP3foo",
 			"Type":	{
 				"_Type":	"FuncType",
 				"Params":	{

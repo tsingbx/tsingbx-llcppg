@@ -115,7 +115,7 @@
 							"_Type":	"Ident",
 							"Name":	"foo"
 						},
-						"MangledName":	"__ZN1B3fooEid",
+						"MangledName":	"_ZN1B3fooEid",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -181,7 +181,7 @@
 							"_Type":	"Ident",
 							"Name":	"vafoo"
 						},
-						"MangledName":	"__ZN1B5vafooEiz",
+						"MangledName":	"_ZN1B5vafooEiz",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -263,7 +263,7 @@
 							"_Type":	"Ident",
 							"Name":	"C"
 						},
-						"MangledName":	"__ZN1CC1Ev",
+						"MangledName":	"_ZN1CC1Ev",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -299,7 +299,7 @@
 							"_Type":	"Ident",
 							"Name":	"C"
 						},
-						"MangledName":	"__ZN1CC1Ev",
+						"MangledName":	"_ZN1CC1Ev",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -335,7 +335,7 @@
 							"_Type":	"Ident",
 							"Name":	"~C"
 						},
-						"MangledName":	"__ZN1CD1Ev",
+						"MangledName":	"_ZN1CD1Ev",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -371,7 +371,7 @@
 							"_Type":	"Ident",
 							"Name":	"foo"
 						},
-						"MangledName":	"__ZN1C3fooEv",
+						"MangledName":	"_ZN1C3fooEv",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -428,7 +428,7 @@
 							"_Type":	"Ident",
 							"Name":	"Base"
 						},
-						"MangledName":	"__ZN4BaseC1Ev",
+						"MangledName":	"_ZN4BaseC1Ev",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -464,7 +464,7 @@
 							"_Type":	"Ident",
 							"Name":	"~Base"
 						},
-						"MangledName":	"__ZN4BaseD1Ev",
+						"MangledName":	"_ZN4BaseD1Ev",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -500,7 +500,7 @@
 							"_Type":	"Ident",
 							"Name":	"foo"
 						},
-						"MangledName":	"__ZN4Base3fooEv",
+						"MangledName":	"_ZN4Base3fooEv",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -557,7 +557,7 @@
 							"_Type":	"Ident",
 							"Name":	"Derived"
 						},
-						"MangledName":	"__ZN7DerivedC1Ev",
+						"MangledName":	"_ZN7DerivedC1Ev",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -593,7 +593,7 @@
 							"_Type":	"Ident",
 							"Name":	"~Derived"
 						},
-						"MangledName":	"__ZN7DerivedD1Ev",
+						"MangledName":	"_ZN7DerivedD1Ev",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{
@@ -629,7 +629,7 @@
 							"_Type":	"Ident",
 							"Name":	"foo"
 						},
-						"MangledName":	"__ZN7Derived3fooEv",
+						"MangledName":	"_ZN7Derived3fooEv",
 						"Type":	{
 							"_Type":	"FuncType",
 							"Params":	{

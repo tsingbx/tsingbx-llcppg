@@ -1,4 +1,4 @@
-package parse
+package parser
 
 import (
 	"fmt"
@@ -9,10 +9,7 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
-	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	"github.com/goplus/llcppg/ast"
-	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/token"
 )
 
@@ -30,10 +27,9 @@ func SetDebug(dbgFlags dbgFlags) {
 }
 
 type Converter struct {
-	Pkg   *llcppg.Pkg
-	index *clang.Index
-	unit  *clang.TranslationUnit
-
+	file   *ast.File
+	index  *clang.Index
+	unit   *clang.TranslationUnit
 	indent int // for verbose debug
 }
 
@@ -45,63 +41,40 @@ var tagMap = map[string]ast.Tag{
 }
 
 type ConverterConfig struct {
-	HfileInfo *config.PkgHfilesInfo
-	Cfg       *clangutils.Config
+	File  string
+	Args  []string
+	IsCpp bool
+}
+
+func Do(config *ConverterConfig) (*ast.File, error) {
+	converter, err := NewConverter(config)
+	if err != nil {
+		return nil, err
+	}
+	return converter.Convert()
 }
 
 func NewConverter(config *ConverterConfig) (*Converter, error) {
 	if debugParse {
 		fmt.Fprintln(os.Stderr, "NewConverter: config")
-		fmt.Fprintln(os.Stderr, "config.File", config.Cfg.File)
-		fmt.Fprintln(os.Stderr, "config.Args", config.Cfg.Args)
-		fmt.Fprintln(os.Stderr, "config.IsCpp", config.Cfg.IsCpp)
-		fmt.Fprintln(os.Stderr, "config.Temp", config.Cfg.Temp)
+		fmt.Fprintln(os.Stderr, "config.File", config.File)
 	}
 
-	index, unit, err := clangutils.CreateTranslationUnit(config.Cfg)
+	index, unit, err := CreateTranslationUnit(&LibClangConfig{
+		File:  config.File,
+		Temp:  false,
+		Args:  config.Args,
+		IsCpp: config.IsCpp,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	fileMap, err := initFileMap(config)
-	if err != nil {
-		return nil, err
-	}
 	return &Converter{
 		index: index,
 		unit:  unit,
-		Pkg: &llcppg.Pkg{
-			File:    &ast.File{},
-			FileMap: fileMap,
-		},
+		file:  &ast.File{},
 	}, nil
-}
-
-// combine file
-func initFileMap(cfg *ConverterConfig) (map[string]*llcppg.FileInfo, error) {
-	fileMap := make(map[string]*llcppg.FileInfo)
-	fileTypes := []struct {
-		files []string
-		fType llcppg.FileType
-	}{
-		{cfg.HfileInfo.Inters, llcppg.Inter},
-		{cfg.HfileInfo.Impls, llcppg.Impl},
-		{cfg.HfileInfo.Thirds, llcppg.Third},
-	}
-	for _, file := range cfg.HfileInfo.Inters {
-		fileMap[file] = &llcppg.FileInfo{
-			FileType: llcppg.Inter,
-		}
-	}
-	for _, ft := range fileTypes {
-		for _, file := range ft.files {
-			fileMap[file] = &llcppg.FileInfo{
-				FileType: ft.fType,
-			}
-		}
-	}
-
-	return fileMap, nil
 }
 
 func (ct *Converter) Dispose() {
@@ -251,17 +224,17 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 			ct.logln(err)
 			return clang.ChildVisit_Continue
 		}
-		ct.Pkg.File.Includes = append(ct.Pkg.File.Includes, include)
+		ct.file.Includes = append(ct.file.Includes, include)
 		ct.logln("visitTop: ProcessInclude END ", include.Path)
 	case clang.CursorMacroDefinition:
 		macro := ct.ProcessMacro(cursor)
 		if cursor.IsMacroBuiltin() == 0 {
-			ct.Pkg.File.Macros = append(ct.Pkg.File.Macros, macro)
+			ct.file.Macros = append(ct.file.Macros, macro)
 		}
 		ct.logln("visitTop: ProcessMacro END ", macro.Name, "Tokens Length:", len(macro.Tokens))
 	case clang.CursorEnumDecl:
 		enum := ct.ProcessEnumDecl(cursor)
-		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, enum)
+		ct.file.Decls = append(ct.file.Decls, enum)
 		ct.logf("visitTop: ProcessEnumDecl END")
 		if enum.Name != nil {
 			ct.logln(enum.Name.Name)
@@ -271,12 +244,12 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 
 	case clang.CursorClassDecl:
 		classDecl := ct.ProcessClassDecl(cursor)
-		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, classDecl)
+		ct.file.Decls = append(ct.file.Decls, classDecl)
 		// class havent anonymous situation
 		ct.logln("visitTop: ProcessClassDecl END", classDecl.Name.Name)
 	case clang.CursorStructDecl:
 		structDecl := ct.ProcessStructDecl(cursor)
-		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, structDecl)
+		ct.file.Decls = append(ct.file.Decls, structDecl)
 		ct.logf("visitTop: ProcessStructDecl END")
 		if structDecl.Name != nil {
 			ct.logln(structDecl.Name.Name)
@@ -285,7 +258,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 		}
 	case clang.CursorUnionDecl:
 		unionDecl := ct.ProcessUnionDecl(cursor)
-		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, unionDecl)
+		ct.file.Decls = append(ct.file.Decls, unionDecl)
 		ct.logf("visitTop: ProcessUnionDecl END")
 		if unionDecl.Name != nil {
 			ct.logln(unionDecl.Name.Name)
@@ -296,27 +269,27 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 		// Handle functions and class methods (including out-of-class method)
 		// Example: void MyClass::myMethod() { ... } out-of-class method
 		funcDecl := ct.ProcessFuncDecl(cursor)
-		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, funcDecl)
+		ct.file.Decls = append(ct.file.Decls, funcDecl)
 		ct.logln("visitTop: ProcessFuncDecl END", funcDecl.Name.Name, funcDecl.MangledName, "isStatic:", funcDecl.IsStatic, "isInline:", funcDecl.IsInline)
 	case clang.CursorTypedefDecl:
 		typedefDecl := ct.ProcessTypeDefDecl(cursor)
 		if typedefDecl == nil {
 			return clang.ChildVisit_Continue
 		}
-		ct.Pkg.File.Decls = append(ct.Pkg.File.Decls, typedefDecl)
+		ct.file.Decls = append(ct.file.Decls, typedefDecl)
 		ct.logln("visitTop: ProcessTypeDefDecl END", typedefDecl.Name.Name)
 	case clang.CursorNamespace:
-		clangutils.VisitChildren(cursor, ct.visitTop)
+		VisitChildren(cursor, ct.visitTop)
 	}
 	return clang.ChildVisit_Continue
 }
 
 // for flatten ast,keep type order
 // input is clang -E 's result
-func (ct *Converter) Convert() (*llcppg.Pkg, error) {
+func (ct *Converter) Convert() (*ast.File, error) {
 	cursor := ct.unit.Cursor()
-	clangutils.VisitChildren(cursor, ct.visitTop)
-	return ct.Pkg, nil
+	VisitChildren(cursor, ct.visitTop)
+	return ct.file, nil
 }
 
 func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
@@ -630,7 +603,7 @@ func (ct *Converter) ProcessMethodAttributes(cursor clang.Cursor, fn *ast.FuncDe
 func (ct *Converter) ProcessEnumType(cursor clang.Cursor) *ast.EnumType {
 	items := make([]*ast.EnumItem, 0)
 
-	clangutils.VisitChildren(cursor, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
+	VisitChildren(cursor, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
 		if cursor.Kind == clang.CursorEnumConstantDecl {
 			name := cursor.String()
 			defer name.Dispose()
@@ -731,7 +704,7 @@ func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 	defer ct.decIndent()
 	flds := &ast.FieldList{}
 	ct.logln("ProcessFieldList: VisitChildren")
-	clangutils.VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
+	VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
 		switch subcsr.Kind {
 		case clang.CursorFieldDecl:
 			// In C language, parameter lists do not have similar parameter grouping in Go.
@@ -762,7 +735,7 @@ func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 // Note:Public Method is considered
 func (ct *Converter) ProcessMethods(cursor clang.Cursor) []*ast.FuncDecl {
 	methods := make([]*ast.FuncDecl, 0)
-	clangutils.VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
+	VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
 		if isMethod(subcsr) && subcsr.CXXAccessSpecifier() == clang.CXXPublic {
 			method := ct.ProcessFuncDecl(subcsr)
 			if method != nil {
@@ -970,7 +943,7 @@ func (ct *Converter) ProcessBuiltinType(t clang.Type) *ast.BuiltinType {
 // Constructs a complete scoping expression by traversing the semantic parents, starting from the given clang.Cursor
 // For anonymous decl of typedef references, use their anonymous name
 func (ct *Converter) BuildScopingExpr(cursor clang.Cursor) ast.Expr {
-	parts := clangutils.BuildScopingParts(cursor)
+	parts := BuildScopingParts(cursor)
 	return buildScopingFromParts(parts)
 }
 
@@ -1025,7 +998,7 @@ func buildScopingFromParts(parts []string) ast.Expr {
 }
 
 func getOffset(location clang.SourceLocation) c.Uint {
-	_, _, _, offset := clangutils.GetLocation(location)
+	_, _, _, offset := GetLocation(location)
 	return offset
 }
 

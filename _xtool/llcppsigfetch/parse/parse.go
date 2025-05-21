@@ -8,11 +8,25 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
+	"github.com/goplus/llcppg/_xtool/internal/parser"
 	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkg/cjson"
 )
+
+type dbgFlags = int
+
+var debugParse bool
+
+const (
+	DbgParse   dbgFlags = 1 << iota
+	DbgFlagAll          = DbgParse
+)
+
+func SetDebug(dbgFlags dbgFlags) {
+	debugParse = (dbgFlags & DbgParse) != 0
+}
 
 // temp to avoid call clang in llcppsigfetch,will cause hang
 var ClangSearchPath []string
@@ -30,11 +44,12 @@ type Config struct {
 
 	CombinedFile     string
 	PreprocessedFile string
-	Exec             func(conf *Config, converter *Converter)
+	Exec             func(conf *Config, pkg *llcppg.Pkg)
 }
 
 func Do(conf *Config) error {
 	if debugParse {
+		parser.SetDebug(parser.DbgFlagAll)
 		fmt.Fprintln(os.Stderr, "output to file:", conf.Out)
 		if conf.ExtractMode {
 			fmt.Fprintln(os.Stderr, "runExtract: extractFile:", conf.ExtractFile)
@@ -101,24 +116,37 @@ func Do(conf *Config) error {
 		fmt.Fprintln(os.Stderr, "thirdhfile", pkgHfiles.Thirds)
 	}
 	libclangFlags = append(libclangFlags, strings.Fields(conf.Conf.CFlags)...)
-	converter, err := NewConverter(
-		&ConverterConfig{
-			HfileInfo: pkgHfiles,
-			Cfg: &clangutils.Config{
-				File:  conf.PreprocessedFile,
-				IsCpp: isCpp,
-				Args:  libclangFlags,
-			},
-		})
+	file, err := parser.Do(&parser.ConverterConfig{
+		File:  conf.PreprocessedFile,
+		Args:  libclangFlags,
+		IsCpp: isCpp,
+	})
 	if err != nil {
 		return err
 	}
-	defer converter.Dispose()
 
-	pkg, err := converter.Convert()
-	if err != nil {
-		return err
+	pkg := &llcppg.Pkg{
+		File:    file,
+		FileMap: make(map[string]*llcppg.FileInfo),
 	}
+
+	fileTypeMappings := []struct {
+		files    []string
+		fileType llcppg.FileType
+	}{
+		{pkgHfiles.Inters, llcppg.Inter},
+		{pkgHfiles.Impls, llcppg.Impl},
+		{pkgHfiles.Thirds, llcppg.Third},
+	}
+
+	for _, mapping := range fileTypeMappings {
+		for _, file := range mapping.files {
+			pkg.FileMap[file] = &llcppg.FileInfo{
+				FileType: mapping.fileType,
+			}
+		}
+	}
+
 	if debugParse {
 		fmt.Fprintln(os.Stderr, "Have %d Macros", len(pkg.File.Macros))
 		for _, macro := range pkg.File.Macros {
@@ -128,14 +156,14 @@ func Do(conf *Config) error {
 	}
 
 	if conf.Exec != nil {
-		conf.Exec(conf, converter)
+		conf.Exec(conf, pkg)
 	}
 
 	return nil
 }
 
-func OutputPkg(conf *Config, cvt *Converter) {
-	info := MarshalPkg(cvt.Pkg)
+func OutputPkg(conf *Config, pkg *llcppg.Pkg) {
+	info := MarshalPkg(pkg)
 	str := info.Print()
 	defer cjson.FreeCStr(unsafe.Pointer(str))
 	defer info.Delete()
