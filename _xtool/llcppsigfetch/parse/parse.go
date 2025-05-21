@@ -15,6 +15,19 @@ import (
 	"github.com/goplus/llpkg/cjson"
 )
 
+type dbgFlags = int
+
+var debugParse bool
+
+const (
+	DbgParse   dbgFlags = 1 << iota
+	DbgFlagAll          = DbgParse
+)
+
+func SetDebug(dbgFlags dbgFlags) {
+	debugParse = (dbgFlags & DbgParse) != 0
+}
+
 // temp to avoid call clang in llcppsigfetch,will cause hang
 var ClangSearchPath []string
 var ClangResourceDir string
@@ -36,6 +49,7 @@ type Config struct {
 
 func Do(conf *Config) error {
 	if debugParse {
+		parser.SetDebug(parser.DbgFlagAll)
 		fmt.Fprintln(os.Stderr, "output to file:", conf.Out)
 		if conf.ExtractMode {
 			fmt.Fprintln(os.Stderr, "runExtract: extractFile:", conf.ExtractFile)
