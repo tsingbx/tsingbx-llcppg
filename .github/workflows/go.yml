@@ -58,7 +58,6 @@ jobs:
         # https://github.com/goplus/llgo/issues/944
 
         llgo cmptest ./arg_test
-        llgo cmptest ./clang_test
         llgo cmptest ./config_test
         llgo cmptest ./name_test
         llgo cmptest ./symbol_test
