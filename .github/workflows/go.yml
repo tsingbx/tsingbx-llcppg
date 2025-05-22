@@ -30,21 +30,17 @@ jobs:
         llvm: ${{ matrix.llvm }}
         llgo: ${{ matrix.llgo }}
 
-    - name: Test llclang
+    - name: Test xtool
       run: |
         # llgo test ./_xtool/internal/parser/...
         # got go/bin/parser.test: exit code -1
-        cd _xtool/internal/parser
+
         # check exit code outout for temporary fix
         # with the latest update can exit in llgo test
         # only with llgo test ./... with llgo update
         # https://github.com/goplus/llgo/pull/1128
-        output=$(llgo test ./... 2>&1)
-        echo "$output"
-        if echo "$output" | grep -q "exit code [^0]"; then
-          echo "llgo test fail"
-          exit 1
-        fi
+        bash .github/workflows/llgo_test.sh $(ls -d _xtool/internal/*/)
+
 
     - name: Test llcppsymg & llcppsigfetch
       run: |
