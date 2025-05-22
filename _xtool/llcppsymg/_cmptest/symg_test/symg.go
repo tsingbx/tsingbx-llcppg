@@ -9,8 +9,8 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	llcppg "github.com/goplus/llcppg/config"
+	"github.com/goplus/llcppg/internal/name"
 	"github.com/goplus/llgo/xtool/nm"
 )
 
