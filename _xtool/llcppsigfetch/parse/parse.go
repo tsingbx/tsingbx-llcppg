@@ -9,8 +9,8 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
+	"github.com/goplus/llcppg/_xtool/internal/config"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkg/cjson"
 )

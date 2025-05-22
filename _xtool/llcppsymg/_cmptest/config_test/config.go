@@ -7,73 +7,14 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config/cfgparse"
-	llcppg "github.com/goplus/llcppg/config"
 )
 
 func main() {
-	TestGetConfByByte()
 	TestParseLibs()
 	TestGenDylibPaths()
 	TestParseCFlags()
 	TestGenHeaderFilePath()
-	TestPkgHfileInfo()
-}
-
-func TestGetConfByByte() {
-	testCases := []struct {
-		name  string
-		input string
-	}{
-		{
-			name: "SQLite configuration",
-			input: `{
-  "name": "sqlite",
-  "cflags": "-I/opt/homebrew/opt/sqlite/include",
-  "include": ["sqlite3.h"],
-  "libs": "-L/opt/homebrew/opt/sqlite/lib -lsqlite3",
-  "trimPrefixes": ["sqlite3_"],
-  "cplusplus": false,
-  "symMap": {
-    "sqlite3_finalize":".Close"
-  }
-}`,
-		},
-		{
-			name: "Lua configuration",
-			input: `{
-  "name": "lua",
-  "cflags": "-I/opt/homebrew/include/lua",
-  "include": ["lua.h"],
-  "libs": "-L/opt/homebrew/lib -llua -lm",
-  "trimPrefixes": ["lua_", "lua_"],
-  "cplusplus": false
-}`,
-		},
-		{
-			name:  "Invalid JSON",
-			input: `{invalid json}`,
-		},
-	}
-
-	for _, tc := range testCases {
-		fmt.Printf("=== Test case: %s ===\n", tc.name)
-		result, err := config.GetConfByByte([]byte(tc.input))
-
-		if err != nil {
-			fmt.Println("Error:", err.Error())
-		} else {
-			fmt.Println("Name:", result.Config.Name)
-			fmt.Println("CFlags:", result.Config.CFlags)
-			fmt.Println("Libs:", result.Config.Libs)
-			fmt.Println("Include:", strings.Join(result.Config.Include, ", "))
-			fmt.Println("TrimPrefixes:", strings.Join(result.Config.TrimPrefixes, ", "))
-			fmt.Println("Cplusplus:", result.Config.Cplusplus)
-			fmt.Println("SymMap:", result.Config.SymMap)
-		}
-		fmt.Println()
-	}
 }
 
 func TestParseLibs() {
@@ -334,46 +275,5 @@ func TestGenHeaderFilePath() {
 			fmt.Printf("Output: %v\n", relativeResult)
 		}
 		fmt.Println()
-	}
-}
-
-func TestPkgHfileInfo() {
-	confs := []*llcppg.Config{{
-		CFlags:  "-I./hfile -I ./thirdhfile",
-		Include: []string{"temp1.h", "temp2.h"},
-	}, {
-		CFlags:  "-I./hfile -I ./thirdhfile",
-		Include: []string{"temp1.h", "temp2.h"},
-		Mix:     true,
-	}}
-	for i, conf := range confs {
-		fmt.Printf("=== Test PkgHfileInfo Case %d ===\n", i+1)
-		info := config.PkgHfileInfo(conf, []string{})
-		fmt.Println("interfaces", info.Inters)
-		fmt.Println("implements", info.Impls)
-
-		thirdhfile, err := filepath.Abs("./thirdhfile/third.h")
-		if err != nil {
-			panic(err)
-		}
-		tfileFound := false
-		stdioFound := false
-		for _, tfile := range info.Thirds {
-			absTfile, err := filepath.Abs(tfile)
-			if err != nil {
-				panic(err)
-			}
-			if absTfile == thirdhfile {
-				tfileFound = true
-				fmt.Println("third hfile found", tfile)
-			}
-			if strings.HasSuffix(absTfile, "stdio.h") {
-				stdioFound = true
-			}
-		}
-		if !tfileFound || !stdioFound {
-			panic("third hfile or std hfile not found")
-		}
-		fmt.Println("All third hfile found")
 	}
 }

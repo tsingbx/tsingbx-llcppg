@@ -1,25 +1,4 @@
 #stdout
-=== Test case: SQLite configuration ===
-Name: sqlite
-CFlags: -I/opt/homebrew/opt/sqlite/include
-Libs: -L/opt/homebrew/opt/sqlite/lib -lsqlite3
-Include: sqlite3.h
-TrimPrefixes: sqlite3_
-Cplusplus: false
-SymMap: map[sqlite3_finalize:.Close]
-
-=== Test case: Lua configuration ===
-Name: lua
-CFlags: -I/opt/homebrew/include/lua
-Libs: -L/opt/homebrew/lib -llua -lm
-Include: lua.h
-TrimPrefixes: lua_, lua_
-Cplusplus: false
-SymMap: map[]
-
-=== Test case: Invalid JSON ===
-Error: failed to parse config
-
 === Test ParseLibs ===
 Test case: Lua library
 Input: -L/opt/homebrew/lib -llua -lm
@@ -93,16 +72,6 @@ Test case: Empty file list
 Input files: []
 Error: failed to find any header files
 
-=== Test PkgHfileInfo Case 1 ===
-interfaces [hfile/temp1.h hfile/temp2.h]
-implements [hfile/tempimpl.h]
-third hfile found thirdhfile/third.h
-All third hfile found
-=== Test PkgHfileInfo Case 2 ===
-interfaces [hfile/temp1.h hfile/temp2.h]
-implements []
-third hfile found thirdhfile/third.h
-All third hfile found
 
 #stderr
 
