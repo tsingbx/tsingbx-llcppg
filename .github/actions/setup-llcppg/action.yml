@@ -6,10 +6,10 @@ inputs:
     default: "1.23"
   llvm:
     description: "LLVM version to install (e.g. 18)"
-    default: "18"
+    default: "19"
   llgo:
     description: "LLGo git ref or tag"
-    default: "v0.10.0"
+    default: "450a3637e44f73de2cb05ddacc77f6886877c69b"
 runs:
   using: "composite"
   steps:
@@ -29,12 +29,12 @@ runs:
     shell: bash
     run: |
       brew update
-      brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv
+      brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv lld@${{inputs.llvm}}
       brew install zlib # for llgo test .
       brew link --force zlib # for llgo test .
       brew link --force libffi
       echo "$(brew --prefix llvm@${{inputs.llvm}})/bin" >> $GITHUB_PATH
-
+      echo "$(brew --prefix lld@${{inputs.llvm}})/bin" >> $GITHUB_PATH
       # llcppg dependencies
       brew install cjson
   - name: Install dependencies
@@ -50,8 +50,7 @@ runs:
     shell: bash
     working-directory: .llgo
     run: |
-      cd compiler
-      go install -v ./cmd/...
+      go install -v ./cmd/llgo/...
       export LLGO_ROOT=$GITHUB_WORKSPACE/.llgo
       echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
   - name: Build
@@ -62,5 +61,5 @@ runs:
     shell: bash
     run: |
       echo "Using LLGO_ROOT: $LLGO_ROOT"
-      llgo install ./_xtool/llclang 
+      llgo install ./_xtool/llclang
       bash ./install.sh
