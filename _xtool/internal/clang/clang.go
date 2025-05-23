@@ -6,6 +6,7 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
+	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 )
 
 type Config struct {
@@ -25,7 +26,7 @@ const TEMP_FILE = "temp.h"
 func CreateTranslationUnit(config *Config) (*clang.Index, *clang.TranslationUnit, error) {
 	// default use the c/c++ standard of clang; c:gnu17 c++:gnu++17
 	// https://clang.llvm.org/docs/CommandGuide/clang.html
-	allArgs := append(defaultArgs(config.IsCpp), config.Args...)
+	allArgs := clangtool.WithSysRoot(append(defaultArgs(config.IsCpp), config.Args...))
 
 	cArgs := make([]*c.Char, len(allArgs))
 	for i, arg := range allArgs {

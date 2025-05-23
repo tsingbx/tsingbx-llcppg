@@ -1,11 +1,19 @@
 package clangtool
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"sync"
 )
+
+var _sysRootDirOnce = sync.OnceValues(sysRoot)
+
+var _matchISysrootRegex = regexp.MustCompile(`-(resource-dir|internal-isystem|isysroot|internal-externc-isystem)\s(\S+)`)
 
 type PreprocessConfig struct {
 	File    string
@@ -68,10 +76,46 @@ func ParseClangIncOutput(output string) []string {
 	return paths
 }
 
+func WithSysRoot(args []string) []string {
+	_defaultSysRootDir, _ := _sysRootDirOnce()
+	return append(args, _defaultSysRootDir...)
+}
+
 func defaultArgs(isCpp bool) []string {
 	args := []string{"-x", "c"}
 	if isCpp {
 		args = []string{"-x", "c++"}
 	}
 	return args
+}
+
+// sysRoot retrieves isysroot from clang preprocessor
+func sysRoot() ([]string, error) {
+	var output bytes.Buffer
+
+	// -x dones't matter, we don't care, just get the isysroot
+	cmd := exec.Command("clang", "-E", "-v", "-x", "c", "/dev/null")
+	cmd.Stderr = &output
+
+	cmd.Run()
+
+	return ParseSystemPath(output.String())
+}
+
+func ParseSystemPath(output string) ([]string, error) {
+	sysRootResults := _matchISysrootRegex.FindAllStringSubmatch(output, -1)
+
+	var result []string
+
+	for _, sysRootResult := range sysRootResults {
+		if len(sysRootResult) == 3 {
+			result = append(result, fmt.Sprintf("-%s%s", sysRootResult[1], sysRootResult[2]))
+		}
+	}
+
+	if len(result) == 0 {
+		return nil, fmt.Errorf("failed to find any sysRoot path")
+	}
+
+	return result, nil
 }
