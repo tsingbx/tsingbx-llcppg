@@ -24,9 +24,10 @@ func init() {
 		"Ident":       Ident,
 		"Variadic":    Variadic,
 
-		"PointerType":   PointerType,
-		"LvalueRefType": LvalueRefType,
-		"RvalueRefType": RvalueRefType,
+		"PointerType":      PointerType,
+		"LvalueRefType":    LvalueRefType,
+		"RvalueRefType":    RvalueRefType,
+		"BlockPointerType": BlockPointerType,
 
 		"ArrayType":   ArrayType,
 		"Field":       Field,
@@ -152,6 +153,10 @@ func Variadic(data []byte) (ast.Node, error) {
 	return &node, nil
 }
 
+func BlockPointerType(data []byte) (ast.Node, error) {
+	return XType(data, &ast.BlockPointerType{})
+}
+
 func XType(data []byte, xType ast.Node) (ast.Node, error) {
 	type XTypeTemp struct {
 		X json.RawMessage
@@ -176,8 +181,14 @@ func XType(data []byte, xType ast.Node) (ast.Node, error) {
 		v.X = expr
 	case *ast.RvalueRefType:
 		v.X = expr
+	case *ast.BlockPointerType:
+		fnType, ok := expr.(*ast.FuncType)
+		if !ok {
+			return nil, newUnexpectType("XType", expr, "*ast.FuncType")
+		}
+		v.X = fnType
 	default:
-		return nil, newUnexpectType("XType", xType, "*ast.PointerType, *ast.LvalueRefType, *ast.RvalueRefType")
+		return nil, newUnexpectType("XType", xType, "*ast.PointerType, *ast.LvalueRefType, *ast.RvalueRefType, *ast.BlockPointerType")
 	}
 
 	return xType, nil

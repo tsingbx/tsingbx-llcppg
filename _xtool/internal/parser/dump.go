@@ -208,6 +208,9 @@ func MarshalASTExpr(t ast.Expr) *cjson.JSON {
 	case *ast.PointerType:
 		root.SetItem(c.Str("_Type"), stringField("PointerType"))
 		root.SetItem(c.Str("X"), MarshalASTExpr(d.X))
+	case *ast.BlockPointerType:
+		root.SetItem(c.Str("_Type"), stringField("BlockPointerType"))
+		root.SetItem(c.Str("X"), MarshalASTExpr(d.X))
 	case *ast.ArrayType:
 		root.SetItem(c.Str("_Type"), stringField("ArrayType"))
 		root.SetItem(c.Str("Elt"), MarshalASTExpr(d.Elt))
