@@ -318,6 +318,15 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 		name, kind := getTypeDesc(t.PointeeType())
 		ct.logln("ProcessType: PointerType  Pointee TypeName:", name, "TypeKind:", kind)
 		expr = &ast.PointerType{X: ct.ProcessType(t.PointeeType())}
+	case clang.TypeBlockPointer:
+		name, kind := getTypeDesc(t)
+		ct.logln("ProcessType: BlockPointerType  TypeName:", name, "TypeKind:", kind)
+		typ := ct.ProcessType(t.PointeeType())
+		fnType, ok := typ.(*ast.FuncType)
+		if !ok {
+			panic("BlockPointerType: not FuncType")
+		}
+		expr = &ast.BlockPointerType{X: fnType}
 	case clang.TypeLValueReference:
 		name, kind := getTypeDesc(t.NonReferenceType())
 		ct.logln("ProcessType: LvalueRefType  NonReference TypeName:", name, "TypeKind:", kind)

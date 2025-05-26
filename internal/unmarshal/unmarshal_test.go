@@ -339,6 +339,76 @@ func TestUnmarshalNode(t *testing.T) {
 			},
 		},
 		{
+			name: "BlockPointerType",
+			json: `{
+						"_Type":	"BlockPointerType",
+						"X":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	[
+									{
+											"_Type":	"Field",
+											"Type":	{
+												"_Type":	"BuiltinType",
+												"Kind":	6,
+												"Flags":	0
+											},
+											"Doc":	{
+												"_Type":	"CommentGroup",
+												"List":	[]
+											},
+											"Comment":	{
+												"_Type":	"CommentGroup",
+												"List":	[]
+											},
+											"IsStatic":	false,
+											"Access":	0,
+											"Names":	[{
+													"_Type":	"Ident",
+													"Name":	"a"
+												}]
+										}
+								]
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						}
+					}`,
+
+			expected: &ast.BlockPointerType{
+				X: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Doc: &ast.CommentGroup{
+									List: []*ast.Comment{},
+								},
+								Comment: &ast.CommentGroup{
+									List: []*ast.Comment{},
+								},
+								Type: &ast.BuiltinType{
+									Kind:  6,
+									Flags: 0,
+								},
+								Names: []*ast.Ident{
+									{Name: "a"},
+								},
+							},
+						},
+					},
+					Ret: &ast.BuiltinType{
+						Kind:  0,
+						Flags: 0,
+					},
+				},
+			},
+		},
+
+		{
 			name: "RvalueRefType",
 			json: `{
 						"_Type":	"RvalueRefType",
@@ -1260,6 +1330,14 @@ func TestUnmarshalErrors(t *testing.T) {
 			},
 			input:       `{"X": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
 			expectedErr: "unmarshal error in XType: got *ast.Token, want ast.Expr",
+		},
+		{
+			name: "unmarshalXType - BlockPointerType",
+			fn: func(data []byte) (ast.Node, error) {
+				return unmarshal.XType(data, &ast.BlockPointerType{})
+			},
+			input:       `{"X": {"_Type": "Ident", "Name": "test"}}`,
+			expectedErr: "unmarshal error in XType: got *ast.Ident, want *ast.FuncType",
 		},
 		{
 			name: "unmarshalXType - Unexpected type",

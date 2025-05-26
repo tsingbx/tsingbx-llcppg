@@ -16,3 +16,5 @@ typedef struct OSSL_DISPATCH OSSL_DISPATCH;
 typedef int(OSSL_provider_init_fn)(const OSSL_CORE_HANDLE *handle, const OSSL_DISPATCH *in, const OSSL_DISPATCH **out,
                                    void **provctx);
 OSSL_provider_init_fn OSSL_provider_init;
+
+void qsort_b(void *__base, int (^_Nonnull __compar)(const void *, const void *));

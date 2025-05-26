@@ -200,6 +200,13 @@ type RvalueRefType struct {
 
 func (*RvalueRefType) exprNode() {}
 
+// Ret (^)(Params)
+type BlockPointerType struct {
+	X *FuncType
+}
+
+func (*BlockPointerType) exprNode() {}
+
 // ------------------------------------------------
 
 // Elt[Len]
