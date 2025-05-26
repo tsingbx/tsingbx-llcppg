@@ -13,7 +13,7 @@ import (
 	"github.com/goplus/llcppg/cl/nc"
 	"github.com/goplus/llcppg/internal/name"
 	ctoken "github.com/goplus/llcppg/token"
-	"github.com/goplus/mod/gopmod"
+	"github.com/goplus/mod/xgomod"
 )
 
 // In Processing Package
@@ -80,7 +80,7 @@ func NewPackage(pnc nc.NodeConverter, config *PackageConfig) (*Package, error) {
 		config.Deps = append([]string{"c"}, config.Deps...)
 	}
 
-	mod, err := gopmod.Load(config.OutputDir)
+	mod, err := xgomod.Load(config.OutputDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load mod: %w", err)
 	}

@@ -12,19 +12,19 @@ import (
 	"github.com/goplus/gogen"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/mod/gopmod"
+	"github.com/goplus/mod/xgomod"
 )
 
-type Module = gopmod.Module
+type Module = xgomod.Module
 
 type PkgDepLoader struct {
-	module   *gopmod.Module
+	module   *xgomod.Module
 	pkg      *gogen.Package
 	pkgCache map[string]*PkgInfo // pkgPath -> *PkgInfo
 	regCache map[string]struct{} // pkgPath
 }
 
-func NewPkgDepLoader(mod *gopmod.Module, pkg *gogen.Package) *PkgDepLoader {
+func NewPkgDepLoader(mod *xgomod.Module, pkg *gogen.Package) *PkgDepLoader {
 	return &PkgDepLoader{
 		module:   mod,
 		pkg:      pkg,

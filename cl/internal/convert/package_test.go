@@ -15,7 +15,7 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/internal/name"
 	"github.com/goplus/llcppg/token"
-	"github.com/goplus/mod/gopmod"
+	"github.com/goplus/mod/xgomod"
 )
 
 var dir string
@@ -2051,7 +2051,7 @@ func TestImport(t *testing.T) {
 	t.Run("invalid include path", func(t *testing.T) {
 		p := &convert.Package{}
 		genPkg := gogen.NewPackage(".", "include", nil)
-		mod, err := gopmod.Load(".")
+		mod, err := xgomod.Load(".")
 		if err != nil {
 			t.Fatal(err)
 		}
