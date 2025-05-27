@@ -196,11 +196,11 @@ func TestGetCppgCfgFromPath(t *testing.T) {
 	}
 
 	t.Run("Successfully parse config file", func(t *testing.T) {
-		cfg, err := config.GetCppgCfgFromPath(validConfigPath)
+		cfg, err := llcppg.GetConfFromFile(validConfigPath)
 		if err != nil {
 			t.Fatalf("Expected no error, got: %v", err)
 		}
-		if cfg == nil {
+		if reflect.ValueOf(cfg).IsZero() {
 			t.Fatal("Expected non-nil config")
 		}
 
@@ -211,13 +211,13 @@ func TestGetCppgCfgFromPath(t *testing.T) {
 		expectedConfig.Libs = "$(pkg-config --libs lua5.4)"
 		expectedConfig.TrimPrefixes = []string{"lua_"}
 
-		if !reflect.DeepEqual(cfg, expectedConfig) {
+		if !reflect.DeepEqual(&cfg, expectedConfig) {
 			t.Errorf("Parsed config does not match expected config.\nGot: %+v\nWant: %+v", cfg, expectedConfig)
 		}
 	})
 
 	t.Run("File not found", func(t *testing.T) {
-		_, err := config.GetCppgCfgFromPath(filepath.Join(tempDir, "nonexistent_file.cfg"))
+		_, err := llcppg.GetConfFromFile(filepath.Join(tempDir, "nonexistent_file.cfg"))
 		if err == nil {
 			t.Error("Expected error for non-existent file, got nil")
 		}
@@ -230,7 +230,7 @@ func TestGetCppgCfgFromPath(t *testing.T) {
 			t.Fatalf("Failed to create invalid JSON file: %v", err)
 		}
 
-		_, err = config.GetCppgCfgFromPath(invalidJSONPath)
+		_, err = llcppg.GetConfFromFile(invalidJSONPath)
 		if err == nil {
 			t.Error("Expected error for invalid JSON, got nil")
 		}
