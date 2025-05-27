@@ -18,7 +18,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -68,7 +70,7 @@ func main() {
 	err = prepareEnv(outputDir, conf.Deps, modulePath)
 	check(err)
 
-	data, err := config.ReadSigfetchFile(filepath.Join(wd, ags.CfgFile))
+	data, err := readSigfetchFile(filepath.Join(wd, ags.CfgFile))
 	check(err)
 
 	convertPkg, err := unmarshal.Pkg(data)
@@ -106,10 +108,10 @@ func main() {
 	err = writePkg(pkg.Package, outputDir)
 	check(err)
 
-	err = config.RunCommand(outputDir, "go", "fmt", ".")
+	err = runCommand(outputDir, "go", "fmt", ".")
 	check(err)
 
-	err = config.RunCommand(outputDir, "go", "mod", "tidy")
+	err = runCommand(outputDir, "go", "mod", "tidy")
 	check(err)
 }
 
@@ -148,6 +150,22 @@ func prepareEnv(outputDir string, deps []string, modulePath string) error {
 	return cl.ModInit(deps, outputDir, modulePath)
 }
 
+func runCommand(dir, cmdName string, args ...string) error {
+	execCmd := exec.Command(cmdName, args...)
+	execCmd.Stdout = os.Stdout
+	execCmd.Stderr = os.Stderr
+	execCmd.Dir = dir
+	return execCmd.Run()
+}
+
 func printUsage() {
 	fmt.Fprintln(os.Stderr, "Usage: gogensig [-v|-cfg|-mod] [sigfetch-file]")
+}
+
+func readSigfetchFile(sigfetchFile string) ([]byte, error) {
+	_, file := filepath.Split(sigfetchFile)
+	if file == "-" {
+		return io.ReadAll(os.Stdin)
+	}
+	return os.ReadFile(sigfetchFile)
 }
