@@ -266,9 +266,13 @@ func main() {
 		pkgs := getPkgs()
 		runPkgs(pkgs, cfg)
 	case appMode == runDemos:
-		demo.RunAllGenPkgDemos(*demosPath, *confPath)
+		if err := demo.RunAllGenPkgDemos(*demosPath, *confPath); err != nil {
+			panic(err)
+		}
 	case appMode == runDemo:
-		demo.RunGenPkgDemo(*demoPath, *confPath)
+		if err := demo.RunGenPkgDemo(*demoPath, *confPath); err != nil {
+			panic(err)
+		}
 	default:
 		if len(flag.Args()) > 0 {
 			arg := flag.Arg(0)
