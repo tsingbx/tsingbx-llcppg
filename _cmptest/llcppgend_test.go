@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"sync"
 	"testing"
 
 	"github.com/goplus/llcppg/config"
@@ -13,6 +15,9 @@ import (
 )
 
 const llcppgGoVersion = "1.20.14"
+
+// avoid conan install race condition
+var conanInstallMutex sync.Mutex
 
 type testCase struct {
 	modpath  string
@@ -43,16 +48,47 @@ var testCases = []testCase{
 	},
 }
 
+var mkdirTempLazily = sync.OnceValue(func() string {
+	if env := os.Getenv("LLCPPG_TEST_LOG_DIR"); env != "" {
+		return env
+	}
+	dir, err := os.MkdirTemp("", "test-log")
+	if err != nil {
+		panic(err)
+	}
+	return dir
+})
+
+func logFile(tc testCase) (*os.File, error) {
+	caseName := fmt.Sprintf("%s-%s-llcppg-%s-%s", runtime.GOOS, runtime.GOARCH, tc.pkg.Name, tc.pkg.Version)
+	dirPath := filepath.Join(mkdirTempLazily(), caseName)
+
+	err := os.MkdirAll(dirPath, 0755)
+	if err != nil {
+		return nil, err
+	}
+
+	return os.Create(filepath.Join(dirPath, fmt.Sprintf("%s.log", caseName)))
+}
+
 func TestEnd2End(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(fmt.Sprintf("%s/%s", tc.pkg.Name, tc.pkg.Version), func(t *testing.T) {
+			t.Parallel()
 			testFrom(t, tc, false)
 		})
 	}
 }
 
 func testFrom(t *testing.T, tc testCase, gen bool) {
+	logFile, err := logFile(tc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer logFile.Close()
+	fmt.Printf("%s:%s log file: %s\n", tc.pkg.Name, tc.pkg.Version, logFile.Name())
+
 	wd, _ := os.Getwd()
 	dir := filepath.Join(wd, tc.dir)
 	conanDir, err := os.MkdirTemp("", "llcppg_end2end_test_conan_dir_*")
@@ -74,12 +110,15 @@ func testFrom(t *testing.T, tc testCase, gen bool) {
 	}
 
 	os.WriteFile(filepath.Join(resultDir, config.LLCPPG_CFG), cfg, os.ModePerm)
+
+	conanInstallMutex.Lock()
 	_, err = conan.NewConanInstaller(tc.config).Install(tc.pkg, conanDir)
+	conanInstallMutex.Unlock()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	cmd := command(resultDir, "llcppg", "-v", "-mod="+tc.modpath)
+	cmd := command(logFile, resultDir, "llcppg", "-v", "-mod="+tc.modpath)
 	cmd.Env = append(cmd.Env, goVerEnv())
 	cmd.Env = append(cmd.Env, pcPathEnv(conanDir)...)
 
@@ -97,17 +136,17 @@ func testFrom(t *testing.T, tc testCase, gen bool) {
 	} else {
 		// check the result is the same as the expected result
 		// when have diff,will got exit code 1
-		diffCmd := command(wd, "git", "diff", "--no-index", dir, resultDir)
+		diffCmd := command(logFile, wd, "git", "diff", "--no-index", dir, resultDir)
 		err = diffCmd.Run()
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
-	runDemos(t, filepath.Join(wd, tc.demosDir), tc.pkg.Name, filepath.Join(dir, tc.pkg.Name), conanDir)
+	runDemos(t, logFile, filepath.Join(wd, tc.demosDir), tc.pkg.Name, filepath.Join(dir, tc.pkg.Name), conanDir)
 }
 
 // pkgpath is the filepath use to replace the import path in demo's go.mod
-func runDemos(t *testing.T, demosPath string, pkgname, pkgpath, pcPath string) {
+func runDemos(t *testing.T, logFile *os.File, demosPath string, pkgname, pkgpath, pcPath string) {
 	tempDemosPath, err := os.MkdirTemp("", "llcppg_end2end_test_demos_*")
 	if err != nil {
 		t.Fatal(err)
@@ -118,19 +157,19 @@ func runDemos(t *testing.T, demosPath string, pkgname, pkgpath, pcPath string) {
 		t.Fatal(err)
 	}
 
-	goMod := command(tempDemosPath, "go", "mod", "init", "test")
+	goMod := command(logFile, tempDemosPath, "go", "mod", "init", "test")
 	err = goMod.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	replace := command(tempDemosPath, "go", "mod", "edit", "-replace", pkgname+"="+pkgpath)
+	replace := command(logFile, tempDemosPath, "go", "mod", "edit", "-replace", pkgname+"="+pkgpath)
 	err = replace.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	tidy := command(tempDemosPath, "go", "mod", "tidy")
+	tidy := command(logFile, tempDemosPath, "go", "mod", "tidy")
 	err = tidy.Run()
 	if err != nil {
 		t.Fatal(err)
@@ -146,7 +185,7 @@ func runDemos(t *testing.T, demosPath string, pkgname, pkgpath, pcPath string) {
 			continue
 		}
 		demoPath := filepath.Join(tempDemosPath, demo.Name())
-		demoCmd := command(demoPath, "llgo", "run", ".")
+		demoCmd := command(logFile, demoPath, "llgo", "run", ".")
 		demoCmd.Env = append(demoCmd.Env, llgoEnv()...)
 		demoCmd.Env = append(demoCmd.Env, pcPathEnv(pcPath)...)
 		err = demoCmd.Run()
@@ -183,10 +222,10 @@ func goVerEnv() string {
 	return fmt.Sprintf("GOTOOLCHAIN=go%s", llcppgGoVersion)
 }
 
-func command(dir string, app string, args ...string) *exec.Cmd {
+func command(logFile *os.File, dir string, app string, args ...string) *exec.Cmd {
 	cmd := exec.Command(app, args...)
 	cmd.Dir = dir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = logFile
+	cmd.Stderr = logFile
 	return cmd
 }
