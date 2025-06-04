@@ -10,11 +10,12 @@ import (
 )
 
 type Config struct {
-	File  string
-	Temp  bool
-	Args  []string
-	IsCpp bool
-	Index *clang.Index
+	File    string
+	Temp    bool
+	Args    []string
+	IsCpp   bool
+	Index   *clang.Index
+	Options c.Uint
 }
 
 type Visitor func(cursor, parent clang.Cursor) clang.ChildVisitResult
@@ -54,7 +55,7 @@ func CreateTranslationUnit(config *Config) (*clang.Index, *clang.TranslationUnit
 			tempFile.Filename,
 			unsafe.SliceData(cArgs), c.Int(len(cArgs)),
 			tempFile, 1,
-			clang.DetailedPreprocessingRecord,
+			config.Options,
 		)
 
 	} else {
@@ -63,7 +64,7 @@ func CreateTranslationUnit(config *Config) (*clang.Index, *clang.TranslationUnit
 			cFile,
 			unsafe.SliceData(cArgs), c.Int(len(cArgs)),
 			nil, 0,
-			clang.DetailedPreprocessingRecord,
+			config.Options,
 		)
 	}
 
@@ -76,6 +77,11 @@ func CreateTranslationUnit(config *Config) (*clang.Index, *clang.TranslationUnit
 
 func GetLocation(loc clang.SourceLocation) (file clang.File, line c.Uint, column c.Uint, offset c.Uint) {
 	loc.SpellingLocation(&file, &line, &column, &offset)
+	return
+}
+
+func GetPresumedLocation(loc clang.SourceLocation) (file clang.String, line c.Uint, column c.Uint) {
+	loc.PresumedLocation(&file, &line, &column)
 	return
 }
 
