@@ -19,19 +19,16 @@ import (
 type dbgFlags = int
 
 var (
-	dbgSymbol        bool
-	dbgParseIsMethod bool
+	dbgSymbol bool
 )
 
 const (
-	DbgSymbol        dbgFlags = 1 << iota
-	DbgParseIsMethod          //print parse.go isMethod debug log info
-	DbgFlagAll       = DbgSymbol | DbgParseIsMethod
+	DbgSymbol  dbgFlags = 1 << iota
+	DbgFlagAll          = DbgSymbol
 )
 
 func SetDebug(flags dbgFlags) {
 	dbgSymbol = (flags & DbgSymbol) != 0
-	dbgParseIsMethod = (flags & DbgParseIsMethod) != 0
 }
 
 type Config struct {

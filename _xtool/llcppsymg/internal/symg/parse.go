@@ -101,32 +101,6 @@ func (p *SymbolProcessor) GenMethodName(class, name string, isDestructor bool, i
 	return prefix + name
 }
 
-func (p *SymbolProcessor) printTypeInfo(typ clang.Type, isArg bool, prefix string) {
-	if dbgParseIsMethod {
-		definitionType := clang.GoString(typ.TypeDeclaration().Definition().Type().String())
-		canonicalType := clang.GoString(typ.CanonicalType().String())
-		fmt.Println("**********", prefix, "**********")
-		fmt.Println(
-			"typ.String():", clang.GoString(typ.String()),
-			"typ.NamedType().String():", clang.GoString(typ.NamedType().String()),
-			"isTypePointer:", typ.Kind == clang.TypePointer,
-			"isTypeElaborated:", typ.Kind == clang.TypeElaborated,
-			"isTypeTypedef:", typ.Kind == clang.TypeTypedef,
-			"isInCurPkg:", p.inCurPkg(typ.TypeDeclaration(), isArg),
-			"definitionType:", definitionType,
-			"canonicalType:", canonicalType,
-			"pointLevel:", p.pointerLevel(typ),
-		)
-	}
-}
-
-func printResult(isInCurPkg, isPointer bool, goName, prefix string) {
-	if dbgParseIsMethod {
-		fmt.Println("===========", prefix, "===========")
-		fmt.Println("isInCurPkg:", isInCurPkg, "isPointer:", isPointer, "goName", goName)
-	}
-}
-
 func (p *SymbolProcessor) pointerLevel(typ clang.Type) int {
 	canonicalTypeGoString := clang.GoString(typ.CanonicalType().String())
 	return strings.Count(canonicalTypeGoString, "*")
@@ -134,41 +108,31 @@ func (p *SymbolProcessor) pointerLevel(typ clang.Type) int {
 
 func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, string) {
 	typ := cur.Type()
+	// Check if the type has more than one level of pointers (e.g., **int, ***char)
+	// Multi-level pointers are not considered for method generation as they are
+	// typically used for complex data structures rather than object instances
 	if p.pointerLevel(typ) > 1 {
 		return false, false, name.GoName(clang.GoString(typ.String()), p.prefixes, false)
 	}
+
 	isInCurPkg := p.inCurPkg(cur, isArg)
-	p.printTypeInfo(typ, isArg, "typ")
+	// Check if the type is a direct pointer type (e.g., *SomeStruct)
 	if typ.Kind == clang.TypePointer {
-		pointeeType := typ.PointeeType()
-		p.printTypeInfo(pointeeType, isArg, "typ.PointeeType()")
-		pointeeTypeNamedType := pointeeType.NamedType()
-		namedTypeGoString := clang.GoString(pointeeTypeNamedType.String())
-		p.printTypeInfo(pointeeTypeNamedType, isArg, "typ.PointeeType().NamedType()")
-		if len(namedTypeGoString) > 0 {
-			goName := name.GoName(namedTypeGoString, p.prefixes, isInCurPkg)
-			printResult(isInCurPkg, true, goName, "typ.pointeeType().NamedType()")
-			return isInCurPkg, true, goName
-		}
-		return p.isMethod(pointeeType.TypeDeclaration(), isArg)
-	} else if typ.Kind == clang.TypeElaborated ||
-		typ.Kind == clang.TypeTypedef {
-		canonicalType := typ.CanonicalType()
-		p.printTypeInfo(canonicalType, isArg, "typ.CanonicalType()")
-		if canonicalType.Kind == clang.TypePointer {
-			return p.isMethod(canonicalType.TypeDeclaration(), isArg)
+		underTypeName := clang.GoString(typ.PointeeType().NamedType().String())
+		return isInCurPkg, true, name.GoName(underTypeName, p.prefixes, isInCurPkg)
+	}
+
+	// Check if the type is an elaborated type (e.g., struct/class with full qualification)
+	// or a typedef (type alias). These types may wrap underlying pointer types
+	// that should be considered for method generation
+	if typ.Kind == clang.TypeElaborated || typ.Kind == clang.TypeTypedef {
+		underTyp := typ.CanonicalType()
+		if underTyp.Kind == clang.TypePointer {
+			return p.isMethod(underTyp.TypeDeclaration(), isArg)
 		}
 	}
-	namedType := typ.NamedType()
-	namedTypeGoString := clang.GoString(namedType.String())
-	if len(namedTypeGoString) > 0 {
-		goName := name.GoName(namedTypeGoString, p.prefixes, isInCurPkg)
-		printResult(isInCurPkg, false, goName, "typ.NamedType()")
-		return isInCurPkg, false, goName
-	}
-	typeGoString := clang.GoString(typ.String())
-	goName := name.GoName(typeGoString, p.prefixes, isInCurPkg)
-	printResult(isInCurPkg, false, goName, "typ")
+	namedType := clang.GoString(typ.NamedType().String())
+	goName := name.GoName(namedType, p.prefixes, isInCurPkg)
 	return isInCurPkg, false, goName
 }
 
