@@ -10,6 +10,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/internal/header"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 	llcppg "github.com/goplus/llcppg/config"
+	"github.com/goplus/llgo/xtool/clang/preprocessor"
 )
 
 type dbgFlags = int
@@ -79,16 +80,32 @@ func Do(conf *Config) error {
 
 	// prepare clang flags to preprocess the combined file
 	clangFlags := strings.Fields(conf.Conf.CFlags)
+	if !isCpp {
+		clangFlags = append(clangFlags, "-x", "c")
+	} else {
+		clangFlags = append(clangFlags, "-x", "c++")
+	}
 	clangFlags = append(clangFlags, "-C")  // keep comment
 	clangFlags = append(clangFlags, "-dD") // keep macro
 	clangFlags = append(clangFlags, "-fparse-all-comments")
 
-	err = clangtool.Preprocess(&clangtool.PreprocessConfig{
-		File:    conf.CombinedFile,
-		IsCpp:   isCpp,
-		Args:    clangFlags,
-		OutFile: conf.PreprocessedFile,
-	})
+	pwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	ppconf := &preprocessor.Config{
+		Compiler: "clang",
+		Flags:    clangFlags,
+		BaseDir:  pwd,
+	}
+
+	fmt.Fprintln(os.Stderr, "pwd", pwd)
+	fmt.Fprintln(os.Stderr, "clangFlags", clangFlags)
+	fmt.Fprintln(os.Stderr, "conf.CombinedFile", conf.CombinedFile)
+	fmt.Fprintln(os.Stderr, "conf.PreprocessedFile", conf.PreprocessedFile)
+
+	err = preprocessor.Do(conf.CombinedFile, conf.PreprocessedFile, ppconf)
 	if err != nil {
 		return err
 	}
