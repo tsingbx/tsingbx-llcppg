@@ -2,6 +2,7 @@ package _cmptest
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -94,6 +95,13 @@ var testCases = []testCase{
 		dir:      "./testdata/libxslt/1.1.42",
 		pkg:      upstream.Package{Name: "libxslt", Version: "1.1.42"},
 		demosDir: "./testdata/libxslt/demo",
+	},
+
+	{
+		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/libtool/2.4.7/libtool",
+		dir:      "./testdata/libtool/2.4.7",
+		pkg:      upstream.Package{Name: "libtool", Version: "2.4.7"},
+		demosDir: "./testdata/libtool/demo",
 	},
 }
 
@@ -273,11 +281,24 @@ func goVerEnv() string {
 }
 
 func copyFile(src, dst string) error {
-	data, err := os.ReadFile(src)
+	srcFile, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(dst, data, os.ModePerm)
+	defer srcFile.Close()
+
+	fi, err := srcFile.Stat()
+	if err != nil {
+		return err
+	}
+	dstFile, err := os.OpenFile(dst, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, fi.Mode())
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	return err
 }
 
 func command(logFile *os.File, dir string, app string, args ...string) *exec.Cmd {
