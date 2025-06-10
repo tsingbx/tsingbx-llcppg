@@ -150,7 +150,6 @@ char matrix[3][4];  // In function parameter becomes **c.Char
 char field[3][4];   // In struct field becomes [3][4]c.Char
 ```
 
-
 #### Name Mapping Rules
 
 The llcppg system converts C/C++ type names to Go-compatible identifiers following specific transformation rules. These rules ensure generated Go code follows Go naming conventions while maintaining clarity and avoiding conflicts.
@@ -476,13 +475,13 @@ If `config-file` is not specified, a `llcppg.cfg` file is used in current direct
 }
 ```
 
-## Steps
+## Process Steps
+
+The llcppg tool orchestrates a three-stage pipeline that automatically generates Go bindings for C/C++ libraries by coordinating symbol table generation, signature extraction, and Go code generation components.
 
 1. llcppsymg: Generate symbol table for a C/C++ library
-2. Manually modify the desired Go symbols in symbol table
-3. llcppsigfetch: Fetch information of C/C++ symbols
-4. gogensig: Generate a go package by information of symbols
-
+2. llcppsigfetch: Fetch information of C/C++ symbols
+3. gogensig: Generate a Go package by information of symbols
 
 ### llcppsymg
 
@@ -491,48 +490,125 @@ llcppsymg config-file
 llcppsymg -  # read config from stdin
 ```
 
-It generates a symbol table file named `llcppg.symb.json`. Its file format is as follows:
+llcppsymg is the symbol table generator in the llcppg toolchain, responsible for analyzing C/C++ dynamic libraries and header files to generate symbol mapping tables. Its main functions are:
+
+1. Parse dynamic library symbols: Extract exported symbols from libraries using the nm tool
+2. Parse header file declarations: Analyze C/C++ header files using libclang for function declarations
+3. Find intersection: Match library symbols with header declarations and then generate symbol table named `llcppg.symb.json`.
+
+#### Symbol Table
+
+This symbol table determines whether the function appears in the generated Go code、its actual name and if it is a method. Its file format is as follows:
 
 ```json
 [
   {
-    "mangle": "_ZN9INIReaderC1EPKcm",
-    "c++": "INIReader::INIReader(char const*, unsigned long)",
-    "go": "(*Reader).Init__0"
+    "mangle": "cJSON_Delete",
+    "c++": "cJSON_Delete(cJSON *)",
+    "go": "(*CJSON).Delete"
+  },
+]
+```
+
+* mangle: mangled name of function
+* c++: C/C++ function prototype declaration string
+* go: corresponding Go function or method name, during the process, llcppg will automatically check if the current function can be a method
+  1. When go is "-", the function is ignored (not generated)
+  2. When go is a valid function name, the function name will be named as the mangle
+  3. When go is `(*Type).MethodName` or `Type.MethodName`, the function will be generated as a method with Receiver as Type/*Type, and Name as MethodName
+
+#### Custom Symbol Table generation
+
+Specify function mapping behavior in `llcppg.cfg` by config the `symMap` field:
+```json
+{
+    "symMap":{
+        "mangle":"<goFuncName> | <.goMethodName> | -"
+    }
+}
+```
+`mangle` is the symbol name of the function. For the value of `mangle`, you can customize it as:
+  1. `goFuncName` - generates a regular function named `goFuncName`
+  2. `.goMethodName` - generates a method named `goMethodName` (if it doesn't meet the rules for generating a method, it will be generated as a regular function)
+  3. `-` - completely ignore this function
+  
+For example, to convert `(*CJSON).PrintUnformatted` from a method to a function, you can use follow config:
+
+```json
+{
+  "symMap":{
+    "cJSON_PrintUnformatted":"PrintUnformatted"
+  }
+}
+```
+and the `llcppg.symb.json` will be:
+```json
+[
+  {
+    "mangle": "cJSON_PrintUnformatted",
+    "c++": "cJSON_PrintUnformatted(cJSON *)",
+    "go": "PrintUnformatted"
   }
 ]
 ```
 
-
 ### llcppsigfetch
+
+llcppsigfetch is a tool that extracts type information and function signatures from C/C++ header files. It uses Clang & Libclang to parse C/C++ header files and outputs a JSON-formatted package information structure.
 
 ```sh
 llcppsigfetch config-file
 llcppsigfetch -  # read config from stdin
 ```
 
-It fetches information of C/C++ symbols and print to stdout. Its format is as follows:
+* Preprocesses C/C++ header files
+* Creates translation units using libclang and traverses the preprocessed header file to extract ast info.
+
+#### Output:
+
+The output is a `pkg-info` structure that contains comprehensive package information needed for Go code generation. This `pkg-info` consists of two main components:
+
+* File: Contains the AST with decls, includes, and macros.
+* FileMap: Maps file paths to file types, where FileType indicates file classification (interface, implementation, or third-party files)
 
 ```json
-[
-  {
-    "path": "/path/to/file.h",
-    "doc": {
-      "decls": [],
-      "macros": [],
-      "includes": [
-        {
-          "path": "incfile.h"
+{
+    "File": {
+        "decls": [],
+        "includes": [],
+        "macros": []
+    },
+    "FileMap": {
+        "usr/include/sys/_types/_rsize_t.h": {
+            "FileType": 3
+        },
+        "/opt/homebrew/include/lua/lua.h": {
+            "FileType": 1
+        },
+        "/opt/homebrew/include/lua/luaconf.h": {
+            "FileType": 2
         }
-      ]
     }
-  }
-]
+}
 ```
 
 ### gogensig
 
+gogensig is the final component in the pipeline, responsible for converting C/C++ type declarations and function signatures into Go code. It reads the `pkg-info` structure generated by llcppsigfetch.
+
 ```sh
-gogensig ast-file
-gogensig -  # read AST from stdin
+gogensig pkg-info-file
+gogensig -  # read pkg-info-file from stdin
 ```
+
+#### Function Generation
+During execution, gogensig only generates functions whose corresponding mangle exists in llcppg.symb.json, determining whether to generate functions/methods with specified Go names by parsing the go field corresponding to the mangle.
+
+1. Regular function format: "FunctionName"
+  * Generates regular functions, using `//go:linkname` annotation
+2. Pointer receiver method format: "(*TypeName).MethodName"
+  * Generates methods with pointer receivers, using `// llgo:link` annotation
+3. Value receiver method format: "TypeName.MethodName"
+  * Generates methods with value receivers, using `// llgo:link` annotation
+4. Ignore function format: "-"
+  * Completely ignores the function, generates no code
