@@ -55,7 +55,7 @@ typedef int (*CallBack)(void *L);
 type CallBack func(c.Pointer) c.Int
 ```
 
-For function pointer types referenced in function signatures, the type is replaced with the converted Go function type.
+For function pointer types referenced in function signatures & struct fields, the type is replaced with the converted Go function type.
 
 ```c
 void exec(void *L, CallBack cb);
@@ -63,6 +63,17 @@ void exec(void *L, CallBack cb);
 ```go
 // llgo:type C
 func Exec(L c.Pointer, cb CallBack)
+```
+
+```c
+typedef struct Stream {
+    CallBack cb;
+} Stream;
+```
+```go
+type Stream struct {
+	Cb CallBack
+}
 ```
 
 For cases where a parameter in a function signature is an anonymous function pointer (meaning it does not reference a pre-defined function pointer type), it is mapped to the corresponding Go function type.
@@ -83,19 +94,8 @@ func (recv_ *Sqlite3) Exec(sql *c.Char, callback func(c.Pointer, c.Int, **c.Char
 }
 ```
 
-For struct fields that are function pointers(both named and anonymous), the field type is replaced with a `c.Pointer` for description.
+For struct fields that are anonymous function pointers, the field type is replaced with a `c.Pointer` for description.
 
-```c
-typedef struct Stream {
-    CallBack cb;
-} Stream;
-```
-```go
-type Stream struct {
-	Cb c.Pointer
-}
-```
-anonymous function pointer
 ```c
 typedef struct Hooks {
     void *(*malloc_fn)(size_t sz);
