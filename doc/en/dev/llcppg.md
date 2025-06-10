@@ -3,6 +3,154 @@ llcppg Design
 
 ### Type Mapping
 
+#### Basic Type Mapping
+
+All basic types are imported from `github.com/goplus/lib/c` and mapped accordingly.
+
+| C Type | Go Type |
+|--------|---------|
+| void | c.Void |
+| bool | bool |
+| char | c.Char |
+| wchar_t | int16 |
+| char16_t | int16 |
+| char32_t | int32 |
+| short | int16 |
+| unsigned short | uint16 |
+| int | c.Int |
+| unsigned int | c.Uint |
+| long | c.Long |
+| unsigned long | c.Ulong |
+| long long | c.LongLong |
+| unsigned long long | c.UlongLong |
+| float | c.Float |
+| double | c.Double |
+| float complex | complex64 |
+| double complex | complex128 |
+
+#### Special Case
+
+##### void *
+
+The pointer type `void*` is mapped to `c.Pointer`.
+
+```c
+void *(luaL_testudata) (lua_State *L, int ud, const char *tname);
+```
+```go
+//go:linkname Testudata C.luaL_testudata
+func LuaLTestudata(L *State, ud c.Int, tname *c.Char) c.Pointer
+```
+
+##### Function pointer
+
+C function pointer types are converted to Go function types with corresponding parameter and return type mappings,And llgo need to add `llgo:type C` tag to the function type.
+
+
+```c
+typedef int (*CallBack)(void *L);
+```
+```go
+// llgo:type C
+type CallBack func(c.Pointer) c.Int
+```
+
+For function pointer types referenced in function signatures, the type is replaced with the converted Go function type.
+
+```c
+void exec(void *L, CallBack cb);
+```
+```go
+// llgo:type C
+func Exec(L c.Pointer, cb CallBack)
+```
+
+For cases where a parameter in a function signature is an anonymous function pointer (meaning it does not reference a pre-defined function pointer type), it is mapped to the corresponding Go function type.
+
+```c
+int sqlite3_exec(
+  sqlite3*,                                  /* An open database */
+  const char *sql,                           /* SQL to be evaluated */
+  int (*callback)(void*,int,char**,char**),  /* Callback function */
+  void *,                                    /* 1st argument to callback */
+  char **errmsg                              /* Error msg written here */
+);
+```
+```go
+// llgo:link (*Sqlite3).Exec C.sqlite3_exec
+func (recv_ *Sqlite3) Exec(sql *c.Char, callback func(c.Pointer, c.Int, **c.Char, **c.Char) c.Int, __llgo_arg_2 c.Pointer, errmsg **c.Char) c.Int {
+	return 0
+}
+```
+
+For struct fields that are function pointers(both named and anonymous), the field type is replaced with a `c.Pointer` for description.
+
+```c
+typedef struct Stream {
+    CallBack cb;
+} Stream;
+```
+```go
+type Stream struct {
+	Cb c.Pointer
+}
+```
+anonymous function pointer
+```c
+typedef struct Hooks {
+    void *(*malloc_fn)(size_t sz);
+    void (*free_fn)(void *ptr);
+} Hooks;
+```
+```go
+type Hooks struct {
+	MallocFn c.Pointer
+	FreeFn   c.Pointer
+}
+```
+
+##### Array
+
+Arrays in C are mapped differently depending on their context - function parameters versus struct fields.
+
+###### As Function Param
+
+Arrays in function parameters are converted to pointers.
+
+```c
+void foo(unsigned int a[], double b[3]);
+```
+```go
+//go:linkname Foo C.foo
+func Foo(a *c.Uint, b *c.Double)
+```
+
+###### As Struct Field
+
+Arrays in struct fields maintain their fixed-length array form to preserve memory layout compatibility with the original C struct.
+
+```c
+typedef struct Foo {  
+    char a[4];  
+    int b[3][4];  
+} Foo;
+```
+```go
+type Foo struct {
+	A [4]c.Char
+	B [3][4]c.Int
+}
+```
+###### Multi-dimensional
+
+Multi-dimensional arrays are supported in both contexts, with the same conversion rules applying:
+
+```c
+char matrix[3][4];  // In function parameter becomes **c.Char  
+char field[3][4];   // In struct field becomes [3][4]c.Char
+```
+
+
 #### Name Mapping Rules
 
 The llcppg system converts C/C++ type names to Go-compatible identifiers following specific transformation rules. These rules ensure generated Go code follows Go naming conventions while maintaining clarity and avoiding conflicts.
