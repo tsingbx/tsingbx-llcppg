@@ -57,6 +57,55 @@ Field names must be exportable (public) in Go to allow external access. The conv
 1. Letter-starting fields: Convert to PascalCase
 2. Underscore/digit-starting fields: Apply public processing, then convert to PascalCase while preserving case after underscores
 
+##### Param Name Conversion
+
+Parameter names are preserved in their original style without conversion, with only the following special cases being handled:
+
+1. When a parameter conflicts with a keyword, a `_` suffix is added to the parameter name
+
+```c
+void(lua_sethook)(lua_State *L, lua_Hook func, int mask, int count);
+```
+```go
+//go:linkname Sethook C.lua_sethook
+func LuaSethook(L *LuaState, func_ LuaHook, mask c.Int, count c.Int)
+```
+
+2. For variadic parameters, the parameter name is `__llgo_va_list`
+
+```c
+LUA_API int(lua_gc)(lua_State *L, int what, ...);
+```
+```go
+//go:linkname Gc C.lua_gc
+func LuaGc(L *State, what c.Int, __llgo_va_list ...interface{}) c.Int
+```
+
+3. For function signatures where all parameters have no names, the corresponding function signature will not generate parameter names.
+
+4. Once there are named parameters in the function signature, according to Go's rules, all parameter names must be generated in the corresponding Go signature.
+
+C allows mixing named and unnamed parameters in function signatures. For this case, the rule is to generate parameter names like `__llgo_arg_N` for unnamed parameters based on their index in the parameter list.
+
+```c
+int OSSL_PROVIDER_add_builtin(OSSL_LIB_CTX *, const char *name);
+```
+```go
+//go:linkname ProviderAddBuiltin C.OSSL_PROVIDER_add_builtin
+func OSSLProviderAddBuiltin(__llgo_arg_0 *OSSLLIBCTX, name *c.Char) c.Int
+```
+
+And for cases where only variadic parameters appear, llgo requires ` __llgo_va_list ...interface{}` to describe variadic parameters, and the same placeholder name generation processing is needed for this case.
+
+```c
+char *mprintf(const char*,...);
+```
+```go
+//go:linkname Mprintf C.mprintf
+func Mprintf(__llgo_arg_0 *c.Char, __llgo_va_list ...interface{}) *c.Char
+```
+
+
 ### File Generation Rules
 
 #### Generated File Types
