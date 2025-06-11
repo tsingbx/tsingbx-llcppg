@@ -6,6 +6,7 @@ llcppg - LLGo autogen tool for C/C++ libraries
 [![GitHub release](https://img.shields.io/github/v/tag/goplus/llcppg.svg?label=release)](https://github.com/goplus/llcppg/releases)
 [![Coverage Status](https://codecov.io/gh/goplus/llcppg/branch/main/graph/badge.svg)](https://codecov.io/gh/goplus/llcppg)
 [![Language](https://img.shields.io/badge/language-Go+-blue.svg)](https://github.com/goplus/gop)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/goplus/llcppg)
 
 llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, enhancing the experience of integrating LLGo with C! It is worth mentioning that several core components of llcppg are built using LLGo, fully leveraging its core capability of "better integrating with the C ecosystem" for development. 
 
