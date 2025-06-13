@@ -388,6 +388,10 @@ Each dependency package follows a unified file organization structure (using xml
 2. llcppg.pub (type mapping information)
 
 ##### TypeMapping Examples (llcppg.pub)
+
+* C types on the left and corresponding Go type names on the right
+* If the Go Name is same with C type name,only need keep one column
+
 Standard Library Type Mapping
 `github.com/goplus/lib/c/llcppg.pub`
 ```
@@ -501,7 +505,7 @@ linux amd64 `t1_linux_amd64.go`  `t2_linux_amd64.go`
 package xxx
 ```
 
-## Usage
+## Input
 
 ```sh
 llcppg [config-file]
@@ -523,6 +527,98 @@ If `config-file` is not specified, a `llcppg.cfg` file is used in current direct
   "deps":["c","github.com/..../third"],
   "mix":false 
 }
+```
+
+The configuration file supports the following options:
+
+- `name`: The name of the generated package
+- `cflags`: Compiler flags for the C/C++ library
+- `include`: Header files to include in the binding generation
+- `libs`: Library flags for linking
+- `trimPrefixes`: Prefixes to remove from function names & type names
+- `cplusplus`: Set to true for C++ libraries(not support)
+- `deps`: Dependencies (other packages & standard libraries)
+- `mix`: Set to true when package header files are mixed with other header files in the same directory. In this mode, only files explicitly listed in `include` are processed as package files.
+- `typeMap`: Custom name mapping from C types to Go types.
+- `symMap`: Custom name mapping from C function names to Go function names.
+
+## Output
+
+After running llcppg, LLGo bindings will be generated in a directory named by `name` field in `llcppg.cfg`,and the `name` field is also the package name of all Go files. The generated file structure is as follows:
+
+### Go Source Files
+
+#### C Header File Corresponding Go File
+
+* A corresponding .go file is generated for each header file listed in the `include` field in `llcppg.cfg`.
+* File names are based on header file names, e.g., cJSON.h generates cJSON.go, cJSON_Utils.h generates cJSON_Utils.go
+* Implementation files are all generated at `{name}_autogen.go` file,determined file type by [Package Header File Determination](#Package-Header-File-Determination)
+
+#### Auto generated Link File
+
+* Generates a `{name}_autogen_link.go` file containing linking information and necessary imports
+* This file includes the `LLGoPackage` constant to specify the lib link flags from `libs` field in `llcppg.cfg`. for example: `"libs": "$(pkg-config --libs libxslt)"`, will generate:
+
+```json
+{
+  "libs": "$(pkg-config --libs libxslt)"
+}
+```
+```go
+const LLGoPackage string = "link: $(pkg-config --libs libxslt);"
+```
+
+* blank import for every dependency package in `deps` field in `llcppg.cfg`, for example:
+
+```json
+{
+  "deps": ["c/os","github.com/goplus/llpkg/libxml2@v1.0.1"]
+}
+```
+```go
+import (
+	_ "github.com/goplus/lib/c"
+	_ "github.com/goplus/lib/c/os"
+	_ "github.com/goplus/llpkg/libxml2"
+)
+```
+
+### Type Mapping File
+
+* Generates an llcppg.pub file containing a mapping table from C types to Go type names, is used for package dependency handling, example and concept see [Dependency](#Dependency)
+
+### Go Module Files (Optional)
+
+* When using the `-mod` flag, go.mod and go.sum files are generated with the specified module name.
+
+for example: `llcppg -mod github.com/author/cjson` will generate a go.mod file with the module name `github.com/author/cjson` and a go.sum file in the result directory.
+
+### Example
+
+```json
+{
+  "name": "cjson",
+  "cflags": "$(pkg-config --cflags libcjson)",
+  "include": ["cJSON.h","cJSON_Utils.h"],
+  "libs": "$(pkg-config --libs libcjson libcjson_utils)",
+  "trimPrefixes": ["cJSONUtils_","cJSON_"],
+  "cplusplus": false,
+  "deps": ["c"],
+  "mix": false,
+  "typeMap":{}
+}
+```
+
+Using the cjson configuration as an example, the generated directory structure would be:
+
+```bash
+cjson/  
+├── cJSON.go                    # Bindings generated from cJSON.h  
+├── cJSON_Utils.go             # Bindings generated from cJSON_Utils.h    
+├── cjson_autogen_link.go      # Auto-generated link file  
+├── llcppg.pub                 # Type mapping information  
+├── go.mod                     # Go module file (when using -mod flag)  
+└── go.sum                     # Dependency checksums (when using -mod flag)  
 ```
 
 ## Process Steps
