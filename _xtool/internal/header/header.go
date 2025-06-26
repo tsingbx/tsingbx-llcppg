@@ -14,10 +14,23 @@ type PkgHfilesInfo struct {
 	Inters []string // From types.Config.Include
 	Impls  []string // From same root of types.Config.Include
 	Thirds []string // Not Current Pkg's Files
+	Plats  []string // Platform Difference Files
 }
 
 func (p *PkgHfilesInfo) CurPkgFiles() []string {
 	return append(p.Inters, p.Impls...)
+}
+
+type Config struct {
+	// Includes specifies the header file include paths to be processed.
+	// These are the paths used in #include directives, such as:
+	// - "zlib.h"
+	// - "openssl/ssl.h"
+	Includes []string
+	// PlatDiff specifies header file include paths that differ between platforms,these are include paths in Includes.
+	PlatDiff []string
+	Args     []string
+	Mix      bool
 }
 
 // PkgHfileInfo analyzes header files dependencies and categorizes them into three groups:
@@ -29,7 +42,7 @@ func (p *PkgHfilesInfo) CurPkgFiles() []string {
 // 1. Creating a temporary header file that includes all headers from conf.Include
 // 2. Using clang to parse the translation unit and analyze includes
 // 3. Categorizing includes based on their inclusion level and path relationship
-func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
+func PkgHfileInfo(conf *Config) *PkgHfilesInfo {
 	info := &PkgHfilesInfo{
 		Inters: []string{},
 		Impls:  []string{},
@@ -43,12 +56,12 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 
 	inters := make(map[string]struct{})
 	others := []string{} // impl & third
-	for _, f := range includes {
+	for _, f := range conf.Includes {
 		content := "#include <" + f + ">"
 		index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 			File: content,
 			Temp: true,
-			Args: args,
+			Args: conf.Args,
 		})
 		if err != nil {
 			panic(err)
@@ -64,11 +77,11 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		index.Dispose()
 	}
 
-	clangtool.ComposeIncludes(includes, outfile.Name())
+	clangtool.ComposeIncludes(conf.Includes, outfile.Name())
 	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 		File: outfile.Name(),
 		Temp: false,
-		Args: args,
+		Args: conf.Args,
 	})
 	defer unit.Dispose()
 	defer index.Dispose()
@@ -84,7 +97,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		}
 	})
 
-	if mix {
+	if conf.Mix {
 		info.Thirds = others
 		return info
 	}
