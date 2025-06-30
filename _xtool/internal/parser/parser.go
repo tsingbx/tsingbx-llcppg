@@ -139,8 +139,7 @@ func (ct *Converter) logln(args ...interface{}) {
 
 func (ct *Converter) InFile(cursor clang.Cursor) bool {
 	loc := cursor.Location()
-	file, _, _ := clangutils.GetPresumedLocation(loc)
-	filePath := clang.GoString(file)
+	filePath, _, _ := clangutils.GetPresumedLocation(loc)
 	ct.logf("GetCurFile: PresumedLocation %s cursor.Location() %s\n", filePath, clang.GoString(loc.File().FileName()))
 	if filePath == "<built-in>" || filePath == "<command line>" {
 		//todo(zzy): For some built-in macros, there is no file.
@@ -164,10 +163,7 @@ func (ct *Converter) CreateObject(cursor clang.Cursor, name *ast.Ident) ast.Obje
 }
 
 func createLoc(cursor clang.Cursor) *ast.Location {
-	var file clang.String
-	loc := cursor.Location()
-	loc.PresumedLocation(&file, nil, nil)
-	filename := filepath.Clean(clang.GoString(file))
+	filename, _, _ := clangutils.GetPresumedLocation(cursor.Location())
 	return &ast.Location{
 		File: filename,
 	}
