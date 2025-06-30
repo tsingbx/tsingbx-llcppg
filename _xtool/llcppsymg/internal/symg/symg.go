@@ -10,6 +10,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	"github.com/goplus/llcppg/_xtool/internal/header"
 	"github.com/goplus/llcppg/_xtool/internal/ld"
+	"github.com/goplus/llcppg/_xtool/internal/symbol"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/nm"
 )
@@ -37,11 +38,11 @@ type Config struct {
 	TrimPrefixes []string
 	SymMap       map[string]string
 	IsCpp        bool
-	libMode      LibMode
+	LibMode      LibMode
 }
 
 func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
-	symbols, err := FetchSymbols(conf.Libs, conf.libMode)
+	symbols, err := FetchSymbols(conf.Libs, conf.LibMode)
 	if err != nil {
 		return
 	}
@@ -100,7 +101,7 @@ func FetchSymbols(lib string, mode LibMode) ([]*nm.Symbol, error) {
 
 	libFiles, notFounds, err := lbs.Files(sysPaths, mode)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate some dylib paths: %v", err)
+		return nil, fmt.Errorf("failed to generate some lib paths: %v", err)
 	}
 
 	if dbgSymbol {
@@ -117,13 +118,13 @@ func FetchSymbols(lib string, mode LibMode) ([]*nm.Symbol, error) {
 
 	for _, libFile := range libFiles {
 		args := []string{"-g"}
-		if runtime.GOOS == "linux" {
+		if runtime.GOOS == "linux" && mode == symbol.ModeDynamic {
 			args = append(args, "-D")
 		}
 
 		files, err := nm.New("llvm-nm").List(libFile, args...)
 		if err != nil {
-			parseErrors = append(parseErrors, fmt.Sprintf("fetchSymbols:Failed to list symbols in dylib %s: %v", libFile, err))
+			parseErrors = append(parseErrors, fmt.Sprintf("fetchSymbols:Failed to list symbols in lib %s: %v", libFile, err))
 			continue
 		}
 
