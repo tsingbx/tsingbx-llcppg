@@ -560,7 +560,8 @@ If `config-file` is not specified, a `llcppg.cfg` file is used in current direct
   "cplusplus":true,
   "deps":["c","github.com/..../third"],
   "mix":false,
-  "staticLib": false
+  "staticLib": false,
+  "headerOnly": false
 }
 ```
 
@@ -577,6 +578,7 @@ The configuration file supports the following options:
 - `typeMap`: Custom name mapping from C types to Go types.
 - `symMap`: Custom name mapping from C function names to Go function names.
 - `staticLib`: Set to true to enable static library symbol reading instead of dynamic library linking. When enabled, llcppg will read symbols from static libraries (.a files) rather than dynamic libraries (.so/.dylib files).
+- `headerOnly`: Set to true to ​​skip the symbol intersection process​​ described in [step 3](#llcppsymg).
 
 ## Output
 
@@ -684,6 +686,12 @@ When `staticLib: true` is configured in `llcppg.cfg`, llcppsymg switches to stat
 
 - **Dynamic Library Mode (default)**: Uses nm tool to extract symbols from .so/.dylib files
 - **Static Library Mode**: Uses nm tool to extract symbols from .a files
+
+### Header-Only Mode
+
+When `headerOnly: true` is configured in llcppg.cfg, llcppg operates in header-only processing mode.
+
+In header-only processing mode, instead of matching library symbols with header declarations, it will generate the symbol table based solely on header files specified in cflags.
 
 #### Symbol Table
 
